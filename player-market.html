@@ -170,7 +170,7 @@
 
       var footHtml = "";
       if (isOwn) {
-        footHtml = '<div class="market-card-foot"><span class="field-hint">This is your listing</span><button type="button" class="btn btn-ghost mp-delete-listing" data-listing-id="' + listing.id + '">Delete Listing</button></div>';
+        footHtml = '<div class="market-card-foot"><button type="button" class="btn btn-ghost mp-delete-listing" data-listing-id="' + listing.id + '" style="padding:0.35rem 0.65rem;font-size:0.68rem">Delete Listing</button></div>';
       } else if (canMessage) {
         var isSample = String(listing.id).indexOf("sample-") === 0;
         var url = "messages.html?to=" + encodeURIComponent(listing.profile_id) +
