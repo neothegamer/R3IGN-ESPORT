@@ -257,10 +257,16 @@
       document.getElementById("account-avatar").textContent = name.charAt(0).toUpperCase();
       document.getElementById("account-panel").style.display = "block";
 
-      return window.R3IGNAuth.client.rpc("ensure_my_league_id");
+      return window.R3IGNAuth.client.rpc("ensure_my_league_id").then(function (rpcRes) {
+        if (rpcRes && !rpcRes.error && rpcRes.data) return rpcRes;
+        return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).maybeSingle();
+      }).catch(function () {
+        return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).maybeSingle();
+      });
     }).then(function (res) {
-      if (res && res.data) {
-        leagueIdEl.textContent = res.data;
+      var leagueId = res && res.data && (typeof res.data === "string" ? res.data : res.data.league_id);
+      if (leagueId) {
+        leagueIdEl.textContent = leagueId;
       } else if (leagueIdEl) {
         leagueIdEl.textContent = "Unavailable";
       }
