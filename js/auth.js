@@ -12,15 +12,16 @@
 (function () {
   "use strict";
 
+  var anonKey = window.SUPABASE_ANON_KEY || window.SUPABASE_PUBLISHABLE_KEY || "";
   var configured =
     window.SUPABASE_URL &&
-    window.SUPABASE_ANON_KEY &&
+    anonKey &&
     window.SUPABASE_URL.indexOf("YOUR_SUPABASE") === -1 &&
-    window.SUPABASE_ANON_KEY.indexOf("YOUR_SUPABASE") === -1;
+    anonKey.indexOf("YOUR_SUPABASE") === -1;
 
   var client = null;
   if (configured && window.supabase) {
-    client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    client = window.supabase.createClient(window.SUPABASE_URL, anonKey);
   }
 
   // Exposed globally so signin.html / signup.html / account.html can use it.

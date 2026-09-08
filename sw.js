@@ -1,5 +1,5 @@
 /* R3IGN ESPORTS — Service Worker */
-const CACHE_NAME = "r3ign-v2";
+const CACHE_NAME = "r3ign-v3";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
@@ -34,44 +34,56 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// Fetch: cache-first for static assets, network-first for API
+// Fetch: keep app assets fresh so config/auth updates aren't stuck behind stale cache entries.
 self.addEventListener("fetch", (e) => {
   const { request } = e;
   const url = new URL(request.url);
 
-  // Skip non-GET requests and Supabase API calls
+  // Skip non-GET requests and Supabase API calls.
   if (request.method !== "GET") return;
   if (url.hostname.includes("supabase.co")) return;
 
-  // Always fetch deployment-generated credentials/config from the server.
-  if (url.pathname.endsWith("/js/supabase-config.js")) {
-    e.respondWith(fetch(request).catch(() => caches.match(request)));
+  // Always prefer the current server version for generated auth/config files.
+  if (
+    url.pathname.endsWith("/js/supabase-config.js") ||
+    url.pathname.endsWith("/js/auth.js") ||
+    url.pathname.endsWith("/js/main.js") ||
+    url.pathname.endsWith("/js/assistant.js")
+  ) {
+    e.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
     return;
   }
 
-  // Cache-first for static assets
+  // For HTML/CSS/image files, update the cache on successful fetch but prefer a fresh response.
   if (
     url.pathname.endsWith(".html") ||
     url.pathname.endsWith(".css") ||
-    url.pathname.endsWith(".js") ||
     url.pathname.endsWith(".png") ||
     url.pathname.endsWith(".jpg") ||
     url.pathname.endsWith(".svg") ||
     url.pathname.endsWith(".woff2")
   ) {
     e.respondWith(
-      caches.match(request).then((cached) => {
-        return cached || fetch(request).then((response) => {
+      fetch(request)
+        .then((response) => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
-        });
-      })
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }
 
-  // Network-first for everything else
+  // Network-first for everything else.
   e.respondWith(
     fetch(request).catch(() => caches.match(request))
   );
