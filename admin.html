@@ -893,7 +893,12 @@
         if (res.error) {
           var fallback = client.from("profiles").select("league_id, display_name, avatar_url, id");
           fallback = isLeagueId ? fallback.ilike("league_id", term + "%") : fallback.ilike("display_name", "%" + term + "%");
-          return fallback.limit(10);
+          return fallback.limit(10).then(function (fallbackRes) {
+            if (!fallbackRes.error) return fallbackRes;
+            var basic = client.from("profiles").select("league_id, display_name, id");
+            basic = isLeagueId ? basic.ilike("league_id", term + "%") : basic.ilike("display_name", "%" + term + "%");
+            return basic.limit(10);
+          });
         }
         return res;
       }).then(function (res) {
