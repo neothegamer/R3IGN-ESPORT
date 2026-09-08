@@ -138,7 +138,7 @@ Once that's done, `admin.html` will show you the **Verify** / **Reject** buttons
 ### Once you deploy to GitHub Pages
 Go to **Authentication → URL Configuration** in Supabase and set:
 - **Site URL** → `https://yourname.github.io/r3ign-esports/`
-- **Redirect URLs** → add `https://yourname.github.io/r3ign-esports/account.html`
+- **Redirect URLs** → add `https://yourname.github.io/r3ign-esports/account.html` and `https://yourname.github.io/r3ign-esports/profile-settings.html`
 
 Until you set this, OAuth sign-in will redirect back to `localhost` instead of your live site — email/password sign-in isn't affected by this setting.
 
@@ -204,7 +204,7 @@ Email/password auth is on by default in Supabase — no extra setup needed. By d
 ### 5. Set your site URL (important for OAuth redirects to work once deployed)
 In Supabase, go to **Authentication → URL Configuration** and set:
 - **Site URL** → your GitHub Pages URL, e.g. `https://yourname.github.io/r3ign-esports/`
-- **Redirect URLs** → add both `https://yourname.github.io/r3ign-esports/account.html` and, for local testing, `http://localhost:8000/account.html`
+- **Redirect URLs** → add `https://yourname.github.io/r3ign-esports/account.html`, `https://yourname.github.io/r3ign-esports/profile-settings.html`, and, for local testing, `http://localhost:8000/account.html` plus `http://localhost:8000/profile-settings.html`
 
 ### 6. Push real rankings data
 The `rankings` table only has sample Season 4 numbers right now. To load your real last-season results:
