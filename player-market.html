@@ -152,6 +152,33 @@
     /* ---------- Listing grid ---------- */
     var grid = document.getElementById("market-grid");
     var currentUserId = null;
+    var confirmOverlay = null;
+
+    function requestDeleteConfirmation(onConfirm) {
+      if (!confirmOverlay) {
+        confirmOverlay = document.createElement("div");
+        confirmOverlay.className = "market-confirm-overlay";
+        confirmOverlay.innerHTML =
+          '<div class="market-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="market-confirm-title">' +
+          '<h3 id="market-confirm-title">Delete Listing</h3>' +
+          '<p>Delete this player listing permanently?</p>' +
+          '<div class="market-confirm-actions"><button type="button" class="btn btn-ghost" data-confirm-cancel>Cancel</button><button type="button" class="btn btn-primary" data-confirm-delete>Delete Listing</button></div>' +
+          '</div>';
+        document.body.appendChild(confirmOverlay);
+        confirmOverlay.addEventListener("click", function (e) {
+          if (e.target === confirmOverlay || e.target.hasAttribute("data-confirm-cancel")) {
+            confirmOverlay.classList.remove("is-visible");
+          }
+        });
+      }
+      var confirmDelete = confirmOverlay.querySelector("[data-confirm-delete]");
+      confirmDelete.onclick = function () {
+        confirmOverlay.classList.remove("is-visible");
+        onConfirm();
+      };
+      confirmOverlay.classList.add("is-visible");
+      confirmDelete.focus();
+    }
 
     function sampleListings() {
       return [
@@ -194,25 +221,26 @@
       var deleteBtn = card.querySelector(".mp-delete-listing");
       if (deleteBtn) {
         deleteBtn.addEventListener("click", function () {
-          if (!window.confirm("Delete this player listing?")) return;
-          deleteBtn.disabled = true;
-          deleteBtn.textContent = "Deleting...";
-          var client = window.R3IGNAuth.client;
-          var removeImage = listing.profile_screenshot_path
-            ? client.storage.from("player-market-uploads").remove([listing.profile_screenshot_path])
-            : Promise.resolve();
-          removeImage.catch(function () {}).then(function () {
-            return client.from("player_listings").delete().eq("id", listing.id).eq("profile_id", currentUserId);
-          }).then(function (res) {
-            if (res.error) throw res.error;
-            card.remove();
-            if (!grid.querySelector(".market-card")) {
-              grid.innerHTML = '<p class="field-hint" style="padding:1.25rem">No listings yet &mdash; be the first to list yourself below.</p>';
-            }
-          }).catch(function (err) {
-            deleteBtn.disabled = false;
-            deleteBtn.textContent = "Delete Listing";
-            window.alert(err.message || "Could not delete the listing.");
+          requestDeleteConfirmation(function () {
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = "Deleting...";
+            var client = window.R3IGNAuth.client;
+            var removeImage = listing.profile_screenshot_path
+              ? client.storage.from("player-market-uploads").remove([listing.profile_screenshot_path])
+              : Promise.resolve();
+            removeImage.catch(function () {}).then(function () {
+              return client.from("player_listings").delete().eq("id", listing.id).eq("profile_id", currentUserId);
+            }).then(function (res) {
+              if (res.error) throw res.error;
+              card.remove();
+              if (!grid.querySelector(".market-card")) {
+                grid.innerHTML = '<p class="field-hint" style="padding:1.25rem">No listings yet &mdash; be the first to list yourself below.</p>';
+              }
+            }).catch(function (err) {
+              deleteBtn.disabled = false;
+              deleteBtn.textContent = "Delete Listing";
+              window.alert(err.message || "Could not delete the listing.");
+            });
           });
         });
       }
