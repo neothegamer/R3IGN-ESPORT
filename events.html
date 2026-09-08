@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events · R3IGN</title>
+<meta name="description" content="Upcoming R3IGN matches and events \u2014 add any date straight to your calendar.">
+<meta property="og:title" content="Events · R3IGN">
+<meta property="og:description" content="Upcoming R3IGN matches and events \u2014 add any date straight to your calendar.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Events · R3IGN">
+<meta name="twitter:description" content="Upcoming R3IGN matches and events \u2014 add any date straight to your calendar.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html" aria-current="page">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Events</span>
+    <span class="eyebrow" style="margin-top:1rem;display:inline-flex">Mark Your Calendar</span>
+    <h1>Events</h1>
+    <p>League matches and community events. Tap Add to Calendar to save any date straight to your phone or computer.</p>
+    <div class="cta-actions" style="margin-top:1.25rem"><a href="brackets.html" class="btn btn-primary">View Tournament Bracket &rarr;</a></div>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap">
+    <div class="filter-bar" role="tablist" aria-label="Events view">
+      <button class="filter-chip" data-events-tab="upcoming" aria-pressed="true" role="tab">Upcoming Events</button>
+      <button class="filter-chip" data-events-tab="ongoing" aria-pressed="false" role="tab">Ongoing Events</button>
+    </div>
+
+    <div data-events-panel="upcoming">
+      <div class="events-grid" id="events-grid">
+        <p class="field-hint" id="events-loading">Loading events&hellip;</p>
+      </div>
+      <p class="field-hint center" id="events-empty" style="display:none;margin-top:1.5rem">No upcoming events right now &mdash; check back soon.</p>
+    </div>
+
+    <div data-events-panel="ongoing" hidden>
+      <div class="events-grid" id="ongoing-grid">
+        <p class="field-hint" id="ongoing-loading">Loading&hellip;</p>
+      </div>
+      <p class="field-hint center" id="ongoing-empty" style="display:none;margin-top:1.5rem">Nothing is live right now &mdash; check Upcoming Events above.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var tabs = document.querySelectorAll("[data-events-tab]");
+  var panels = document.querySelectorAll("[data-events-panel]");
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) { t.setAttribute("aria-pressed", "false"); });
+      tab.setAttribute("aria-pressed", "true");
+      var name = tab.getAttribute("data-events-tab");
+      panels.forEach(function (p) { p.hidden = p.getAttribute("data-events-panel") !== name; });
+    });
+  });
+})();
+
+(function () {
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+  function toICSDate(d) {
+    return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + "T" +
+      pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + "Z";
+  }
+
+  function escapeICS(text) {
+    return String(text || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+  }
+
+  function downloadICS(ev) {
+    var start = new Date(ev.start_time);
+    var end = ev.end_time ? new Date(ev.end_time) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    var lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//R3IGN//Events//EN",
+      "BEGIN:VEVENT",
+      "UID:" + (ev.id || Math.random().toString(36).slice(2)) + "@r3ignesports.gg",
+      "DTSTAMP:" + toICSDate(new Date()),
+      "DTSTART:" + toICSDate(start),
+      "DTEND:" + toICSDate(end),
+      "SUMMARY:" + escapeICS(ev.title),
+      "DESCRIPTION:" + escapeICS(ev.description || ""),
+      "LOCATION:" + escapeICS(ev.location || ""),
+      "END:VEVENT",
+      "END:VCALENDAR"
+    ];
+    var blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = (ev.title || "event").replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".ics";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function googleCalendarUrl(ev) {
+    var start = new Date(ev.start_time);
+    var end = ev.end_time ? new Date(ev.end_time) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    var params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: ev.title || "",
+      dates: toICSDate(start) + "/" + toICSDate(end),
+      details: ev.description || "",
+      location: ev.location || ""
+    });
+    return "https://calendar.google.com/calendar/render?" + params.toString();
+  }
+
+  var LEAGUE_LABEL = { rcml: "RCML \u00b7 COD Mobile", rfcl: "RFCL \u00b7 Free Fire", rbsl: "RBSL \u00b7 Blood Strike" };
+
+  function eventCard(ev) {
+    var start = new Date(ev.start_time);
+    var dateLabel = start.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) +
+      " \u00b7 " + start.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    var metaBits = [];
+    if (ev.league && LEAGUE_LABEL[ev.league]) metaBits.push("<span>" + LEAGUE_LABEL[ev.league] + "</span>");
+    if (ev.location) metaBits.push("<span>" + ev.location + "</span>");
+
+    var card = document.createElement("div");
+    card.className = "event-card";
+    card.innerHTML =
+      '<div class="event-date">' + dateLabel + '</div>' +
+      '<h3></h3>' +
+      '<p></p>' +
+      '<div class="event-meta">' + metaBits.join("") + '</div>' +
+      '<div class="event-actions">' +
+        '<button class="btn btn-ghost btn-add-cal">Add to Calendar</button>' +
+        '<a class="btn btn-ghost" target="_blank" rel="noopener">Google Calendar</a>' +
+      '</div>';
+    card.querySelector("h3").textContent = ev.title || "Untitled Event";
+    card.querySelector("p").textContent = ev.description || "";
+    card.querySelector(".btn-add-cal").addEventListener("click", function () { downloadICS(ev); });
+    card.querySelector("a.btn").href = googleCalendarUrl(ev);
+    return card;
+  }
+
+  function sampleEvents() {
+    var now = Date.now();
+    var day = 24 * 60 * 60 * 1000;
+    return [
+      { id: "sample-1", title: "RCML Season 4 \u2014 Division 1 Match Night", description: "Live Division 1 matches with kill tracking and standings updates.", league: "rcml", location: "Online", start_time: new Date(now + 3 * day).toISOString(), end_time: new Date(now + 3 * day + 2 * 60 * 60 * 1000).toISOString() },
+      { id: "sample-2", title: "RFCL \u2014 Open Registration", description: "Registration window is open for the inaugural Free Fire Clash Squad season.", league: "rfcl", location: "Online", start_time: new Date(now + 1 * day).toISOString(), end_time: new Date(now + 1 * day + 2 * 60 * 60 * 1000).toISOString() },
+      { id: "sample-3", title: "RBSL Season 1 \u2014 Registration Deadline", description: "Last day for organizations to register a Blood Strike roster for Season 1.", league: "rbsl", location: "Online", start_time: new Date(now + 8 * day).toISOString() }
+    ];
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var grid = document.getElementById("events-grid");
+    var loading = document.getElementById("events-loading");
+    var empty = document.getElementById("events-empty");
+
+    function render(events, isLive) {
+      grid.innerHTML = "";
+      if (!events.length) {
+        empty.style.display = "block";
+        return;
+      }
+      events.forEach(function (ev) { grid.appendChild(eventCard(ev)); });
+      if (!isLive) {
+        var note = document.createElement("p");
+        note.className = "field-hint";
+        note.style.gridColumn = "1 / -1";
+        note.textContent = "Sample schedule shown \u2014 connect Supabase and post real events from the Admin page for live dates.";
+        grid.appendChild(note);
+      }
+    }
+
+    if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) {
+      render(sampleEvents(), false);
+      return;
+    }
+
+    window.R3IGNAuth.client.from("events")
+      .select("*")
+      .gte("start_time", new Date().toISOString())
+      .order("start_time", { ascending: true })
+      .then(function (res) {
+        if (res.error || !res.data || !res.data.length) {
+          render(sampleEvents(), false);
+          return;
+        }
+        render(res.data, true);
+      });
+
+    /* ---------- Ongoing Events (started, not yet ended) ---------- */
+    var ongoingGrid = document.getElementById("ongoing-grid");
+    var ongoingEmpty = document.getElementById("ongoing-empty");
+
+    function renderOngoing(events) {
+      ongoingGrid.innerHTML = "";
+      if (!events.length) {
+        ongoingEmpty.style.display = "block";
+        return;
+      }
+      events.forEach(function (ev) {
+        var card = eventCard(ev);
+        var badge = document.createElement("span");
+        badge.className = "stamp stamp-live";
+        badge.style.marginLeft = "0.6rem";
+        badge.textContent = "Live Now";
+        card.querySelector("h3").appendChild(badge);
+        ongoingGrid.appendChild(card);
+      });
+    }
+
+    function sampleOngoing() {
+      var now = Date.now();
+      var hr = 60 * 60 * 1000;
+      return [
+        { id: "ongoing-sample-1", title: "RCML Season 4 \u2014 Division 1, Week 6", description: "Live matches in progress \u2014 standings updating in real time.", league: "rcml", location: "Online", start_time: new Date(now - 1 * hr).toISOString(), end_time: new Date(now + 1 * hr).toISOString() }
+      ];
+    }
+
+    if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) {
+      renderOngoing(sampleOngoing());
+    } else {
+      var nowIso = new Date().toISOString();
+      window.R3IGNAuth.client.from("events")
+        .select("*")
+        .lte("start_time", nowIso)
+        .gte("end_time", nowIso)
+        .order("start_time", { ascending: true })
+        .then(function (res) {
+          if (res.error || !res.data || !res.data.length) {
+            renderOngoing(sampleOngoing());
+            return;
+          }
+          renderOngoing(res.data);
+        });
+    }
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

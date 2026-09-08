@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Market · R3IGN</title>
+<meta name="description" content="Browse free agents or list yourself as available to join an organization in R3IGN.">
+<meta property="og:title" content="Player Market · R3IGN">
+<meta property="og:description" content="Browse free agents or list yourself as available to join an organization in R3IGN.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Player Market · R3IGN">
+<meta name="twitter:description" content="Browse free agents or list yourself as available to join an organization in R3IGN.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html" aria-current="page">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Player Market</span>
+    <span class="eyebrow" style="margin-top:1rem;display:inline-flex">Free Agents</span>
+    <h1>Player Market</h1>
+    <p>Browse free agents looking for a roster, or list yourself as available to join an organization.</p>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap">
+    <div class="market-grid" id="market-grid">
+      <p class="field-hint" style="padding:1.25rem">Loading&hellip;</p>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="wrap" style="max-width:640px">
+    <div class="form-panel">
+      <div class="auth-notice" id="mp-config-notice">
+        Backend isn't connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code> to enable listings. See the README for setup steps.
+      </div>
+      <div class="auth-notice" id="mp-signin-notice">
+        <a href="signin.html" style="color:var(--paper)">Sign in</a> to list yourself on the player market.
+      </div>
+      <div class="auth-error" id="mp-error"></div>
+      <div class="form-success" id="mp-success" role="status">Listing submitted. Organizations will be able to find your profile once it's reviewed.</div>
+      <form id="market-form" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label for="mp-name">In-game name <span class="req">*</span></label>
+            <input type="text" id="mp-name" name="mp-name" required>
+            <div class="field-error">Enter your in-game name.</div>
+          </div>
+          <div class="field">
+            <label for="mp-role">Primary role <span class="req">*</span></label>
+            <input type="text" id="mp-role" name="mp-role" placeholder="e.g. IGL, Support, Sniper" required>
+            <div class="field-error">Enter your primary role.</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="mp-league">Game <span class="req">*</span></label>
+          <select id="mp-league" name="mp-league" required>
+            <option value="">Select a game</option>
+            <option value="rcml">Call of Duty: Mobile (RCML)</option>
+            <option value="rfcl">Free Fire (RFCL)</option>
+            <option value="rbsl">Blood Strike (RBSL)</option>
+          </select>
+          <div class="field-error">Select which game you play.</div>
+        </div>
+        <div class="field">
+          <label for="mp-region">Region</label>
+          <select id="mp-region" name="mp-region">
+            <option value="">Select a region</option>
+            <option>North America</option>
+            <option>South America</option>
+            <option>Europe</option>
+            <option>Middle East &amp; Africa</option>
+            <option>Asia Pacific</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mp-notes">Availability &amp; experience</label>
+          <textarea id="mp-notes" name="mp-notes" placeholder="Divisions you're open to, availability, past results"></textarea>
+        </div>
+        <div class="field">
+          <label for="mp-file">Upload in-game profile screenshot (optional)</label>
+          <input type="file" id="mp-file" accept="image/*">
+          <p class="field-hint" id="mp-file-name"></p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="mp-submit">List Yourself</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var configured = window.R3IGNAuth && window.R3IGNAuth.isConfigured();
+    var form = document.getElementById("market-form");
+
+    /* ---------- Listing grid ---------- */
+    var grid = document.getElementById("market-grid");
+    var currentUserId = null;
+
+    function sampleListings() {
+      return [
+        { id: "sample-1", ign: "Kestrel", role: "IGL / Rifler", notes: "Looking for a Division 1\u20133 roster. Available immediately.", league: "rcml", region: "North America", profile_id: null },
+        { id: "sample-2", ign: "Vale", role: "Support", notes: "Flex support player, prior playoff experience.", league: "rcml", region: "Europe", profile_id: null },
+        { id: "sample-3", ign: "Onyx", role: "Entry Fragger", notes: "High aggression entry player seeking an active org.", league: "rcml", region: "Asia Pacific", profile_id: null },
+        { id: "sample-4", ign: "Draft", role: "Sniper", notes: "Looking to join a Division 4\u20136 roster to build experience.", league: "rcml", region: "North America", profile_id: null }
+      ];
+    }
+
+    function marketCard(listing) {
+      var card = document.createElement("div");
+      card.className = "market-card";
+      var isOwn = currentUserId && listing.profile_id === currentUserId;
+      var canMessage = listing.profile_id && !isOwn;
+
+      var footHtml = "";
+      if (isOwn) {
+        footHtml = '<div class="market-card-foot"><span class="field-hint">This is your listing</span></div>';
+      } else if (canMessage) {
+        var isSample = String(listing.id).indexOf("sample-") === 0;
+        var url = "messages.html?to=" + encodeURIComponent(listing.profile_id) +
+          "&name=" + encodeURIComponent(listing.ign || "Player") +
+          (isSample ? "" : "&listing=" + encodeURIComponent(listing.id));
+        footHtml = '<div class="market-card-foot"><a href="' + url + '" class="btn btn-ghost">Message</a></div>';
+      } else if (listing.profile_id) {
+        footHtml = '<div class="market-card-foot"><a href="signin.html" class="btn btn-ghost">Sign in to message</a></div>';
+      }
+
+      card.innerHTML =
+        '<div class="role"></div><h3></h3><p></p>' +
+        '<div class="market-tags"><span class="market-tag"></span><span class="market-tag"></span></div>' +
+        footHtml;
+      card.querySelector(".role").textContent = listing.role || "Player";
+      card.querySelector("h3").textContent = listing.ign || "Player";
+      card.querySelector("p").textContent = listing.notes || "Available to join an organization.";
+      var tags = card.querySelectorAll(".market-tag");
+      tags[0].textContent = (listing.league || "rcml").toUpperCase();
+      tags[1].textContent = listing.region || "Region TBD";
+      return card;
+    }
+
+    function renderGrid(listings) {
+      grid.innerHTML = "";
+      if (!listings.length) {
+        grid.innerHTML = '<p class="field-hint" style="padding:1.25rem">No listings yet \u2014 be the first to list yourself below.</p>';
+        return;
+      }
+      listings.forEach(function (l) { grid.appendChild(marketCard(l)); });
+    }
+
+    function loadGrid() {
+      if (!configured) { renderGrid(sampleListings()); return; }
+      window.R3IGNAuth.getSession().then(function (res) {
+        currentUserId = res.data.session ? res.data.session.user.id : null;
+        return window.R3IGNAuth.client
+          .from("player_listings")
+          .select("*, profile:profiles(display_name)")
+          .order("created_at", { ascending: false })
+          .limit(24);
+      }).then(function (res) {
+        if (res.error || !res.data || !res.data.length) { renderGrid(sampleListings()); return; }
+        renderGrid(res.data);
+      }).catch(function () { renderGrid(sampleListings()); });
+    }
+
+    loadGrid();
+
+    /* ---------- List yourself form ---------- */
+
+    if (!configured) {
+      document.getElementById("mp-config-notice").classList.add("is-visible");
+      form.hidden = true;
+      return;
+    }
+
+    window.R3IGNAuth.getSession().then(function (res) {
+      if (!res.data.session) {
+        document.getElementById("mp-signin-notice").classList.add("is-visible");
+        form.hidden = true;
+      }
+    });
+
+    var pendingFile = null;
+    var fileInput = document.getElementById("mp-file");
+    if (fileInput) {
+      fileInput.addEventListener("change", function () {
+        pendingFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        document.getElementById("mp-file-name").textContent = pendingFile ? ("Selected: " + pendingFile.name) : "";
+      });
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var valid = true;
+      form.querySelectorAll("[required]").forEach(function (input) {
+        var field = input.closest(".field");
+        if (!input.value.trim()) { valid = false; if (field) field.classList.add("has-error"); }
+        else if (field) field.classList.remove("has-error");
+      });
+      if (!valid) return;
+
+      var submitBtn = document.getElementById("mp-submit");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting…";
+
+      var client = window.R3IGNAuth.client;
+      var currentUser = null;
+
+      window.R3IGNAuth.getSession().then(function (res) {
+        currentUser = res.data.session.user;
+        return client.from("player_listings").insert({
+          profile_id: currentUser.id,
+          ign: document.getElementById("mp-name").value.trim(),
+          role: document.getElementById("mp-role").value.trim(),
+          league: document.getElementById("mp-league").value,
+          region: document.getElementById("mp-region").value,
+          notes: document.getElementById("mp-notes").value.trim()
+        });
+      }).then(function (res) {
+        if (res.error) return Promise.reject(res.error);
+        if (!pendingFile) return res;
+        var path = currentUser.id + "/" + Date.now() + "-" + pendingFile.name;
+        return client.storage.from("player-market-uploads").upload(path, pendingFile, { upsert: true }).then(function (up) {
+          if (up.error) return res;
+          return client.from("player_listings").update({ profile_screenshot_path: path })
+            .eq("profile_id", currentUser.id).order("created_at", { ascending: false }).limit(1);
+        });
+      }).then(function (res) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "List Yourself";
+        if (res && res.error) {
+          document.getElementById("mp-error").textContent = res.error.message;
+          document.getElementById("mp-error").classList.add("is-visible");
+          return;
+        }
+        form.hidden = true;
+        document.getElementById("mp-success").classList.add("is-visible");
+      }).catch(function (err) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "List Yourself";
+        document.getElementById("mp-error").textContent = err.message || "Something went wrong. Try again.";
+        document.getElementById("mp-error").classList.add("is-visible");
+      });
+    });
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

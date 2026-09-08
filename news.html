@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>News · R3IGN</title>
+<meta name="description" content="League updates, match recaps, and announcements from R3IGN Esports.">
+<meta property="og:title" content="News · R3IGN">
+<meta property="og:description" content="League updates, match recaps, and announcements from R3IGN Esports.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="News · R3IGN">
+<meta name="twitter:description" content="League updates, match recaps, and announcements from R3IGN Esports.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html" aria-current="page">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / News</span>
+    <span class="eyebrow" style="margin-top:1rem;display:inline-flex">Newsroom</span>
+    <h1>News</h1>
+    <p>League updates, match recaps, and announcements from across the R3IGN ecosystem.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="filter-bar" data-filter-group=".news-item" id="news-filter-bar">
+      <button class="filter-chip" aria-pressed="true" data-filter-value="all">All</button>
+      <button class="filter-chip" aria-pressed="false" data-filter-value="update">League Update</button>
+      <button class="filter-chip" aria-pressed="false" data-filter-value="recap">Match Recap</button>
+      <button class="filter-chip" aria-pressed="false" data-filter-value="announcement">Announcement</button>
+      <button class="filter-chip" aria-pressed="false" data-filter-value="community">Community</button>
+    </div>
+    <p class="empty-state" style="display:none">No stories match that filter.</p>
+    <div class="news-grid" id="news-grid">
+      <p class="field-hint" style="padding:1.25rem">Loading&hellip;</p>
+    </div>
+
+    <div id="news-detail" style="display:none">
+      <a href="news.html" class="btn btn-ghost" style="margin-bottom:1.5rem">&larr; Back to News</a>
+      <article class="statement-card">
+        <div class="statement-head">
+          <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="statement-logo">
+        </div>
+        <span class="statement-kicker" id="news-detail-category">Official Statement</span>
+        <h2 class="statement-title" id="news-detail-title"></h2>
+        <p class="statement-meta" id="news-detail-meta"></p>
+        <div class="statement-box">
+          <span class="corner corner-tr"></span>
+          <span class="corner corner-bl"></span>
+          <div id="news-detail-body"></div>
+        </div>
+        <div class="statement-foot">
+          <img src="assets/r3ign-logo-256.jpg" alt="" class="statement-foot-mark">
+          <span>R3IGN&trade;</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script>
+(function () {
+  function readingTime(text) {
+    var words = (text || "").trim().split(/\s+/).length;
+    var mins = Math.ceil(words / 200);
+    return mins + " min read";
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var configured = window.R3IGNAuth && window.R3IGNAuth.isConfigured();
+    var grid = document.getElementById("news-grid");
+    var filterBar = document.getElementById("news-filter-bar");
+    var detail = document.getElementById("news-detail");
+
+    var CATEGORY_TAG = {
+      "League Update": "update",
+      "Match Recap": "recap",
+      "Announcement": "announcement",
+      "Community": "community"
+    };
+
+    function sampleNews() {
+      return [
+        { id: "sample-1", title: "RCML Season 4 enters its final stretch", category: "League Update", body: "A legendary season filled with intense battles and unforgettable moments.", created_at: "2026-05-28T00:00:00Z" },
+        { id: "sample-2", title: "RFCL registration window opens next month", category: "Announcement", body: "A legendary season filled with intense battles and unforgettable moments.", created_at: "2026-05-28T00:00:00Z" },
+        { id: "sample-3", title: "Aether Esports edges Siroxx in a top-of-table clash", category: "Match Recap", body: "A legendary season filled with intense battles and unforgettable moments.", created_at: "2026-05-28T00:00:00Z" },
+        { id: "sample-4", title: "Player pool crosses 1,500 across 50+ teams", category: "Community", body: "A legendary season filled with intense battles and unforgettable moments.", created_at: "2026-05-28T00:00:00Z" },
+        { id: "sample-5", title: "7SIN Esports crowned RCML Season 3 champion", category: "Match Recap", body: "A legendary season filled with intense battles and unforgettable moments.", created_at: "2026-03-12T00:00:00Z" },
+        { id: "sample-6", title: "RBSL format and rules revealed", category: "Announcement", body: "A legendary season filled with intense battles and unforgettable moments.", created_at: "2026-02-20T00:00:00Z" }
+      ];
+    }
+
+    function fmtDate(iso) {
+      return new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+    }
+
+    function excerpt(body) {
+      var text = body.replace(/\s+/g, " ").trim();
+      return text.length > 140 ? text.slice(0, 140).trim() + "\u2026" : text;
+    }
+
+    function newsCard(post) {
+      var isSample = String(post.id).indexOf("sample-") === 0;
+      var tag = CATEGORY_TAG[post.category] || "announcement";
+      var card = document.createElement("div");
+      card.className = "news-card news-item";
+      card.setAttribute("data-tags", tag);
+      card.innerHTML =
+        '<div class="news-thumb"><span class="eyebrow"></span></div>' +
+        '<div class="news-body">' +
+        '<span class="eyebrow">News</span>' +
+        '<h3></h3><p></p>' +
+        '<div class="news-foot"><span></span><a href="#">Read More &rarr;</a></div>' +
+        '</div>';
+      card.querySelector(".news-thumb .eyebrow").textContent = post.category;
+      card.querySelector("h3").textContent = post.title;
+      card.querySelector(".news-body > p").textContent = excerpt(post.body);
+      card.querySelector(".news-foot span").textContent = fmtDate(post.created_at);
+      var readMore = card.querySelector(".news-foot a");
+      if (isSample) {
+        readMore.style.display = "none";
+      } else {
+        readMore.href = "news.html?post=" + encodeURIComponent(post.id);
+      }
+      return card;
+    }
+
+    function renderGrid(posts) {
+      grid.innerHTML = "";
+      if (!posts.length) {
+        grid.innerHTML = '<p class="field-hint" style="padding:1.25rem">No stories posted yet &mdash; check back soon.</p>';
+        return;
+      }
+      posts.forEach(function (p) { grid.appendChild(newsCard(p)); });
+    }
+
+    function loadGrid() {
+      if (!configured) { renderGrid(sampleNews()); return; }
+      window.R3IGNAuth.client
+        .from("news_posts")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(30)
+        .then(function (res) {
+          if (res.error || !res.data || !res.data.length) { renderGrid(sampleNews()); return; }
+          renderGrid(res.data);
+        })
+        .catch(function () { renderGrid(sampleNews()); });
+    }
+
+    function showDetail(post) {
+      filterBar.parentElement.querySelector(".empty-state").style.display = "none";
+      filterBar.style.display = "none";
+      grid.style.display = "none";
+      detail.style.display = "block";
+      document.getElementById("news-detail-category").textContent = "Official " + (post.category || "Statement");
+      document.getElementById("news-detail-title").textContent = post.title;
+      document.getElementById("news-detail-meta").textContent = fmtDate(post.created_at) + (post.author_name ? " \u00b7 " + post.author_name : "") + " \u00b7 " + readingTime(post.body);
+      var bodyEl = document.getElementById("news-detail-body");
+      bodyEl.innerHTML = "";
+      post.body.split(/\n{2,}/).forEach(function (para) {
+        var p = document.createElement("p");
+        p.textContent = para;
+        bodyEl.appendChild(p);
+      });
+      document.title = post.title + " \u00b7 News \u00b7 R3IGN";
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var postId = params.get("post");
+
+    if (postId && configured) {
+      window.R3IGNAuth.client.from("news_posts").select("*").eq("id", postId).maybeSingle().then(function (res) {
+        if (res.error || !res.data) {
+          detail.innerHTML = '<p class="field-hint">That story couldn\u2019t be found. <a href="news.html" style="color:var(--paper)">Back to News</a></p>';
+          detail.style.display = "block";
+          filterBar.style.display = "none";
+          grid.style.display = "none";
+          return;
+        }
+        showDetail(res.data);
+      });
+    } else {
+      loadGrid();
+    }
+  });
+})();
+</script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

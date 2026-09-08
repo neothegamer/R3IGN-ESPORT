@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rankings · R3IGN</title>
+<meta name="description" content="Live R3IGN league standings, win-loss records, and win percentage across RCML, RFCL, and RBSL.">
+<meta property="og:title" content="Rankings · R3IGN">
+<meta property="og:description" content="Live R3IGN league standings, win-loss records, and win percentage across RCML, RFCL, and RBSL.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Rankings · R3IGN">
+<meta name="twitter:description" content="Live R3IGN league standings, win-loss records, and win percentage across RCML, RFCL, and RBSL.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html" aria-current="page">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Rankings</span>
+    <span class="eyebrow" style="margin-top:1rem;display:inline-flex">Live Standings</span>
+    <h1>Rankings</h1>
+    <p>Standings update after every reported match. Win percentage is used to break ties within a league.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="filter-bar" data-filter-group=".rank-row">
+      <button class="filter-chip" aria-pressed="true" data-filter-value="rcml">RCML &middot; Season 4</button>
+      <button class="filter-chip" aria-pressed="false" data-filter-value="rfcl">RFCL</button>
+      <button class="filter-chip" aria-pressed="false" data-filter-value="rbsl">RBSL</button>
+    </div>
+    <p class="empty-state" style="display:none">No teams match that filter. Try a different league.</p>
+
+    <div class="table-wrap">
+      <table class="rank-table">
+        <thead>
+          <tr><th>Pos</th><th>Team</th><th>Tag</th><th>W</th><th>L</th><th>Win %</th></tr>
+        </thead>
+        <tbody id="rcml-rows">
+          <tr class="rank-row" data-tags="rcml"><td class="pos">1</td><td class="team-name">Aether Esports</td><td>AE</td><td>10</td><td>1</td><td>90.9%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">2</td><td class="team-name">Siroxx</td><td>SX</td><td>10</td><td>1</td><td>90.9%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">3</td><td class="team-name">Infinite</td><td>IN</td><td>9</td><td>2</td><td>81.8%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">4</td><td class="team-name">Eleventh Order</td><td>EO</td><td>8</td><td>3</td><td>72.7%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">5</td><td class="team-name">Seven Esports</td><td>SE</td><td>7</td><td>4</td><td>63.6%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">6</td><td class="team-name">7SIN Esports</td><td>7S</td><td>6</td><td>5</td><td>54.5%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">7</td><td class="team-name">Nightshade</td><td>NS</td><td>5</td><td>6</td><td>45.5%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">8</td><td class="team-name">Ironclad</td><td>IC</td><td>4</td><td>7</td><td>36.4%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">9</td><td class="team-name">Vortex Squad</td><td>VS</td><td>3</td><td>8</td><td>27.3%</td></tr>
+          <tr class="rank-row" data-tags="rcml"><td class="pos">10</td><td class="team-name">Last Watch</td><td>LW</td><td>1</td><td>10</td><td>9.1%</td></tr>
+          <tr class="rank-row" data-tags="rfcl" style="display:none"><td class="pos">&mdash;</td><td class="team-name" colspan="5" style="color:var(--steel)">RFCL standings open once Season 1 begins.</td></tr>
+          <tr class="rank-row" data-tags="rbsl" style="display:none"><td class="pos">&mdash;</td><td class="team-name" colspan="5" style="color:var(--steel)">RBSL standings open once Season 1 begins.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1rem;font-family:var(--f-mono);font-size:0.78rem;color:var(--steel)" id="rankings-status">Showing RCML Season 4 &middot; sample data &mdash; connect Supabase for live standings.</p>
+  </div>
+</section>
+
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) return; // keep the static sample rows above
+
+    var client = window.R3IGNAuth.client;
+    var tbody = document.getElementById("rcml-rows");
+    var status = document.getElementById("rankings-status");
+    var PLACEHOLDER = {
+      rfcl: '<tr class="rank-row" data-tags="rfcl" style="display:none"><td class="pos">&mdash;</td><td class="team-name" colspan="5" style="color:var(--steel)">RFCL standings open once Season 1 begins.</td></tr>',
+      rbsl: '<tr class="rank-row" data-tags="rbsl" style="display:none"><td class="pos">&mdash;</td><td class="team-name" colspan="5" style="color:var(--steel)">RBSL standings open once Season 1 begins.</td></tr>'
+    };
+
+    // Fetch every league in one call, then group client-side — this used to
+    // fetch RCML only and wipe the RFCL/RBSL placeholder rows in the process,
+    // which broke the filter chips. Now all three leagues stay in sync.
+    client.from("rankings")
+      .select("*")
+      .order("league", { ascending: true })
+      .order("points", { ascending: false })
+      .then(function (res) {
+        if (res.error || !res.data || !res.data.length) return; // keep sample rows on failure
+
+        var byLeague = { rcml: [], rfcl: [], rbsl: [] };
+        res.data.forEach(function (row) {
+          if (byLeague[row.league]) byLeague[row.league].push(row);
+        });
+
+        function rowsHtml(list) {
+          return list.map(function (row, i) {
+            var total = row.wins + row.losses;
+            var pct = total ? ((row.wins / total) * 100).toFixed(1) + "%" : "&mdash;";
+            return '<tr class="rank-row" data-tags="' + row.league + '">' +
+              '<td class="pos">' + (i + 1) + '</td><td class="team-name">' + row.team_name +
+              '</td><td>' + (row.tag || "") + '</td><td>' + row.wins + '</td><td>' + row.losses + '</td><td>' + pct + '</td></tr>';
+          }).join("");
+        }
+
+        var html = "";
+        html += byLeague.rcml.length ? rowsHtml(byLeague.rcml) : '<tr class="rank-row" data-tags="rcml"><td class="pos">&mdash;</td><td class="team-name" colspan="5" style="color:var(--steel)">No RCML standings posted yet.</td></tr>';
+        html += byLeague.rfcl.length ? rowsHtml(byLeague.rfcl) : PLACEHOLDER.rfcl;
+        html += byLeague.rbsl.length ? rowsHtml(byLeague.rbsl) : PLACEHOLDER.rbsl;
+        tbody.innerHTML = html;
+
+        // re-apply whichever filter chip is currently active, since we just replaced the rows
+        var active = document.querySelector('.filter-chip[aria-pressed="true"]');
+        var activeValue = active ? active.getAttribute("data-filter-value") : "rcml";
+        tbody.querySelectorAll(".rank-row").forEach(function (row) {
+          row.style.display = row.getAttribute("data-tags") === activeValue ? "" : "none";
+        });
+
+        status.textContent = "Showing live standings from Supabase — updated " + new Date().toLocaleString();
+      });
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

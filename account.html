@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account · R3IGN</title>
+<meta name="description" content="Manage your R3IGN account, league ID, and linked game accounts.">
+<meta property="og:title" content="My Account · R3IGN">
+<meta property="og:description" content="Manage your R3IGN account, league ID, and linked game accounts.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="My Account · R3IGN">
+<meta name="twitter:description" content="Manage your R3IGN account, league ID, and linked game accounts.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Account</span>
+    <h1 style="margin-top:1rem">My Account</h1>
+    <p>Manage your R3IGN profile and sign-in.</p>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap" style="max-width:640px">
+    <div class="auth-notice" id="auth-config-notice">
+      Auth isn't connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code> to enable accounts. See the README for setup steps.
+    </div>
+    <div id="signed-out-panel" class="auth-panel" style="display:none">
+      <span class="eyebrow">Not Signed In</span>
+      <h1 style="margin-top:0.75rem;font-size:1.4rem">You&rsquo;re not signed in</h1>
+      <p class="lede">Sign in to view your account.</p>
+      <div class="cta-actions" style="margin-top:1.5rem;justify-content:flex-start">
+        <a href="signin.html" class="btn btn-primary">Sign In</a>
+        <a href="signup.html" class="btn btn-ghost">Create Account</a>
+      </div>
+    </div>
+
+    <div id="account-panel" style="display:none">
+      <div class="account-card">
+        <div class="account-avatar" id="account-avatar">R</div>
+        <div class="account-meta">
+          <h3 id="account-name">&nbsp;</h3>
+          <p id="account-email">&nbsp;</p>
+          <p style="margin-top:0.4rem"><span class="stamp stamp-live">League ID</span> <span id="account-league-id" style="font-family:var(--f-mono);letter-spacing:0.06em;margin-left:0.5em">&nbsp;</span></p>
+        </div>
+      </div>
+
+      <div class="cta-actions" style="margin-top:1.25rem;justify-content:flex-start">
+        <a href="register.html" class="btn btn-ghost">Register a Team</a>
+        <a href="player-market.html" class="btn btn-ghost">List Yourself on the Player Market</a>
+      </div>
+
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Linked Game Accounts</span>
+        <p class="lede" style="margin-top:0.6rem">Select the games you play, then fill in your in-game name (and player ID, if the game shows one) for each. A league admin reviews and verifies each submission &mdash; there's no public game API to check it automatically.</p>
+        <div class="auth-error" id="game-error"></div>
+        <div class="form-success" id="game-success" role="status">Saved. Status is now "Pending" until an admin reviews it.</div>
+
+        <div class="field-row" style="flex-wrap:wrap;gap:0.75rem;margin-top:1.5rem" id="game-picker">
+          <label class="checkbox-field" style="border:1px solid var(--line);padding:0.6rem 1rem;border-radius:0;flex:0 0 auto">
+            <input type="checkbox" class="game-toggle" data-game="rcml"><span>RCML &mdash; COD:Mobile</span>
+          </label>
+          <label class="checkbox-field" style="border:1px solid var(--line);padding:0.6rem 1rem;border-radius:0;flex:0 0 auto">
+            <input type="checkbox" class="game-toggle" data-game="rfcl"><span>RFCL &mdash; Free Fire</span>
+          </label>
+          <label class="checkbox-field" style="border:1px solid var(--line);padding:0.6rem 1rem;border-radius:0;flex:0 0 auto">
+            <input type="checkbox" class="game-toggle" data-game="rbsl"><span>RBSL &mdash; Blood Strike</span>
+          </label>
+        </div>
+
+        <div class="game-block" data-game-block="rcml" style="display:none;margin-top:1.5rem">
+          <div class="field">
+            <label for="ga-rcml-ign">RCML &mdash; Call of Duty: Mobile IGN <span class="stamp" id="ga-rcml-status" style="margin-left:0.5em">Unverified</span></label>
+            <input type="text" id="ga-rcml-ign" placeholder="In-game name">
+          </div>
+          <div class="field">
+            <label for="ga-rcml-uid">Player UID (optional)</label>
+            <input type="text" id="ga-rcml-uid" placeholder="Player ID shown in-game">
+          </div>
+          <div class="field">
+            <label for="ga-rcml-file">Upload in-game profile screenshot (optional, for review)</label>
+            <input type="file" id="ga-rcml-file" accept="image/*">
+            <p class="field-hint" id="ga-rcml-file-name"></p>
+          </div>
+          <p class="field-hint" id="ga-rcml-code" style="display:none"></p>
+        </div>
+
+        <div class="game-block" data-game-block="rfcl" style="display:none;margin-top:1.5rem">
+          <div class="field">
+            <label for="ga-rfcl-ign">RFCL &mdash; Free Fire IGN <span class="stamp" id="ga-rfcl-status" style="margin-left:0.5em">Unverified</span></label>
+            <input type="text" id="ga-rfcl-ign" placeholder="In-game name">
+          </div>
+          <div class="field">
+            <label for="ga-rfcl-uid">Player UID (optional)</label>
+            <input type="text" id="ga-rfcl-uid" placeholder="Player ID shown in-game">
+          </div>
+          <div class="field">
+            <label for="ga-rfcl-file">Upload in-game profile screenshot (optional, for review)</label>
+            <input type="file" id="ga-rfcl-file" accept="image/*">
+            <p class="field-hint" id="ga-rfcl-file-name"></p>
+          </div>
+          <p class="field-hint" id="ga-rfcl-code" style="display:none"></p>
+        </div>
+
+        <div class="game-block" data-game-block="rbsl" style="display:none;margin-top:1.5rem">
+          <div class="field">
+            <label for="ga-rbsl-ign">RBSL &mdash; Blood Strike IGN <span class="stamp" id="ga-rbsl-status" style="margin-left:0.5em">Unverified</span></label>
+            <input type="text" id="ga-rbsl-ign" placeholder="In-game name">
+          </div>
+          <div class="field">
+            <label for="ga-rbsl-uid">Player UID (optional)</label>
+            <input type="text" id="ga-rbsl-uid" placeholder="Player ID shown in-game">
+          </div>
+          <div class="field">
+            <label for="ga-rbsl-file">Upload in-game profile screenshot (optional, for review)</label>
+            <input type="file" id="ga-rbsl-file" accept="image/*">
+            <p class="field-hint" id="ga-rbsl-file-name"></p>
+          </div>
+          <p class="field-hint" id="ga-rbsl-code" style="display:none"></p>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block" id="btn-save-games" style="margin-top:1.5rem">Save Game Accounts</button>
+        <p class="field-hint center" style="margin-top:1rem">There's no public sign-in API for these games, so this links your account by ID and puts it up for admin review instead of a real OAuth login.</p>
+      </div>
+
+      <div class="center mt-lg">
+        <button class="btn btn-ghost" id="btn-sign-out">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var GAMES = ["rcml", "rfcl", "rbsl"];
+  var STATUS_CLASS = { unverified: "stamp-soon", pending: "stamp-active", verified: "stamp-live", rejected: "stamp-soon" };
+  var STATUS_LABEL = { unverified: "Unverified", pending: "Pending Review", verified: "Verified", rejected: "Rejected — resubmit" };
+  var pendingFiles = {};
+
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) {
+      document.getElementById("auth-config-notice").classList.add("is-visible");
+      document.getElementById("signed-out-panel").style.display = "block";
+      return;
+    }
+
+    document.querySelectorAll(".game-toggle").forEach(function (box) {
+      box.addEventListener("change", function () {
+        var block = document.querySelector('[data-game-block="' + box.getAttribute("data-game") + '"]');
+        if (block) block.style.display = box.checked ? "block" : "none";
+      });
+    });
+
+    GAMES.forEach(function (game) {
+      var fileInput = document.getElementById("ga-" + game + "-file");
+      if (!fileInput) return;
+      fileInput.addEventListener("change", function () {
+        var f = fileInput.files && fileInput.files[0];
+        pendingFiles[game] = f || null;
+        var label = document.getElementById("ga-" + game + "-file-name");
+        if (label) label.textContent = f ? ("Selected: " + f.name) : "";
+      });
+    });
+
+    var currentUser = null;
+
+    window.R3IGNAuth.getSession().then(function (res) {
+      var session = res.data.session;
+      if (!session) {
+        document.getElementById("signed-out-panel").style.display = "block";
+        return;
+      }
+      currentUser = session.user;
+      var name = (currentUser.user_metadata && (currentUser.user_metadata.display_name || currentUser.user_metadata.full_name)) || currentUser.email.split("@")[0];
+      document.getElementById("account-name").textContent = name;
+      document.getElementById("account-email").textContent = currentUser.email || "";
+      document.getElementById("account-avatar").textContent = name.charAt(0).toUpperCase();
+      document.getElementById("account-panel").style.display = "block";
+
+      return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).single();
+    }).then(function (res) {
+      if (res && res.data && res.data.league_id) {
+        document.getElementById("account-league-id").textContent = res.data.league_id;
+      }
+      return window.R3IGNAuth.client.from("game_accounts").select("*").eq("profile_id", currentUser.id);
+    }).then(function (res) {
+      if (!res || res.error || !res.data) return;
+      res.data.forEach(function (row) {
+        var toggle = document.querySelector('.game-toggle[data-game="' + row.game + '"]');
+        var block = document.querySelector('[data-game-block="' + row.game + '"]');
+        if (toggle) toggle.checked = true;
+        if (block) block.style.display = "block";
+        var ignField = document.getElementById("ga-" + row.game + "-ign");
+        var uidField = document.getElementById("ga-" + row.game + "-uid");
+        var statusEl = document.getElementById("ga-" + row.game + "-status");
+        var codeEl = document.getElementById("ga-" + row.game + "-code");
+        if (ignField) ignField.value = row.ign || "";
+        if (uidField) uidField.value = row.game_uid || "";
+        if (statusEl) {
+          statusEl.textContent = STATUS_LABEL[row.verification_status] || "Unverified";
+          statusEl.className = "stamp " + (STATUS_CLASS[row.verification_status] || "stamp-soon");
+        }
+        if (codeEl && row.verification_status !== "verified" && row.verification_code) {
+          codeEl.style.display = "block";
+          codeEl.textContent = "Verification code: " + row.verification_code + " — an admin will confirm this against your in-game profile.";
+        }
+      });
+    });
+
+    document.getElementById("btn-save-games").addEventListener("click", function () {
+      if (!currentUser) return;
+      var selectedGames = GAMES.filter(function (game) {
+        var toggle = document.querySelector('.game-toggle[data-game="' + game + '"]');
+        return toggle && toggle.checked;
+      });
+
+      var rows = selectedGames.map(function (game) {
+        var ign = document.getElementById("ga-" + game + "-ign").value.trim();
+        var uid = document.getElementById("ga-" + game + "-uid").value.trim();
+        return { profile_id: currentUser.id, game: game, ign: ign, game_uid: uid || null };
+      }).filter(function (row) { return row.ign; });
+
+      var errEl = document.getElementById("game-error");
+      var okEl = document.getElementById("game-success");
+      errEl.classList.remove("is-visible");
+      okEl.classList.remove("is-visible");
+
+      if (!rows.length) {
+        errEl.textContent = "Select at least one game and enter your in-game name.";
+        errEl.classList.add("is-visible");
+        return;
+      }
+
+      var client = window.R3IGNAuth.client;
+      client.from("game_accounts")
+        .upsert(rows, { onConflict: "profile_id,game" })
+        .then(function (res) {
+          if (res.error) {
+            errEl.textContent = res.error.message;
+            errEl.classList.add("is-visible");
+            return Promise.reject(res.error);
+          }
+          var uploads = selectedGames.map(function (game) {
+            var file = pendingFiles[game];
+            if (!file) return Promise.resolve();
+            var path = currentUser.id + "/" + game + "-" + Date.now() + "-" + file.name;
+            return client.storage.from("game-profiles").upload(path, file, { upsert: true }).then(function (up) {
+              if (up.error) return;
+              return client.from("game_accounts").update({ profile_screenshot_path: path }).eq("profile_id", currentUser.id).eq("game", game);
+            });
+          });
+          return Promise.all(uploads);
+        }).then(function () {
+          okEl.classList.add("is-visible");
+        }).catch(function () { /* error already shown */ });
+    });
+
+    document.getElementById("btn-sign-out").addEventListener("click", function () {
+      window.R3IGNAuth.signOut().then(function () {
+        window.location.href = "index.html";
+      });
+    });
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

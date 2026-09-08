@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match Highlights · R3IGN</title>
+<meta name="description" content="Watch screen-recorded highlights from R3IGN league matches.">
+<meta property="og:title" content="Match Highlights · R3IGN">
+<meta property="og:description" content="Watch screen-recorded highlights from R3IGN league matches.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Match Highlights · R3IGN">
+<meta name="twitter:description" content="Watch screen-recorded highlights from R3IGN league matches.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html" aria-current="page">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Match Highlights</span>
+    <span class="eyebrow" style="margin-top:1rem;display:inline-flex">Watch The Plays</span>
+    <h1>Match Highlights</h1>
+    <p>Screen-recorded clips from league matches, uploaded by R3IGN admins after each session.</p>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap">
+    <div class="filter-bar" data-filter-group=".highlight-card">
+      <button class="filter-chip" data-filter-value="all" aria-pressed="true">All</button>
+      <button class="filter-chip" data-filter-value="rcml">RCML</button>
+      <button class="filter-chip" data-filter-value="rfcl">RFCL</button>
+      <button class="filter-chip" data-filter-value="rbsl">RBSL</button>
+    </div>
+    <div class="news-grid" id="highlights-grid">
+      <p class="field-hint" id="highlights-loading">Loading highlights&hellip;</p>
+    </div>
+    <p class="field-hint center empty-state" id="highlights-empty" style="display:none;margin-top:1.5rem">No highlights posted yet &mdash; check back after the next match.</p>
+  </div>
+</section>
+
+<script>
+(function () {
+  function isEmbeddable(url) {
+    return /youtube\.com|youtu\.be|twitch\.tv/.test(url || "");
+  }
+  function toEmbedUrl(url) {
+    if (!url) return null;
+    var yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{6,})/);
+    if (yt) return "https://www.youtube.com/embed/" + yt[1];
+    var twitchClip = url.match(/twitch\.tv\/[^/]+\/clip\/([\w-]+)/);
+    if (twitchClip) return "https://clips.twitch.tv/embed?clip=" + twitchClip[1] + "&parent=" + window.location.hostname;
+    return null;
+  }
+
+  function highlightCard(h) {
+    var card = document.createElement("div");
+    card.className = "news-card highlight-card";
+    if (h.league) card.setAttribute("data-tags", h.league);
+    var embed = toEmbedUrl(h.video_url);
+    var mediaHtml;
+    if (embed) {
+      mediaHtml = '<div class="news-thumb" style="padding:0;aspect-ratio:16/9"><iframe src="' + embed + '" style="width:100%;height:100%;border:0" loading="lazy" allow="autoplay; encrypted-media" allowfullscreen title="' + (h.title || "Match highlight").replace(/"/g,"") + '"></iframe></div>';
+    } else if (h.storage_path && h.public_url) {
+      mediaHtml = '<div class="news-thumb" style="padding:0;aspect-ratio:16/9;background:#000"><video src="' + h.public_url + '" controls preload="metadata" style="width:100%;height:100%"></video></div>';
+    } else if (h.video_url) {
+      mediaHtml = '<div class="news-thumb"><a class="btn btn-ghost" href="' + h.video_url + '" target="_blank" rel="noopener">Watch Clip &rarr;</a></div>';
+    } else {
+      mediaHtml = '<div class="news-thumb"><span class="eyebrow">No Video Yet</span></div>';
+    }
+    card.innerHTML = mediaHtml +
+      '<div class="news-body">' +
+        '<span class="eyebrow">' + (h.match_label || (h.league ? h.league.toUpperCase() : "Highlight")) + '</span>' +
+        '<h3></h3><p></p>' +
+        '<div class="news-foot"><span></span>' +
+          '<button class="btn btn-ghost share-btn" style="padding:0.3em 0.6em;font-size:0.7rem" title="Share">&#128279; Share</button>' +
+        '</div>' +
+      '</div>';
+    card.querySelector("h3").textContent = h.title || "Match Highlight";
+    card.querySelector("p").textContent = h.description || "";
+    card.querySelector(".news-foot span").textContent = h.created_at ? new Date(h.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+    var shareBtn = card.querySelector(".share-btn");
+    if (shareBtn && navigator.share) {
+      shareBtn.addEventListener("click", function () {
+        navigator.share({
+          title: h.title || "R3IGN Match Highlight",
+          text: h.description || "Check out this match highlight on R3IGN.",
+          url: h.video_url || window.location.href
+        }).catch(function () {});
+      });
+    } else if (shareBtn) {
+      shareBtn.style.display = "none";
+    }
+    return card;
+  }
+
+  function sampleHighlights() {
+    return [
+      { title: "Aether Esports clutch triple in Division 1 final", description: "The last-round push that sealed the RCML Season 4 Division 1 title.", league: "rcml", match_label: "RCML S4 \u00b7 Division 1 \u00b7 Grand Final", video_url: "", created_at: new Date().toISOString() },
+      { title: "RFCL opening week \u2014 top frag of the night", description: "Vanta's 24-kill run from RFCL's opening week.", league: "rfcl", match_label: "RFCL S1 \u00b7 Week 1", video_url: "", created_at: new Date(Date.now() - 86400000).toISOString() }
+    ];
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var grid = document.getElementById("highlights-grid");
+    var loading = document.getElementById("highlights-loading");
+    var empty = document.getElementById("highlights-empty");
+
+    function render(rows, isLive) {
+      grid.innerHTML = "";
+      if (!rows.length) { empty.style.display = "block"; return; }
+      rows.forEach(function (h) { grid.appendChild(highlightCard(h)); });
+      if (!isLive) {
+        var note = document.createElement("p");
+        note.className = "field-hint";
+        note.style.gridColumn = "1 / -1";
+        note.textContent = "Sample highlights shown \u2014 admins can upload real clips from the Admin page.";
+        grid.appendChild(note);
+      }
+    }
+
+    if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) {
+      render(sampleHighlights(), false);
+      return;
+    }
+
+    window.R3IGNAuth.client.from("match_highlights").select("*").order("created_at", { ascending: false }).then(function (res) {
+      if (res.error || !res.data || !res.data.length) { render(sampleHighlights(), false); return; }
+      var rows = res.data;
+      var withUrls = rows.map(function (h) {
+        if (h.storage_path) {
+          var pub = window.R3IGNAuth.client.storage.from("match-highlights").getPublicUrl(h.storage_path);
+          h.public_url = pub && pub.data ? pub.data.publicUrl : null;
+        }
+        return h;
+      });
+      render(withUrls, true);
+    });
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

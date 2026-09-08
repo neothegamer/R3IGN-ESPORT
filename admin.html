@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · R3IGN</title>
+<meta name="description" content="Post events, review verifications, and manage league admins for R3IGN.">
+<meta property="og:title" content="Admin · R3IGN">
+<meta property="og:description" content="Post events, review verifications, and manage league admins for R3IGN.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Admin · R3IGN">
+<meta name="twitter:description" content="Post events, review verifications, and manage league admins for R3IGN.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Admin</span>
+    <h1 style="margin-top:1rem">Admin</h1>
+    <p>Review linked game accounts, post events, and manage league admins. Only league admins can make changes &mdash; this page is visible to anyone, but the database itself blocks non-admins from writing.</p>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap">
+    <div class="auth-notice" id="admin-config-notice">
+      Backend isn't connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code>. See the README.
+    </div>
+    <div class="auth-notice" id="admin-signin-notice"><a href="signin.html" style="color:var(--paper)">Sign in</a> to access the admin tools.</div>
+    <div class="auth-error" id="admin-denied-notice" style="border-color:var(--signal);background:var(--signal-dim)">
+      Your account isn&rsquo;t in the <code>admins</code> table, so you can view this page but can&rsquo;t make changes. Add yourself in Supabase under Table Editor &rarr; admins to get write access.
+    </div>
+
+    <div class="admin-stats" id="admin-stats" style="display:none">
+      <div class="admin-stat-grid">
+        <div class="admin-stat-card">
+          <div class="value" id="stat-orgs">&mdash;</div>
+          <div class="label">Organizations</div>
+          <div class="trend up" id="trend-orgs">&nbsp;</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="value" id="stat-registrations">&mdash;</div>
+          <div class="label">Registrations</div>
+          <div class="trend up" id="trend-registrations">&nbsp;</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="value" id="stat-listings">&mdash;</div>
+          <div class="label">Player Listings</div>
+          <div class="trend up" id="trend-listings">&nbsp;</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="value" id="stat-pending">&mdash;</div>
+          <div class="label">Pending Verification</div>
+          <div class="trend down" id="trend-pending">&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="admin-chart" style="margin-top:1.5rem">
+        <h4>Verification Queue — Last 7 Days</h4>
+        <div class="admin-chart-bar" id="verification-chart">
+          <div class="admin-chart-col"><div class="bar" data-value="0" style="height:4px"></div><span class="label">Mon</span></div>
+          <div class="admin-chart-col"><div class="bar" data-value="0" style="height:4px"></div><span class="label">Tue</span></div>
+          <div class="admin-chart-col"><div class="bar" data-value="0" style="height:4px"></div><span class="label">Wed</span></div>
+          <div class="admin-chart-col"><div class="bar" data-value="0" style="height:4px"></div><span class="label">Thu</span></div>
+          <div class="admin-chart-col"><div class="bar" data-value="0" style="height:4px"></div><span class="label">Fri</span></div>
+          <div class="admin-chart-col"><div class="bar" data-value="0" style="height:4px"></div><span class="label">Sat</span></div>
+          <div class="admin-chart-col"><div class="bar" data-value="0" style="height:4px"></div><span class="label">Sun</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="admin-tools" style="display:none">
+      <div class="form-panel">
+        <span class="eyebrow">Post an Event</span>
+        <p class="lede" style="margin-top:0.6rem">Publishes immediately to the <a href="events.html" style="color:var(--paper)">Events</a> page.</p>
+        <div class="auth-error" id="event-error"></div>
+        <div class="form-success" id="event-success" role="status">Event posted.</div>
+        <div class="field">
+          <label for="ev-title">Title <span class="req">*</span></label>
+          <input type="text" id="ev-title" placeholder="e.g. RCML Season 4 — Division 1 Match Night">
+        </div>
+        <div class="field">
+          <label for="ev-description">Description</label>
+          <textarea id="ev-description" placeholder="What's happening, and anything players/captains need to know"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="ev-league">League</label>
+            <select id="ev-league">
+              <option value="">General / all leagues</option>
+              <option value="rcml">RCML &mdash; COD:Mobile</option>
+              <option value="rfcl">RFCL &mdash; Free Fire</option>
+              <option value="rbsl">RBSL &mdash; Blood Strike</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ev-location">Location</label>
+            <input type="text" id="ev-location" placeholder="e.g. Online">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="ev-start">Start <span class="req">*</span></label>
+            <input type="datetime-local" id="ev-start">
+          </div>
+          <div class="field">
+            <label for="ev-end">End (optional)</label>
+            <input type="datetime-local" id="ev-end">
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="btn-post-event">Post Event</button>
+      </div>
+
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Manage Admins</span>
+        <p class="lede" style="margin-top:0.6rem">Promote a player to admin using their League ID (shown on their Account page, e.g. R3L482910) or their account email.</p>
+        <div class="auth-error" id="promote-error"></div>
+        <div class="form-success" id="promote-success" role="status">Admin added.</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="promote-lookup">League ID or email <span class="req">*</span></label>
+            <input type="text" id="promote-lookup" placeholder="R3L482910 or player@email.com">
+          </div>
+          <div class="field" style="flex:0 0 auto;align-self:flex-end">
+            <button type="button" class="btn btn-primary" id="btn-promote">Make Admin</button>
+          </div>
+        </div>
+
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead><tr><th>Admin</th><th>League ID</th><th>Email</th><th>Action</th></tr></thead>
+            <tbody id="admins-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Manage Rankings</span>
+        <p class="lede" style="margin-top:0.6rem">Edit win/loss records inline and hit Save on a row, or add a new team below. Changes go live on <a href="rankings.html" style="color:var(--paper)">Rankings</a> immediately.</p>
+        <div class="auth-error" id="rankings-error"></div>
+        <div class="form-success" id="rankings-success" role="status">Rankings updated.</div>
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead><tr><th>Team</th><th>Tag</th><th>League</th><th>W</th><th>L</th><th>Points</th><th>Action</th></tr></thead>
+            <tbody id="rankings-admin-rows"></tbody>
+          </table>
+        </div>
+        <div class="field-row mt-lg">
+          <div class="field"><label for="rk-team">Team name <span class="req">*</span></label><input type="text" id="rk-team" placeholder="e.g. New Squad Esports"></div>
+          <div class="field"><label for="rk-tag">Tag</label><input type="text" id="rk-tag" placeholder="e.g. NSE"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="rk-league">League <span class="req">*</span></label>
+            <select id="rk-league">
+              <option value="rcml">RCML</option>
+              <option value="rfcl">RFCL</option>
+              <option value="rbsl">RBSL</option>
+            </select>
+          </div>
+          <div class="field"><label for="rk-season">Season</label><input type="text" id="rk-season" placeholder="e.g. Season 4" value="Season 4"></div>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="btn-add-ranking">Add Team to Rankings</button>
+      </div>
+
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Manage Bracket</span>
+        <p class="lede" style="margin-top:0.6rem">Edit the most recent tournament&rsquo;s matches. Set both teams and, once played, the score &mdash; the winner highlight updates automatically on <a href="brackets.html" style="color:var(--paper)">the bracket page</a>.</p>
+        <div class="auth-error" id="bracket-error"></div>
+        <div class="form-success" id="bracket-success" role="status">Bracket updated.</div>
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead><tr><th>Round</th><th>Team A</th><th>Score A</th><th>Team B</th><th>Score B</th><th>Action</th></tr></thead>
+            <tbody id="bracket-admin-rows"></tbody>
+          </table>
+        </div>
+        <p class="field-hint" id="bracket-admin-empty" style="display:none;margin-top:1rem">No tournament yet &mdash; add one in Supabase&rsquo;s Table Editor under <code>tournaments</code>, then its matches will appear here.</p>
+      </div>
+
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Manage Match Highlights</span>
+        <p class="lede" style="margin-top:0.6rem">Upload a screen recording, or paste a YouTube/Twitch clip link. Either shows up on <a href="match-highlights.html" style="color:var(--paper)">Match Highlights</a> immediately.</p>
+        <div class="auth-error" id="highlight-error"></div>
+        <div class="form-success" id="highlight-success" role="status">Highlight posted.</div>
+        <div class="field">
+          <label for="hl-title">Title <span class="req">*</span></label>
+          <input type="text" id="hl-title" placeholder="e.g. Aether Esports clutch triple in Division 1 final">
+        </div>
+        <div class="field">
+          <label for="hl-description">Description</label>
+          <textarea id="hl-description" placeholder="What happened, who was involved, any context"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="hl-league">League</label>
+            <select id="hl-league"><option value="">General</option><option value="rcml">RCML</option><option value="rfcl">RFCL</option><option value="rbsl">RBSL</option></select>
+          </div>
+          <div class="field"><label for="hl-match">Match label</label><input type="text" id="hl-match" placeholder="e.g. RCML S4 &middot; D1 &middot; Week 6"></div>
+        </div>
+        <div class="field">
+          <label for="hl-url">YouTube / Twitch clip URL</label>
+          <input type="url" id="hl-url" placeholder="https://youtube.com/watch?v=...">
+          <p class="field-hint">Leave blank if you&rsquo;re uploading a recording file instead.</p>
+        </div>
+        <div class="field">
+          <label for="hl-file">Or upload a recording file</label>
+          <input type="file" id="hl-file" accept="video/*">
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="btn-post-highlight">Post Highlight</button>
+
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead><tr><th>Title</th><th>League</th><th>Source</th><th>Action</th></tr></thead>
+            <tbody id="highlights-admin-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Manage News</span>
+        <p class="lede" style="margin-top:0.6rem">Post an update, match recap, or announcement &mdash; it shows up on <a href="news.html" style="color:var(--paper)">News</a> immediately.</p>
+        <div class="auth-error" id="news-error"></div>
+        <div class="form-success" id="news-success" role="status">Story posted.</div>
+        <div class="field">
+          <label for="nw-title">Title <span class="req">*</span></label>
+          <input type="text" id="nw-title" placeholder="e.g. RCML Season 4 Grand Final set for next week">
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="nw-category">Category</label>
+            <select id="nw-category">
+              <option value="Announcement">Announcement</option>
+              <option value="League Update">League Update</option>
+              <option value="Match Recap">Match Recap</option>
+              <option value="Community">Community</option>
+            </select>
+          </div>
+          <div class="field"><label for="nw-author">Byline (optional)</label><input type="text" id="nw-author" placeholder="e.g. R3IGN Staff"></div>
+        </div>
+        <div class="field">
+          <label for="nw-body">Story <span class="req">*</span></label>
+          <textarea id="nw-body" rows="6" placeholder="Write the full story. Leave a blank line between paragraphs."></textarea>
+        </div>
+        <label class="checkbox-field" style="margin-bottom:1rem">
+          <input type="checkbox" id="nw-published" checked>
+          <span>Published (visible on the News page immediately)</span>
+        </label>
+        <button type="button" class="btn btn-primary btn-block" id="btn-post-news">Post Story</button>
+
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="news-admin-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Manage Hall of Champions</span>
+        <p class="lede" style="margin-top:0.6rem">Post an MVP or other award winner &mdash; it shows up in the "Recent MVPs" grid on <a href="awards.html" style="color:var(--paper)">Awards</a> immediately.</p>
+        <div class="auth-error" id="award-error"></div>
+        <div class="form-success" id="award-success" role="status">Winner posted.</div>
+        <div class="field-row">
+          <div class="field"><label for="aw-label">Award <span class="req">*</span></label><input type="text" id="aw-label" placeholder="e.g. MVP" value="MVP"></div>
+          <div class="field"><label for="aw-player">Player <span class="req">*</span></label><input type="text" id="aw-player" placeholder="e.g. Kestrel"></div>
+        </div>
+        <div class="field">
+          <label for="aw-context">Context</label>
+          <input type="text" id="aw-context" placeholder="e.g. RCML S4 &middot; D1 &middot; Aether Esports">
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="btn-post-award">Post Winner</button>
+
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead><tr><th>Award</th><th>Player</th><th>Context</th><th>Action</th></tr></thead>
+            <tbody id="award-admin-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-panel mt-lg">
+      <span class="eyebrow">Player Review Assistant</span>
+      <p class="lede" style="margin-top:0.6rem">Look a player up by R3L ID, League ID prefix, email, or display name &mdash; the assistant chat (bottom-right) answers with their verification status and account details while you&rsquo;re signed in as an admin.</p>
+      <div class="field-row">
+        <div class="field" style="flex:1">
+          <label for="admin-player-lookup">R3L ID, email, or name</label>
+          <input type="text" id="admin-player-lookup" placeholder="R3L482910, player@email.com, or a display name">
+        </div>
+        <div class="field" style="flex:0 0 auto;align-self:flex-end">
+          <button type="button" class="btn btn-primary" id="btn-player-lookup">Look Up</button>
+        </div>
+      </div>
+      <div id="player-lookup-result" class="table-wrap" style="display:none;margin-top:0.5rem">
+        <table class="rank-table">
+          <thead><tr><th>R3L ID</th><th>Name</th><th>Email</th><th>Game Accounts</th><th>Verification</th></tr></thead>
+          <tbody id="player-lookup-rows"></tbody>
+        </table>
+      </div>
+      <p class="field-hint" id="player-lookup-empty" style="display:none;margin-top:0.75rem">No player matched that lookup.</p>
+    </div>
+
+    <div class="form-panel mt-lg">
+      <span class="eyebrow">Verification Queue</span>
+      <p class="lede" style="margin-top:0.6rem">Linked game accounts awaiting review. Screenshots, when uploaded, open in a new tab.</p>
+      <div class="auth-error" id="admin-error"></div>
+      <div class="table-wrap" id="admin-table-wrap" style="display:none;margin-top:1rem">
+        <table class="rank-table">
+          <thead>
+            <tr><th>Game</th><th>IGN</th><th>UID</th><th>Code</th><th>Screenshot</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="admin-rows"></tbody>
+        </table>
+      </div>
+      <p class="field-hint center" id="admin-empty" style="display:none;margin-top:1.5rem">No submissions yet.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) {
+      document.getElementById("admin-config-notice").classList.add("is-visible");
+      return;
+    }
+
+    var client = window.R3IGNAuth.client;
+    var isAdmin = false;
+
+    var statsEl = document.getElementById("admin-stats");
+    function loadStat(table, targetId, filter) {
+      var q = client.from(table).select("*", { count: "exact", head: true });
+      if (filter) q = q[filter[0]](filter[1], filter[2]);
+      q.then(function (res) {
+        var el = document.getElementById(targetId);
+        if (el) el.textContent = (res.count === null || res.count === undefined) ? "—" : res.count;
+      });
+    }
+    if (statsEl) {
+      statsEl.style.display = "block";
+      loadStat("organizations", "stat-orgs");
+      loadStat("registrations", "stat-registrations");
+      loadStat("player_listings", "stat-listings");
+      loadStat("game_accounts", "stat-pending", ["eq", "verification_status", "pending"]);
+      loadVerificationChart();
+    }
+
+    function loadVerificationChart() {
+      var now = new Date();
+      var days = [];
+      for (var i = 6; i >= 0; i--) {
+        var d = new Date(now);
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split("T")[0]);
+      }
+      client.from("game_accounts").select("created_at, verification_status").gte("created_at", days[0] + "T00:00:00Z").then(function (res) {
+        if (res.error || !res.data) return;
+        var counts = days.map(function () { return 0; });
+        res.data.forEach(function (row) {
+          var d = row.created_at.split("T")[0];
+          var idx = days.indexOf(d);
+          if (idx !== -1) counts[idx]++;
+        });
+        var max = Math.max.apply(Math, counts);
+        var cols = document.querySelectorAll("#verification-chart .admin-chart-col");
+        counts.forEach(function (c, i) {
+          var bar = cols[i].querySelector(".bar");
+          var h = max > 0 ? Math.max(4, (c / max) * 100) : 4;
+          bar.style.height = h + "px";
+          bar.setAttribute("data-value", c);
+          bar.classList.add(c > 0 ? "is-amber" : "is-steel");
+        });
+      });
+    }
+
+    function renderRows(rows) {
+      var tbody = document.getElementById("admin-rows");
+      tbody.innerHTML = "";
+      if (!rows.length) {
+        document.getElementById("admin-empty").style.display = "block";
+        return;
+      }
+      document.getElementById("admin-table-wrap").style.display = "block";
+      rows.forEach(function (row) {
+        var tr = document.createElement("tr");
+        var actionsHtml = isAdmin
+          ? '<button class="btn btn-ghost" data-approve="' + row.id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Verify</button> ' +
+            '<button class="btn btn-ghost" data-reject="' + row.id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Reject</button>'
+          : '&mdash;';
+        var shotHtml = '&mdash;';
+        if (row.profile_screenshot_path) {
+          shotHtml = '<button class="btn btn-ghost" data-view-shot="' + row.profile_screenshot_path + '" style="padding:0.4em 0.8em;font-size:0.68rem">View</button>';
+        }
+        tr.innerHTML = '<td>' + row.game.toUpperCase() + '</td><td class="team-name">' + row.ign + '</td><td>' +
+          (row.game_uid || '&mdash;') + '</td><td>' + (row.verification_code
+            ? '<button class="btn btn-ghost copy-code" data-code="' + row.verification_code + '" style="padding:0.2em 0.5em;font-size:0.7rem;font-family:var(--f-mono);letter-spacing:0.05em">' + row.verification_code + '</button>'
+            : '&mdash;') + '</td><td>' + shotHtml + '</td><td>' +
+          row.verification_status + '</td><td>' + actionsHtml + '</td>';
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("[data-view-shot]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var path = btn.getAttribute("data-view-shot");
+          client.storage.from("game-profiles").createSignedUrl(path, 300).then(function (res) {
+            if (res.data && res.data.signedUrl) window.open(res.data.signedUrl, "_blank");
+          });
+        });
+      });
+
+      tbody.querySelectorAll(".copy-code").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var code = btn.getAttribute("data-code");
+          navigator.clipboard.writeText(code).then(function () {
+            var original = btn.textContent;
+            btn.textContent = "Copied";
+            btn.style.color = "var(--amber)";
+            setTimeout(function () {
+              btn.textContent = original;
+              btn.style.color = "";
+            }, 1200);
+          });
+        });
+      });
+
+      if (isAdmin) {
+        tbody.querySelectorAll("[data-approve]").forEach(function (btn) {
+          btn.addEventListener("click", function () { updateStatus(btn.getAttribute("data-approve"), "verified"); });
+        });
+        tbody.querySelectorAll("[data-reject]").forEach(function (btn) {
+          btn.addEventListener("click", function () { updateStatus(btn.getAttribute("data-reject"), "rejected"); });
+        });
+      }
+    }
+
+    function updateStatus(id, status) {
+      client.from("game_accounts").update({ verification_status: status }).eq("id", id).then(function (res) {
+        if (res.error) {
+          var el = document.getElementById("admin-error");
+          el.textContent = res.error.message;
+          el.classList.add("is-visible");
+          return;
+        }
+        loadQueue();
+      });
+    }
+
+    function loadQueue() {
+      client.from("game_accounts").select("*").order("updated_at", { ascending: false }).then(function (res) {
+        if (res.error) return;
+        renderRows(res.data || []);
+      });
+    }
+
+    function loadAdmins() {
+      client.from("admins").select("profile_id, profiles(league_id, email, display_name)").then(function (res) {
+        var tbody = document.getElementById("admins-rows");
+        if (res.error || !res.data) return;
+        tbody.innerHTML = "";
+        res.data.forEach(function (row) {
+          var p = row.profiles || {};
+          var tr = document.createElement("tr");
+          tr.innerHTML = '<td class="team-name">' + (p.display_name || '&mdash;') + '</td><td>' + (p.league_id || '&mdash;') + '</td><td>' +
+            (p.email || '&mdash;') + '</td><td><button class="btn btn-ghost" data-remove-admin="' + row.profile_id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Remove</button></td>';
+          tbody.appendChild(tr);
+        });
+        tbody.querySelectorAll("[data-remove-admin]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            client.from("admins").delete().eq("profile_id", btn.getAttribute("data-remove-admin")).then(loadAdmins);
+          });
+        });
+      });
+    }
+
+    document.getElementById("btn-post-event").addEventListener("click", function () {
+      var errEl = document.getElementById("event-error");
+      var okEl = document.getElementById("event-success");
+      errEl.classList.remove("is-visible");
+      okEl.classList.remove("is-visible");
+
+      var title = document.getElementById("ev-title").value.trim();
+      var startVal = document.getElementById("ev-start").value;
+      if (!title || !startVal) {
+        errEl.textContent = "Enter at least a title and a start time.";
+        errEl.classList.add("is-visible");
+        return;
+      }
+      var endVal = document.getElementById("ev-end").value;
+      window.R3IGNAuth.getSession().then(function (res) {
+        var user = res.data.session ? res.data.session.user : null;
+        return client.from("events").insert({
+          title: title,
+          description: document.getElementById("ev-description").value.trim(),
+          league: document.getElementById("ev-league").value || null,
+          location: document.getElementById("ev-location").value.trim(),
+          start_time: new Date(startVal).toISOString(),
+          end_time: endVal ? new Date(endVal).toISOString() : null,
+          created_by: user ? user.id : null
+        });
+      }).then(function (res) {
+        if (res.error) {
+          errEl.textContent = res.error.message;
+          errEl.classList.add("is-visible");
+          return;
+        }
+        okEl.classList.add("is-visible");
+        document.getElementById("ev-title").value = "";
+        document.getElementById("ev-description").value = "";
+        document.getElementById("ev-location").value = "";
+        document.getElementById("ev-start").value = "";
+        document.getElementById("ev-end").value = "";
+      });
+    });
+
+    document.getElementById("btn-promote").addEventListener("click", function () {
+      var errEl = document.getElementById("promote-error");
+      var okEl = document.getElementById("promote-success");
+      errEl.classList.remove("is-visible");
+      okEl.classList.remove("is-visible");
+
+      var lookup = document.getElementById("promote-lookup").value.trim();
+      if (!lookup) return;
+      var query = client.from("profiles").select("id").limit(1);
+      query = lookup.indexOf("@") !== -1 ? query.eq("email", lookup) : query.eq("league_id", lookup.toUpperCase());
+      query.then(function (res) {
+        if (res.error || !res.data || !res.data.length) {
+          errEl.textContent = "No player found with that League ID or email.";
+          errEl.classList.add("is-visible");
+          return Promise.reject();
+        }
+        return client.from("admins").insert({ profile_id: res.data[0].id });
+      }).then(function (res) {
+        if (!res) return;
+        if (res.error) {
+          errEl.textContent = res.error.message;
+          errEl.classList.add("is-visible");
+          return;
+        }
+        okEl.classList.add("is-visible");
+        document.getElementById("promote-lookup").value = "";
+        loadAdmins();
+      }).catch(function () { /* error already shown */ });
+    });
+
+    /* ---------- Manage Rankings ---------- */
+    function loadRankings() {
+      var tbody = document.getElementById("rankings-admin-rows");
+      client.from("rankings").select("*").order("league").order("points", { ascending: false }).then(function (res) {
+        if (res.error || !res.data) return;
+        tbody.innerHTML = "";
+        res.data.forEach(function (row) {
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td class="team-name">' + row.team_name + '</td>' +
+            '<td>' + (row.tag || "") + '</td>' +
+            '<td>' + row.league.toUpperCase() + '</td>' +
+            '<td><input type="number" min="0" value="' + row.wins + '" data-field="wins" style="width:64px"></td>' +
+            '<td><input type="number" min="0" value="' + row.losses + '" data-field="losses" style="width:64px"></td>' +
+            '<td><input type="number" min="0" value="' + (row.points || 0) + '" data-field="points" style="width:76px"></td>' +
+            '<td>' +
+              '<button class="btn btn-ghost" data-save-rank="' + row.id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Save</button> ' +
+              '<button class="btn btn-ghost" data-delete-rank="' + row.id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Delete</button>' +
+            '</td>';
+          tbody.appendChild(tr);
+        });
+
+        tbody.querySelectorAll("[data-save-rank]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var tr = btn.closest("tr");
+            var patch = {};
+            tr.querySelectorAll("input[data-field]").forEach(function (inp) { patch[inp.getAttribute("data-field")] = Number(inp.value) || 0; });
+            client.from("rankings").update(patch).eq("id", btn.getAttribute("data-save-rank")).then(function (r) {
+              var errEl = document.getElementById("rankings-error");
+              var okEl = document.getElementById("rankings-success");
+              if (r.error) { errEl.textContent = r.error.message; errEl.classList.add("is-visible"); return; }
+              okEl.classList.add("is-visible");
+              setTimeout(function () { okEl.classList.remove("is-visible"); }, 2500);
+            });
+          });
+        });
+        tbody.querySelectorAll("[data-delete-rank]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            if (!confirm("Remove this team from rankings?")) return;
+            client.from("rankings").delete().eq("id", btn.getAttribute("data-delete-rank")).then(function () { loadRankings(); });
+          });
+        });
+      });
+    }
+
+    document.getElementById("btn-add-ranking").addEventListener("click", function () {
+      var errEl = document.getElementById("rankings-error");
+      var okEl = document.getElementById("rankings-success");
+      errEl.classList.remove("is-visible");
+      okEl.classList.remove("is-visible");
+      var team = document.getElementById("rk-team").value.trim();
+      if (!team) { errEl.textContent = "Team name is required."; errEl.classList.add("is-visible"); return; }
+      client.from("rankings").insert({
+        team_name: team,
+        tag: document.getElementById("rk-tag").value.trim(),
+        league: document.getElementById("rk-league").value,
+        season: document.getElementById("rk-season").value.trim() || "Season 4",
+        wins: 0, losses: 0, points: 0
+      }).then(function (res) {
+        if (res.error) { errEl.textContent = res.error.message; errEl.classList.add("is-visible"); return; }
+        okEl.classList.add("is-visible");
+        document.getElementById("rk-team").value = "";
+        document.getElementById("rk-tag").value = "";
+        loadRankings();
+      });
+    });
+
+    /* ---------- Manage Bracket ---------- */
+    var currentTournamentId = null;
+    function loadBracket() {
+      client.from("tournaments").select("*").order("created_at", { ascending: false }).limit(1).then(function (tRes) {
+        if (tRes.error || !tRes.data || !tRes.data.length) {
+          document.getElementById("bracket-admin-empty").style.display = "block";
+          return;
+        }
+        currentTournamentId = tRes.data[0].id;
+        return client.from("bracket_matches").select("*").eq("tournament_id", currentTournamentId).order("round_number").order("match_order");
+      }).then(function (mRes) {
+        if (!mRes || mRes.error || !mRes.data) return;
+        var tbody = document.getElementById("bracket-admin-rows");
+        tbody.innerHTML = "";
+        mRes.data.forEach(function (m) {
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td>' + (m.round_name || ("Rd " + m.round_number)) + '</td>' +
+            '<td><input type="text" value="' + (m.team_a || "") + '" data-field="team_a" style="width:120px"></td>' +
+            '<td><input type="number" value="' + (m.score_a === null ? "" : m.score_a) + '" data-field="score_a" style="width:56px"></td>' +
+            '<td><input type="text" value="' + (m.team_b || "") + '" data-field="team_b" style="width:120px"></td>' +
+            '<td><input type="number" value="' + (m.score_b === null ? "" : m.score_b) + '" data-field="score_b" style="width:56px"></td>' +
+            '<td><button class="btn btn-ghost" data-save-match="' + m.id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Save</button></td>';
+          tbody.appendChild(tr);
+        });
+        tbody.querySelectorAll("[data-save-match]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var tr = btn.closest("tr");
+            var patch = {};
+            tr.querySelectorAll("input[data-field]").forEach(function (inp) {
+              var v = inp.value.trim();
+              patch[inp.getAttribute("data-field")] = v === "" ? null : (inp.type === "number" ? Number(v) : v);
+            });
+            if (patch.score_a !== null && patch.score_b !== null) {
+              patch.winner = patch.score_a > patch.score_b ? "a" : (patch.score_b > patch.score_a ? "b" : null);
+            }
+            client.from("bracket_matches").update(patch).eq("id", btn.getAttribute("data-save-match")).then(function (r) {
+              var errEl = document.getElementById("bracket-error");
+              var okEl = document.getElementById("bracket-success");
+              if (r.error) { errEl.textContent = r.error.message; errEl.classList.add("is-visible"); return; }
+              okEl.classList.add("is-visible");
+              setTimeout(function () { okEl.classList.remove("is-visible"); }, 2500);
+            });
+          });
+        });
+      });
+    }
+
+    /* ---------- Manage Match Highlights ---------- */
+    function loadHighlightsAdmin() {
+      client.from("match_highlights").select("*").order("created_at", { ascending: false }).limit(20).then(function (res) {
+        if (res.error || !res.data) return;
+        var tbody = document.getElementById("highlights-admin-rows");
+        tbody.innerHTML = "";
+        res.data.forEach(function (h) {
+          var tr = document.createElement("tr");
+          tr.innerHTML = '<td>' + h.title + '</td><td>' + (h.league ? h.league.toUpperCase() : "&mdash;") + '</td><td>' +
+            (h.storage_path ? "Uploaded file" : (h.video_url ? "Link" : "&mdash;")) +
+            '</td><td><button class="btn btn-ghost" data-delete-highlight="' + h.id + '" data-storage-path="' + (h.storage_path || "") + '" style="padding:0.4em 0.8em;font-size:0.68rem">Delete</button></td>';
+          tbody.appendChild(tr);
+        });
+        tbody.querySelectorAll("[data-delete-highlight]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var path = btn.getAttribute("data-storage-path");
+            client.from("match_highlights").delete().eq("id", btn.getAttribute("data-delete-highlight")).then(function () {
+              if (path) client.storage.from("match-highlights").remove([path]);
+              loadHighlightsAdmin();
+            });
+          });
+        });
+      });
+    }
+
+    document.getElementById("btn-post-highlight").addEventListener("click", function () {
+      var errEl = document.getElementById("highlight-error");
+      var okEl = document.getElementById("highlight-success");
+      errEl.classList.remove("is-visible");
+      var title = document.getElementById("hl-title").value.trim();
+      var file = document.getElementById("hl-file").files[0];
+      var url = document.getElementById("hl-url").value.trim();
+      if (!title) { errEl.textContent = "Title is required."; errEl.classList.add("is-visible"); return; }
+      if (!file && !url) { errEl.textContent = "Add a clip URL or choose a file to upload."; errEl.classList.add("is-visible"); return; }
+
+      var record = {
+        title: title,
+        description: document.getElementById("hl-description").value.trim() || null,
+        league: document.getElementById("hl-league").value || null,
+        match_label: document.getElementById("hl-match").value.trim() || null,
+        video_url: url || null
+      };
+
+      function insertRecord(storagePath) {
+        if (storagePath) record.storage_path = storagePath;
+        client.from("match_highlights").insert(record).then(function (res) {
+          if (res.error) { errEl.textContent = res.error.message; errEl.classList.add("is-visible"); return; }
+          okEl.classList.add("is-visible");
+          setTimeout(function () { okEl.classList.remove("is-visible"); }, 2500);
+          document.getElementById("hl-title").value = "";
+          document.getElementById("hl-description").value = "";
+          document.getElementById("hl-match").value = "";
+          document.getElementById("hl-url").value = "";
+          document.getElementById("hl-file").value = "";
+          loadHighlightsAdmin();
+        });
+      }
+
+      if (file) {
+        var path = Date.now() + "-" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        client.storage.from("match-highlights").upload(path, file).then(function (res) {
+          if (res.error) { errEl.textContent = res.error.message; errEl.classList.add("is-visible"); return; }
+          insertRecord(path);
+        });
+      } else {
+        insertRecord(null);
+      }
+    });
+
+    /* ---------- Manage News ---------- */
+    function loadNewsAdmin() {
+      client.from("news_posts").select("*").order("created_at", { ascending: false }).limit(30).then(function (res) {
+        if (res.error || !res.data) return;
+        var tbody = document.getElementById("news-admin-rows");
+        tbody.innerHTML = "";
+        res.data.forEach(function (n) {
+          var tr = document.createElement("tr");
+          tr.innerHTML = '<td>' + n.title + '</td><td>' + n.category + '</td><td>' +
+            (n.published ? '<span style="color:var(--signal)">Published</span>' : '<span style="color:var(--steel)">Draft</span>') +
+            '</td><td><button class="btn btn-ghost" data-toggle-news="' + n.id + '" data-published="' + n.published + '" style="padding:0.4em 0.8em;font-size:0.68rem">' +
+            (n.published ? "Unpublish" : "Publish") +
+            '</button> <button class="btn btn-ghost" data-delete-news="' + n.id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Delete</button></td>';
+          tbody.appendChild(tr);
+        });
+        tbody.querySelectorAll("[data-toggle-news]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var nowPublished = btn.getAttribute("data-published") === "true";
+            client.from("news_posts").update({ published: !nowPublished }).eq("id", btn.getAttribute("data-toggle-news")).then(loadNewsAdmin);
+          });
+        });
+        tbody.querySelectorAll("[data-delete-news]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            client.from("news_posts").delete().eq("id", btn.getAttribute("data-delete-news")).then(loadNewsAdmin);
+          });
+        });
+      });
+    }
+
+    document.getElementById("btn-post-news").addEventListener("click", function () {
+      var errEl = document.getElementById("news-error");
+      var okEl = document.getElementById("news-success");
+      errEl.classList.remove("is-visible");
+      var title = document.getElementById("nw-title").value.trim();
+      var body = document.getElementById("nw-body").value.trim();
+      if (!title || !body) { errEl.textContent = "Title and story text are both required."; errEl.classList.add("is-visible"); return; }
+
+      window.R3IGNAuth.getSession().then(function (res) {
+        var user = res.data.session ? res.data.session.user : null;
+        return client.from("news_posts").insert({
+          title: title,
+          category: document.getElementById("nw-category").value,
+          author_name: document.getElementById("nw-author").value.trim() || null,
+          body: body,
+          published: document.getElementById("nw-published").checked,
+          created_by: user ? user.id : null
+        });
+      }).then(function (res) {
+        if (res.error) { errEl.textContent = res.error.message; errEl.classList.add("is-visible"); return; }
+        okEl.classList.add("is-visible");
+        setTimeout(function () { okEl.classList.remove("is-visible"); }, 2500);
+        document.getElementById("nw-title").value = "";
+        document.getElementById("nw-author").value = "";
+        document.getElementById("nw-body").value = "";
+        document.getElementById("nw-published").checked = true;
+        loadNewsAdmin();
+      });
+    });
+
+    /* ---------- Manage Hall of Champions ---------- */
+    function loadAwardsAdmin() {
+      client.from("award_winners").select("*").order("created_at", { ascending: false }).limit(20).then(function (res) {
+        if (res.error || !res.data) return;
+        var tbody = document.getElementById("award-admin-rows");
+        tbody.innerHTML = "";
+        res.data.forEach(function (a) {
+          var tr = document.createElement("tr");
+          tr.innerHTML = '<td>' + a.award_label + '</td><td>' + a.player_name + '</td><td>' + (a.context || "&mdash;") +
+            '</td><td><button class="btn btn-ghost" data-delete-award="' + a.id + '" style="padding:0.4em 0.8em;font-size:0.68rem">Delete</button></td>';
+          tbody.appendChild(tr);
+        });
+        tbody.querySelectorAll("[data-delete-award]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            client.from("award_winners").delete().eq("id", btn.getAttribute("data-delete-award")).then(loadAwardsAdmin);
+          });
+        });
+      });
+    }
+
+    document.getElementById("btn-post-award").addEventListener("click", function () {
+      var errEl = document.getElementById("award-error");
+      var okEl = document.getElementById("award-success");
+      errEl.classList.remove("is-visible");
+      var label = document.getElementById("aw-label").value.trim();
+      var player = document.getElementById("aw-player").value.trim();
+      if (!label || !player) { errEl.textContent = "Award and player are both required."; errEl.classList.add("is-visible"); return; }
+
+      client.from("award_winners").insert({
+        award_label: label,
+        player_name: player,
+        context: document.getElementById("aw-context").value.trim() || null
+      }).then(function (res) {
+        if (res.error) { errEl.textContent = res.error.message; errEl.classList.add("is-visible"); return; }
+        okEl.classList.add("is-visible");
+        setTimeout(function () { okEl.classList.remove("is-visible"); }, 2500);
+        document.getElementById("aw-player").value = "";
+        document.getElementById("aw-context").value = "";
+        loadAwardsAdmin();
+      });
+    });
+
+    /* ---------- Player Review Assistant lookup ---------- */
+    function runPlayerLookup(term) {
+      var resultBox = document.getElementById("player-lookup-result");
+      var emptyEl = document.getElementById("player-lookup-empty");
+      var rows = document.getElementById("player-lookup-rows");
+      term = (term || "").trim();
+      if (!term) return;
+      var isLeagueId = /^R3L/i.test(term);
+      var query = client.from("profiles").select("league_id, display_name, email, id");
+      query = isLeagueId ? query.ilike("league_id", term + "%") : query.or("email.ilike.%" + term + "%,display_name.ilike.%" + term + "%");
+      query.limit(10).then(function (res) {
+        if (res.error || !res.data || !res.data.length) {
+          resultBox.style.display = "none";
+          emptyEl.style.display = "block";
+          return;
+        }
+        emptyEl.style.display = "none";
+        var ids = res.data.map(function (p) { return p.id; });
+        client.from("game_accounts").select("profile_id, verification_status, game").in("profile_id", ids).then(function (gRes) {
+          var byProfile = {};
+          (gRes.data || []).forEach(function (g) {
+            byProfile[g.profile_id] = byProfile[g.profile_id] || [];
+            byProfile[g.profile_id].push(g);
+          });
+          rows.innerHTML = "";
+          res.data.forEach(function (p) {
+            var accounts = byProfile[p.id] || [];
+            var statusSummary = accounts.length
+              ? accounts.map(function (a) { return a.game + ": " + a.verification_status; }).join(", ")
+              : "No game accounts linked";
+            var tr = document.createElement("tr");
+            tr.innerHTML = '<td>' + (p.league_id || "&mdash;") + '</td><td>' + (p.display_name || "&mdash;") +
+              '</td><td>' + (p.email || "&mdash;") + '</td><td>' + accounts.length + '</td><td>' + statusSummary + '</td>';
+            rows.appendChild(tr);
+          });
+          resultBox.style.display = "block";
+        });
+      });
+    }
+    document.getElementById("btn-player-lookup").addEventListener("click", function () {
+      runPlayerLookup(document.getElementById("admin-player-lookup").value);
+    });
+    document.getElementById("admin-player-lookup").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") runPlayerLookup(this.value);
+    });
+    // Exposed so the assistant chat widget (js/assistant.js) can trigger the
+    // same lookup when an admin types a player/R3L question into the bot.
+    window.R3IGNAdminPlayerLookup = runPlayerLookup;
+
+    window.R3IGNAuth.getSession().then(function (res) {
+      var session = res.data.session;
+      if (!session) {
+        document.getElementById("admin-signin-notice").classList.add("is-visible");
+        return;
+      }
+      return client.from("admins").select("profile_id").eq("profile_id", session.user.id);
+    }).then(function (res) {
+      if (!res) return;
+      isAdmin = !!(res.data && res.data.length);
+      if (!isAdmin) {
+        document.getElementById("admin-denied-notice").classList.add("is-visible");
+      } else {
+        document.getElementById("admin-tools").style.display = "block";
+        loadAdmins();
+        loadRankings();
+        loadBracket();
+        loadHighlightsAdmin();
+        loadNewsAdmin();
+        loadAwardsAdmin();
+      }
+      loadQueue();
+    });
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

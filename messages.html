@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages · R3IGN</title>
+<meta name="description" content="Message players and organizations directly on R3IGN.">
+<meta property="og:title" content="Messages · R3IGN">
+<meta property="og:description" content="Message players and organizations directly on R3IGN.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Messages · R3IGN">
+<meta name="twitter:description" content="Message players and organizations directly on R3IGN.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Messages</span>
+    <span class="eyebrow" style="margin-top:1rem;display:inline-flex">Direct Messages</span>
+    <h1>Messages</h1>
+    <p>Chat directly with players and organizations you've connected with through the Player Market.</p>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap">
+    <div class="auth-notice" id="msg-config-notice">
+      Backend isn't connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code> to enable messaging. See the README for setup steps.
+    </div>
+    <div class="auth-notice" id="msg-signin-notice">
+      <a href="signin.html" style="color:var(--paper)">Sign in</a> to view and send messages.
+    </div>
+
+    <div class="msg-layout" id="msg-layout" style="display:none">
+      <div class="msg-list-pane">
+        <div class="msg-list-head">Conversations</div>
+        <div id="msg-conv-list">
+          <p class="field-hint" style="padding:1rem">Loading&hellip;</p>
+        </div>
+      </div>
+      <div class="msg-thread-pane">
+        <div id="msg-thread-empty" class="msg-empty">
+          <div class="msg-empty-state">
+            <span>Select a conversation to start chatting.</span>
+            <a href="player-market.html" class="btn btn-ghost">Browse Player Market</a>
+          </div>
+        </div>
+        <div id="msg-thread-active" style="display:none;flex-direction:column;height:100%">
+          <div class="msg-thread-head">
+            <button type="button" class="msg-thread-back" id="msg-thread-back" aria-label="Back to conversations">&larr;</button>
+            <div>
+              <div class="msg-thread-title" id="msg-thread-title">&nbsp;</div>
+              <div class="msg-thread-sub" id="msg-thread-sub">&nbsp;</div>
+            </div>
+          </div>
+          <div class="msg-thread-body" id="msg-thread-body"></div>
+          <div class="auth-error" id="msg-send-error" style="margin:0 1rem"></div>
+          <form class="msg-compose" id="msg-compose-form">
+            <textarea id="msg-compose-input" rows="1" placeholder="Write a message…" maxlength="2000" required></textarea>
+            <button type="submit" class="btn btn-primary" id="msg-send-btn">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+          <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var configured = window.R3IGNAuth && window.R3IGNAuth.isConfigured();
+    if (!configured) {
+      document.getElementById("msg-config-notice").classList.add("is-visible");
+      return;
+    }
+
+    window.R3IGNAuth.getSession().then(function (res) {
+      var session = res.data.session;
+      if (!session) {
+        document.getElementById("msg-signin-notice").classList.add("is-visible");
+        return;
+      }
+      initMessages(session.user);
+    });
+
+    function escapeHtml(str) {
+      var div = document.createElement("div");
+      div.textContent = str == null ? "" : String(str);
+      return div.innerHTML;
+    }
+
+    function fmtTime(iso) {
+      var d = new Date(iso);
+      var now = new Date();
+      var sameDay = d.toDateString() === now.toDateString();
+      return sameDay
+        ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+        : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    function initMessages(user) {
+      var client = window.R3IGNAuth.client;
+      var layout = document.getElementById("msg-layout");
+      var convListEl = document.getElementById("msg-conv-list");
+      var threadEmpty = document.getElementById("msg-thread-empty");
+      var threadActive = document.getElementById("msg-thread-active");
+      var threadBody = document.getElementById("msg-thread-body");
+      var threadTitle = document.getElementById("msg-thread-title");
+      var threadSub = document.getElementById("msg-thread-sub");
+      var composeForm = document.getElementById("msg-compose-form");
+      var composeInput = document.getElementById("msg-compose-input");
+      var sendBtn = document.getElementById("msg-send-btn");
+      var sendError = document.getElementById("msg-send-error");
+      var backBtn = document.getElementById("msg-thread-back");
+
+      layout.style.display = "grid";
+
+      var params = new URLSearchParams(window.location.search);
+      var draftTo = params.get("to");
+      var draftName = params.get("name");
+      var draftListing = params.get("listing");
+
+      var conversations = {}; // otherId -> { name, messages: [], listingId }
+      var activeId = null;
+
+      function ensureConv(otherId, name) {
+        if (!conversations[otherId]) {
+          conversations[otherId] = { id: otherId, name: name || "Player", messages: [], listingId: null };
+        } else if (name) {
+          conversations[otherId].name = name;
+        }
+        return conversations[otherId];
+      }
+
+      function loadAndRender() {
+        return client
+          .from("messages")
+          .select("*, sender:profiles!messages_sender_id_fkey(display_name), recipient:profiles!messages_recipient_id_fkey(display_name)")
+          .or("sender_id.eq." + user.id + ",recipient_id.eq." + user.id)
+          .order("created_at", { ascending: true })
+          .then(function (res) {
+            if (res.error) return Promise.reject(res.error);
+            (res.data || []).forEach(function (m) {
+              var isMine = m.sender_id === user.id;
+              var otherId = isMine ? m.recipient_id : m.sender_id;
+              var otherName = isMine
+                ? (m.recipient && m.recipient.display_name) || "Player"
+                : (m.sender && m.sender.display_name) || "Player";
+              var conv = ensureConv(otherId, otherName);
+              if (m.listing_id) conv.listingId = m.listing_id;
+              conv.messages.push(m);
+            });
+
+            if (draftTo && draftTo !== user.id) {
+              ensureConv(draftTo, draftName ? decodeURIComponent(draftName) : "Player");
+              if (draftListing) conversations[draftTo].listingId = draftListing;
+            }
+
+            renderConvList();
+
+            if (draftTo && conversations[draftTo]) {
+              openConversation(draftTo);
+            }
+          });
+      }
+
+      function renderConvList() {
+        var ids = Object.keys(conversations);
+        if (!ids.length) {
+          convListEl.innerHTML = '<p class="field-hint" style="padding:1rem">No conversations yet. Message someone from the <a href="player-market.html" style="color:var(--paper)">Player Market</a> to start one.</p>';
+          return;
+        }
+        ids.sort(function (a, b) {
+          var am = conversations[a].messages, bm = conversations[b].messages;
+          var at = am.length ? new Date(am[am.length - 1].created_at).getTime() : 0;
+          var bt = bm.length ? new Date(bm[bm.length - 1].created_at).getTime() : 0;
+          return bt - at;
+        });
+        convListEl.innerHTML = "";
+        ids.forEach(function (id) {
+          var conv = conversations[id];
+          var last = conv.messages[conv.messages.length - 1];
+          var unread = conv.messages.some(function (m) { return m.recipient_id === user.id && !m.read_at; });
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "msg-conv-item" + (id === activeId ? " is-active" : "") + (unread ? " is-unread" : "");
+          btn.innerHTML =
+            '<div class="msg-conv-name"><span></span>' + (unread ? '<span class="msg-conv-dot" aria-label="Unread"></span>' : "") + '</div>' +
+            '<div class="msg-conv-preview"></div>' +
+            '<div class="msg-conv-time"></div>';
+          btn.querySelector(".msg-conv-name span").textContent = conv.name;
+          btn.querySelector(".msg-conv-preview").textContent = last ? last.body : "Say hello \u2014 no messages yet";
+          btn.querySelector(".msg-conv-time").textContent = last ? fmtTime(last.created_at) : "";
+          btn.addEventListener("click", function () { openConversation(id); });
+          convListEl.appendChild(btn);
+        });
+      }
+
+      function openConversation(id) {
+        activeId = id;
+        layout.classList.add("is-thread-open");
+        threadEmpty.style.display = "none";
+        threadActive.style.display = "flex";
+        renderConvList();
+        renderThread();
+        markRead(id);
+        composeInput.focus();
+      }
+
+      function renderThread() {
+        var conv = conversations[activeId];
+        threadTitle.textContent = conv.name;
+        threadSub.textContent = conv.messages.length
+          ? conv.messages.length + " message" + (conv.messages.length === 1 ? "" : "s")
+          : "New conversation";
+        threadBody.innerHTML = "";
+        conv.messages.forEach(function (m) {
+          var mine = m.sender_id === user.id;
+          var bubble = document.createElement("div");
+          bubble.className = "msg-bubble " + (mine ? "mine" : "theirs");
+          var textSpan = document.createElement("span");
+          textSpan.textContent = m.body;
+          var timeSpan = document.createElement("span");
+          timeSpan.className = "msg-bubble-time";
+          timeSpan.textContent = fmtTime(m.created_at);
+          bubble.appendChild(textSpan);
+          bubble.appendChild(timeSpan);
+          threadBody.appendChild(bubble);
+        });
+        threadBody.scrollTop = threadBody.scrollHeight;
+      }
+
+      function markRead(id) {
+        var conv = conversations[id];
+        var toMark = conv.messages.filter(function (m) { return m.recipient_id === user.id && !m.read_at; });
+        if (!toMark.length) return;
+        var nowIso = new Date().toISOString();
+        toMark.forEach(function (m) { m.read_at = nowIso; });
+        client.from("messages").update({ read_at: nowIso })
+          .eq("recipient_id", user.id).eq("sender_id", id).is("read_at", null)
+          .then(function () { renderConvList(); });
+      }
+
+      backBtn.addEventListener("click", function () {
+        layout.classList.remove("is-thread-open");
+      });
+
+      composeForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var body = composeInput.value.trim();
+        if (!body || !activeId) return;
+        sendError.classList.remove("is-visible");
+        sendBtn.disabled = true;
+        var conv = conversations[activeId];
+        var payload = { sender_id: user.id, recipient_id: activeId, body: body };
+        if (conv.listingId) payload.listing_id = conv.listingId;
+
+        client.from("messages").insert(payload).select(
+          "*, sender:profiles!messages_sender_id_fkey(display_name), recipient:profiles!messages_recipient_id_fkey(display_name)"
+        ).then(function (res) {
+          sendBtn.disabled = false;
+          if (res.error || !res.data || !res.data.length) {
+            sendError.textContent = (res.error && res.error.message) || "Couldn't send that message. Try again.";
+            sendError.classList.add("is-visible");
+            return;
+          }
+          conv.messages.push(res.data[0]);
+          composeInput.value = "";
+          renderThread();
+          renderConvList();
+        }).catch(function (err) {
+          sendBtn.disabled = false;
+          sendError.textContent = err.message || "Couldn't send that message. Try again.";
+          sendError.classList.add("is-visible");
+        });
+      });
+
+      composeInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          composeForm.requestSubmit();
+        }
+      });
+
+      loadAndRender();
+      // light polling so new replies show up without a full page reload
+      setInterval(loadAndRender, 15000);
+    }
+  });
+})();
+</script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

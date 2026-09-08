@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /account.html
+Allow: /
+
+Sitemap: https://r3ignesports.gg/sitemap.xml

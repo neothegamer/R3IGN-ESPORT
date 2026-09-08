@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Profile · R3IGN</title>
+<meta name="description" content="Team and organization profile \u2014 roster, league record, and socials.">
+<meta property="og:title" content="Team Profile · R3IGN">
+<meta property="og:description" content="Team and organization profile \u2014 roster, league record, and socials.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Team Profile · R3IGN">
+<meta name="twitter:description" content="Team and organization profile \u2014 roster, league record, and socials.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html" aria-current="page">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header" id="org-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / <a href="organizations.html">Organizations</a> / <span id="org-crumb">Team</span></span>
+    <div id="org-hero" style="margin-top:1.25rem">
+      <span class="eyebrow" id="org-league-badge" style="display:inline-flex">Loading&hellip;</span>
+      <h1 id="org-name" style="margin-top:0.75rem">&nbsp;</h1>
+      <p id="org-desc" class="lede" style="margin-top:0.75rem;max-width:60ch"></p>
+    </div>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap">
+    <div id="org-not-found" class="empty-state" style="display:none">
+      Couldn&rsquo;t find that organization. <a href="organizations.html" style="color:var(--paper)">Back to Organizations</a>.
+    </div>
+
+    <div id="org-content" style="display:none">
+      <div class="dossier-grid" style="grid-template-columns:2fr 1fr;gap:2rem">
+        <div>
+          <div class="form-panel">
+            <span class="eyebrow">Roster</span>
+            <p class="lede" id="org-roster" style="margin-top:0.75rem;white-space:pre-line">&mdash;</p>
+          </div>
+          <div class="form-panel mt-lg">
+            <span class="eyebrow">League Record</span>
+            <div class="table-wrap" style="margin-top:1rem">
+              <table class="rank-table">
+                <thead><tr><th>League</th><th>Season</th><th>W</th><th>L</th><th>Win %</th></tr></thead>
+                <tbody id="org-record-rows"><tr><td colspan="5" style="color:var(--steel)">No matches reported yet.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="account-card" style="flex-direction:column;align-items:flex-start;gap:1rem">
+            <div class="account-avatar" id="org-badge" style="width:56px;height:56px">&mdash;</div>
+            <div class="account-meta">
+              <h3 id="org-tag-full">&mdash;</h3>
+              <p id="org-region">&mdash;</p>
+            </div>
+          </div>
+          <div class="form-panel mt-lg">
+            <span class="eyebrow">Socials</span>
+            <ul id="org-socials" style="margin-top:1rem;display:flex;flex-direction:column;gap:0.6rem"><li style="color:var(--steel);font-size:0.85rem">No linked socials yet.</li></ul>
+          </div>
+          <div class="cta-actions" style="margin-top:1.5rem;flex-direction:column;align-items:stretch">
+            <a href="player-market.html" class="btn btn-ghost btn-block">Browse Player Market</a>
+            <a href="rankings.html" class="btn btn-primary btn-block">Full Rankings</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var SAMPLE_ORGS = {"aether-esports":{"name":"Aether Esports","tag":"AE","league":"rcml","division":1,"region":"Sample Data","record":"W10–L1","pct":"90.9%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"siroxx":{"name":"Siroxx","tag":"SX","league":"rcml","division":1,"region":"Sample Data","record":"W10–L1","pct":"90.9%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"infinite":{"name":"Infinite","tag":"IN","league":"rcml","division":1,"region":"Sample Data","record":"W9–L2","pct":"81.8%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"eleventh-order":{"name":"Eleventh Order","tag":"EO","league":"rcml","division":1,"region":"Sample Data","record":"W8–L3","pct":"72.7%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"seven-esports":{"name":"Seven Esports","tag":"SE","league":"rcml","division":1,"region":"Sample Data","record":"W7–L4","pct":"63.6%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"7sin-esports":{"name":"7SIN Esports","tag":"7S","league":"rcml","division":1,"region":"Sample Data","record":"W6–L5","pct":"54.5%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"nightshade":{"name":"Nightshade","tag":"NS","league":"rcml","division":1,"region":"Sample Data","record":"W5–L6","pct":"45.5%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"ironclad":{"name":"Ironclad","tag":"IC","league":"rcml","division":1,"region":"Sample Data","record":"W4–L7","pct":"36.4%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"vortex-squad":{"name":"Vortex Squad","tag":"VS","league":"rcml","division":1,"region":"Sample Data","record":"W3–L8","pct":"27.3%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""},"last-watch":{"name":"Last Watch","tag":"LW","league":"rcml","division":1,"region":"Sample Data","record":"W1–L10","pct":"9.1%","description":"Sample profile \u2014 connect Supabase and register real organizations to replace this.","roster":"Add a roster from the Admin page or Supabase once this org signs up.","discord_url":"","twitch_url":"","twitter_url":""}};
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get("id");
+    var nameSlug = params.get("name");
+
+    function render(org) {
+      document.getElementById("org-not-found").style.display = "none";
+      document.getElementById("org-content").style.display = "block";
+      document.title = org.name + " \u00b7 R3IGN";
+      document.getElementById("org-crumb").textContent = org.name;
+      document.getElementById("org-league-badge").textContent = (org.league || "R3IGN").toUpperCase() + (org.division ? (" \u00b7 Division " + org.division) : "");
+      document.getElementById("org-name").textContent = org.name;
+      document.getElementById("org-desc").textContent = org.description || "No team bio yet.";
+      document.getElementById("org-roster").textContent = org.roster || "No roster listed yet.";
+      document.getElementById("org-tag-full").textContent = org.tag || "\u2014";
+      document.getElementById("org-badge").textContent = org.tag || "?";
+      document.getElementById("org-region").textContent = org.region || "Region not set";
+
+      if (org.record) {
+        document.getElementById("org-record-rows").innerHTML =
+          "<tr><td>" + (org.league || "\u2014").toUpperCase() + "</td><td>Current Season</td><td colspan=\"3\">" + org.record + " (" + org.pct + " win rate)</td></tr>";
+      }
+
+      var socials = [];
+      if (org.discord_url) socials.push('<li><a href="' + org.discord_url + '" target="_blank" rel="noopener" style="color:var(--paper)">Discord</a></li>');
+      if (org.twitch_url) socials.push('<li><a href="' + org.twitch_url + '" target="_blank" rel="noopener" style="color:var(--paper)">Twitch</a></li>');
+      if (org.twitter_url) socials.push('<li><a href="' + org.twitter_url + '" target="_blank" rel="noopener" style="color:var(--paper)">Twitter / X</a></li>');
+      if (socials.length) document.getElementById("org-socials").innerHTML = socials.join("");
+    }
+
+    function showNotFound() {
+      document.getElementById("org-not-found").style.display = "block";
+      document.getElementById("org-content").style.display = "none";
+      document.getElementById("org-name").textContent = "Not Found";
+      document.getElementById("org-league-badge").textContent = "404";
+    }
+
+    function tryLiveFetch() {
+      if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) return Promise.resolve(null);
+      var client = window.R3IGNAuth.client;
+      var query = client.from("organizations").select("*");
+      query = id ? query.eq("id", id) : query.ilike("name", (nameSlug || "").replace(/-/g, " "));
+      return query.maybeSingle().then(function (res) { return (res.data) || null; }).catch(function () { return null; });
+    }
+
+    tryLiveFetch().then(function (liveOrg) {
+      if (liveOrg) { render(liveOrg); return; }
+      var sample = nameSlug && SAMPLE_ORGS[nameSlug];
+      if (sample) { render(sample); return; }
+      showNotFound();
+    });
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

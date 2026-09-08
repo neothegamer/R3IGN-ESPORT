@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Your Team · R3IGN</title>
+<meta name="description" content="Submit your roster for placement in an R3IGN mobile esports league.">
+<meta property="og:title" content="Register Your Team · R3IGN">
+<meta property="og:description" content="Submit your roster for placement in an R3IGN mobile esports league.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/r3ign-logo-256.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Register Your Team · R3IGN">
+<meta name="twitter:description" content="Submit your roster for placement in an R3IGN mobile esports league.">
+<meta name="twitter:image" content="assets/r3ign-logo-256.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <span class="brand" role="img" aria-label="R3IGN">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high" loading="eager" decoding="async">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </span>
+    <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span>
+      </button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+      <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span>
+      <span>RFCL — REGISTRATION OPENING SOON</span>
+      <span>RBSL — REGISTRATION OPENING SOON</span>
+      <span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<div class="page-header">
+  <div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Register Team</span>
+    <span class="eyebrow" style="margin-top:1rem;display:inline-flex">Enlist Your Roster</span>
+    <h1>Register Your Team</h1>
+    <p>Fill out the form below to submit your team for league placement. Fields marked <span style="color:var(--signal)">*</span> are required.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap" style="max-width:760px">
+    <div class="form-panel">
+      <div class="auth-notice" id="reg-config-notice">
+        Backend isn't connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code> to receive real submissions. See the README for setup steps.
+      </div>
+      <div class="auth-notice" id="reg-signin-notice">
+        <a href="signin.html" style="color:var(--paper)">Sign in</a> or <a href="signup.html" style="color:var(--paper)">create an account</a> first &mdash; team registration is only available to signed-in players.
+      </div>
+      <div class="auth-error" id="reg-error"></div>
+      <div class="form-success" id="reg-success" role="status">
+        Registration received. A member of the R3IGN team will follow up by email with next steps.
+      </div>
+      <form id="register-form" novalidate>
+        <div class="field">
+          <label for="team-name">Team name <span class="req">*</span></label>
+          <input type="text" id="team-name" name="team-name" required>
+          <div class="field-error">Enter your team name.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="team-tag">Team tag <span class="req">*</span></label>
+            <input type="text" id="team-tag" name="team-tag" maxlength="5" placeholder="e.g. AE" required>
+            <div class="field-error">Enter a short team tag.</div>
+          </div>
+          <div class="field">
+            <label for="league">League <span class="req">*</span></label>
+            <select id="league" name="league" required>
+              <option value="">Select a league</option>
+              <option value="rcml">RCML &mdash; COD:Mobile</option>
+              <option value="rfcl">RFCL &mdash; Free Fire</option>
+              <option value="rbsl">RBSL &mdash; Blood Strike</option>
+            </select>
+            <div class="field-error">Select a league.</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="captain-name">Captain full name <span class="req">*</span></label>
+            <input type="text" id="captain-name" name="captain-name" required>
+            <div class="field-error">Enter the captain's name.</div>
+          </div>
+          <div class="field">
+            <label for="captain-email">Captain email <span class="req">*</span></label>
+            <input type="email" id="captain-email" name="captain-email" required>
+            <div class="field-error">Enter a valid email address.</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="discord">Discord handle</label>
+            <input type="text" id="discord" name="discord" placeholder="username">
+          </div>
+          <div class="field">
+            <label for="region">Region <span class="req">*</span></label>
+            <select id="region" name="region" required>
+              <option value="">Select a region</option>
+              <option>North America</option>
+              <option>South America</option>
+              <option>Europe</option>
+              <option>Middle East &amp; Africa</option>
+              <option>Asia Pacific</option>
+            </select>
+            <div class="field-error">Select your region.</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="roster">Roster (in-game names, one per line) <span class="req">*</span></label>
+          <textarea id="roster" name="roster" required placeholder="Player 1&#10;Player 2&#10;Player 3&#10;Player 4&#10;Player 5"></textarea>
+          <div class="field-error">List your roster.</div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Anything else we should know?</label>
+          <textarea id="notes" name="notes" placeholder="Previous results, org affiliation, availability, etc."></textarea>
+        </div>
+
+        <div class="field checkbox-field">
+          <input type="checkbox" id="agree" name="agree" required>
+          <label for="agree">I confirm my roster agrees to the R3IGN competitive rules and code of conduct. <span class="req">*</span></label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="reg-submit">Submit Registration</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var configured = window.R3IGNAuth && window.R3IGNAuth.isConfigured();
+    if (!configured) document.getElementById("reg-config-notice").classList.add("is-visible");
+
+    var form = document.getElementById("register-form");
+
+    if (configured) {
+      window.R3IGNAuth.getSession().then(function (res) {
+        if (!res.data.session) {
+          document.getElementById("reg-signin-notice").classList.add("is-visible");
+          form.hidden = true;
+        }
+      });
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var valid = true;
+      form.querySelectorAll("[required]").forEach(function (input) {
+        var field = input.closest(".field");
+        var isEmpty = input.type === "checkbox" ? !input.checked : !input.value.trim();
+        if (isEmpty) { valid = false; if (field) field.classList.add("has-error"); }
+        else if (field) field.classList.remove("has-error");
+      });
+      var emailInput = document.getElementById("captain-email");
+      if (emailInput.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
+        valid = false;
+        emailInput.closest(".field").classList.add("has-error");
+      }
+      if (!valid) return;
+
+      if (!configured) {
+        document.getElementById("reg-error").textContent = "Backend isn't connected yet — see the notice above.";
+        document.getElementById("reg-error").classList.add("is-visible");
+        return;
+      }
+
+      var submitBtn = document.getElementById("reg-submit");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting…";
+
+      window.R3IGNAuth.getSession().then(function (res) {
+        var user = res.data.session ? res.data.session.user : null;
+        return window.R3IGNAuth.client.from("registrations").insert({
+          submitted_by: user ? user.id : null,
+          team_name: document.getElementById("team-name").value.trim(),
+          team_tag: document.getElementById("team-tag").value.trim(),
+          league: document.getElementById("league").value,
+          captain_name: document.getElementById("captain-name").value.trim(),
+          captain_email: document.getElementById("captain-email").value.trim(),
+          discord: document.getElementById("discord").value.trim(),
+          region: document.getElementById("region").value,
+          roster: document.getElementById("roster").value.trim(),
+          notes: document.getElementById("notes").value.trim()
+        });
+      }).then(function (res) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Registration";
+        if (res.error) {
+          document.getElementById("reg-error").textContent = res.error.message;
+          document.getElementById("reg-error").classList.add("is-visible");
+          return;
+        }
+        form.hidden = true;
+        document.getElementById("reg-success").classList.add("is-visible");
+      });
+    });
+  });
+})();
+</script>
+</main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
+  <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="consent-actions">
+    <button class="btn btn-ghost" id="consent-decline">Decline</button>
+    <button class="btn btn-primary" id="consent-accept">Accept</button>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid footer-grid-wide">
+      <div>
+        <div class="footer-brand">R3IGN&trade;</div>
+        <p>R3IGN — structured mobile esports competition across leagues and divisions.</p>
+      </div>
+      <div class="footer-col">
+        <h4>League</h4>
+        <ul>
+          <li><a href="leagues.html">League Overview</a></li>
+          <li><a href="divisions.html">Divisions</a></li>
+          <li><a href="rankings.html">Rankings</a></li>
+          <li><a href="events.html">Upcoming Events</a></li>
+          <li><a href="brackets.html">Tournament Bracket</a></li>
+          <li><a href="register.html">Register Organization</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compete</h4>
+        <ul>
+            <li><a href="player-market.html">Player Market</a></li>
+          <li><a href="messages.html">Messages</a></li>
+          <li><a href="organizations.html">Organizations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="awards.html">Awards &amp; Hall of Champions</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="media.html">Media</a></li>
+          <li><a href="match-highlights.html">Match Highlights</a></li>
+          <li><a href="partnerships.html">Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="guide.html">Guide</a></li>
+          <li><a href="support.html">FAQ &amp; Support</a></li>
+          <li><a href="about.html">About R3IGN</a></li>
+          <li><a href="community.html">Community</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rule" style="margin:2.5rem 0">
+    <div class="footer-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="copyright.html">Copyright Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community Channels</h4>
+        <ul>
+          <li><a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.instagram.com/r3ignhq" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://www.tiktok.com/@r3ignhq" target="_blank" rel="noopener">TikTok</a> &middot; <a href="https://www.facebook.com/share/18zfJRxAJK/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> R3IGN&trade;. All rights reserved.</span>
+      <span>Built as a static site &mdash; no framework required.</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/assistant.js"></script>
+  <div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>
