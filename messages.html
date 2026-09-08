@@ -417,8 +417,19 @@
       });
 
       loadAndRender();
-      // light polling so new replies show up without a full page reload
-      setInterval(loadAndRender, 15000);
+      // poll more frequently so new messages appear quickly without a full reload
+      var refreshTimer = setInterval(loadAndRender, 5000);
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) {
+          loadAndRender();
+        }
+      });
+      window.addEventListener("focus", function () {
+        loadAndRender();
+      });
+      window.addEventListener("beforeunload", function () {
+        if (refreshTimer) clearInterval(refreshTimer);
+      });
     }
   });
 })();
