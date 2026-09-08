@@ -91,7 +91,10 @@
 
     <div id="account-panel" style="display:none">
       <div class="account-card">
-        <div class="account-avatar" id="account-avatar">R</div>
+        <label class="account-avatar-upload" for="profile-picture" aria-label="Upload profile picture">
+          <span class="account-avatar" id="account-avatar">R</span>
+          <input type="file" id="profile-picture" accept="image/png,image/jpeg,image/webp,image/gif">
+        </label>
         <div class="account-meta">
           <h3 id="account-name">&nbsp;</h3>
           <p id="account-email">&nbsp;</p>
@@ -103,11 +106,7 @@
               <span class="field-hint" id="copy-league-status" aria-live="polite"></span>
             </div>
           </div>
-          <div class="field" style="margin-top:0.75rem">
-            <label for="profile-picture">Profile Picture</label>
-            <input type="file" id="profile-picture" accept="image/png,image/jpeg,image/webp,image/gif">
-            <p class="field-hint" id="profile-picture-status" aria-live="polite"></p>
-          </div>
+          <p class="field-hint" id="profile-picture-status" aria-live="polite"></p>
         </div>
       </div>
 
