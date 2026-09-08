@@ -1,5 +1,5 @@
 /* R3IGN ESPORTS — Service Worker */
-const CACHE_NAME = "r3ign-v1";
+const CACHE_NAME = "r3ign-v2";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
@@ -42,6 +42,12 @@ self.addEventListener("fetch", (e) => {
   // Skip non-GET requests and Supabase API calls
   if (request.method !== "GET") return;
   if (url.hostname.includes("supabase.co")) return;
+
+  // Always fetch deployment-generated credentials/config from the server.
+  if (url.pathname.endsWith("/js/supabase-config.js")) {
+    e.respondWith(fetch(request).catch(() => caches.match(request)));
+    return;
+  }
 
   // Cache-first for static assets
   if (
