@@ -103,6 +103,11 @@
               <span class="field-hint" id="copy-league-status" aria-live="polite"></span>
             </div>
           </div>
+          <div class="field" style="margin-top:0.75rem">
+            <label for="profile-picture">Profile Picture</label>
+            <input type="file" id="profile-picture" accept="image/png,image/jpeg,image/webp,image/gif">
+            <p class="field-hint" id="profile-picture-status" aria-live="polite"></p>
+          </div>
         </div>
       </div>
 
@@ -226,6 +231,8 @@
     var leagueIdEl = document.getElementById("account-league-id");
     var copyLeagueBtn = document.getElementById("copy-league-id");
     var copyLeagueStatus = document.getElementById("copy-league-status");
+    var profilePictureInput = document.getElementById("profile-picture");
+    var profilePictureStatus = document.getElementById("profile-picture-status");
 
     if (copyLeagueBtn) {
       copyLeagueBtn.addEventListener("click", function () {
@@ -258,10 +265,17 @@
       document.getElementById("account-panel").style.display = "block";
 
       return window.R3IGNAuth.client.rpc("ensure_my_league_id").then(function (rpcRes) {
-        if (rpcRes && !rpcRes.error && rpcRes.data) return rpcRes;
-        return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).maybeSingle();
+        if (rpcRes && !rpcRes.error && rpcRes.data) {
+          return window.R3IGNAuth.client.from("profiles").select("avatar_url").eq("id", currentUser.id).maybeSingle().then(function (profileRes) {
+            return { data: { league_id: rpcRes.data, avatar_url: profileRes.data && profileRes.data.avatar_url } };
+          });
+        }
+        return window.R3IGNAuth.client.from("profiles").select("league_id, avatar_url").eq("id", currentUser.id).maybeSingle();
       }).catch(function () {
-        return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).maybeSingle();
+        return window.R3IGNAuth.client.from("profiles").select("league_id, avatar_url").eq("id", currentUser.id).maybeSingle().then(function (profileRes) {
+          if (!profileRes.error) return profileRes;
+          return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).maybeSingle();
+        });
       });
     }).then(function (res) {
       var leagueId = res && res.data && (typeof res.data === "string" ? res.data : res.data.league_id);
@@ -269,6 +283,10 @@
         leagueIdEl.textContent = leagueId;
       } else if (leagueIdEl) {
         leagueIdEl.textContent = "Unavailable";
+      }
+      if (res && res.data && res.data.avatar_url) {
+        document.getElementById("account-avatar").style.backgroundImage = "url('" + res.data.avatar_url + "')";
+        document.getElementById("account-avatar").textContent = "";
       }
       return window.R3IGNAuth.client.from("game_accounts").select("*").eq("profile_id", currentUser.id);
     }).then(function (res) {
@@ -294,6 +312,35 @@
         }
       });
     });
+
+    if (profilePictureInput) {
+      profilePictureInput.addEventListener("change", function () {
+        var file = profilePictureInput.files && profilePictureInput.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          profilePictureStatus.textContent = "Choose an image smaller than 5 MB.";
+          profilePictureInput.value = "";
+          return;
+        }
+        profilePictureStatus.textContent = "Uploading...";
+        var path = currentUser.id + "/avatar" + (file.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0].toLowerCase();
+        window.R3IGNAuth.client.storage.from("profile-avatars").upload(path, file, { upsert: true, contentType: file.type })
+          .then(function (uploadRes) {
+            if (uploadRes.error) throw uploadRes.error;
+            var publicUrl = window.R3IGNAuth.client.storage.from("profile-avatars").getPublicUrl(path).data.publicUrl;
+            return window.R3IGNAuth.client.from("profiles").update({ avatar_url: publicUrl }).eq("id", currentUser.id).then(function (updateRes) {
+              if (updateRes.error) throw updateRes.error;
+              return publicUrl;
+            });
+          })
+          .then(function (publicUrl) {
+            document.getElementById("account-avatar").style.backgroundImage = "url('" + publicUrl + "')";
+            document.getElementById("account-avatar").textContent = "";
+            profilePictureStatus.textContent = "Profile picture updated.";
+          })
+          .catch(function (err) { profilePictureStatus.textContent = err.message || "Upload failed."; });
+      });
+    }
 
     document.getElementById("btn-save-games").addEventListener("click", function () {
       if (!currentUser) return;

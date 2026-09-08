@@ -344,7 +344,7 @@
       </div>
       <div id="player-lookup-result" class="table-wrap" style="display:none;margin-top:0.5rem">
         <table class="rank-table">
-            <thead><tr><th>R3E ID</th><th>Name</th><th>Email</th><th>Game Accounts</th><th>Verification</th></tr></thead>
+            <thead><tr><th>Player</th><th>R3E ID</th><th>Name</th><th>Email</th><th>Game Accounts</th><th>Verification</th></tr></thead>
           <tbody id="player-lookup-rows"></tbody>
         </table>
       </div>
@@ -887,9 +887,16 @@
       term = (term || "").trim();
       if (!term) return;
             var isLeagueId = /^R3E/i.test(term);
-      var query = client.from("profiles").select("league_id, display_name, email, id");
+      var query = client.from("profiles").select("league_id, display_name, email, avatar_url, id");
       query = isLeagueId ? query.ilike("league_id", term + "%") : query.or("email.ilike.%" + term + "%,display_name.ilike.%" + term + "%");
       query.limit(10).then(function (res) {
+        if (res.error) {
+          var fallback = client.from("profiles").select("league_id, display_name, avatar_url, id");
+          fallback = isLeagueId ? fallback.ilike("league_id", term + "%") : fallback.ilike("display_name", "%" + term + "%");
+          return fallback.limit(10);
+        }
+        return res;
+      }).then(function (res) {
         if (res.error || !res.data || !res.data.length) {
           resultBox.style.display = "none";
           emptyEl.style.display = "block";
@@ -910,7 +917,7 @@
               ? accounts.map(function (a) { return a.game + ": " + a.verification_status; }).join(", ")
               : "No game accounts linked";
             var tr = document.createElement("tr");
-            tr.innerHTML = '<td>' + (p.league_id || "&mdash;") + '</td><td>' + (p.display_name || "&mdash;") +
+            tr.innerHTML = '<td>' + (p.avatar_url ? '<img src="' + p.avatar_url + '" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle">' : '&mdash;') + '</td><td>' + (p.league_id || "&mdash;") + '</td><td>' + (p.display_name || "&mdash;") +
               '</td><td>' + (p.email || "&mdash;") + '</td><td>' + accounts.length + '</td><td>' + statusSummary + '</td>';
             rows.appendChild(tr);
           });

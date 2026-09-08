@@ -23,6 +23,7 @@ create table if not exists public.profiles (
 -- so admins can look someone up without needing service_role access
 alter table public.profiles add column if not exists league_id text unique;
 alter table public.profiles add column if not exists email text;
+alter table public.profiles add column if not exists avatar_url text;
 
 alter table public.profiles enable row level security;
 
@@ -33,6 +34,24 @@ create policy "Profiles are viewable by everyone"
 drop policy if exists "Users can update their own profile" on public.profiles;
 create policy "Users can update their own profile"
   on public.profiles for update using (auth.uid() = id);
+
+insert into storage.buckets (id, name, public)
+values ('profile-avatars', 'profile-avatars', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Anyone can view profile avatars" on storage.objects;
+create policy "Anyone can view profile avatars"
+  on storage.objects for select using (bucket_id = 'profile-avatars');
+
+drop policy if exists "Users can upload their own profile avatar" on storage.objects;
+create policy "Users can upload their own profile avatar"
+  on storage.objects for insert
+  with check (bucket_id = 'profile-avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "Users can update their own profile avatar" on storage.objects;
+create policy "Users can update their own profile avatar"
+  on storage.objects for update
+  using (bucket_id = 'profile-avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- generates a unique league ID like R3E482910 (R3E + 6 random digits)
 create or replace function public.generate_league_id()
