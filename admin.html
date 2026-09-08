@@ -405,11 +405,16 @@
         d.setDate(d.getDate() - i);
         days.push(d.toISOString().split("T")[0]);
       }
-      client.from("game_accounts").select("created_at, verification_status").gte("created_at", days[0] + "T00:00:00Z").then(function (res) {
-        if (res.error || !res.data) return;
+      client.from("game_accounts").select("updated_at, verification_status").gte("updated_at", days[0] + "T00:00:00Z").eq("verification_status", "pending").then(function (res) {
+        if (res.error || !res.data) {
+          var chartError = document.getElementById("admin-error");
+          chartError.textContent = res.error ? res.error.message : "Verification queue data could not be loaded.";
+          chartError.classList.add("is-visible");
+          return;
+        }
         var counts = days.map(function () { return 0; });
         res.data.forEach(function (row) {
-          var d = row.created_at.split("T")[0];
+          var d = row.updated_at.split("T")[0];
           var idx = days.indexOf(d);
           if (idx !== -1) counts[idx]++;
         });
@@ -494,12 +499,18 @@
           return;
         }
         loadQueue();
+        loadStat("game_accounts", "stat-pending", ["eq", "verification_status", "pending"]);
       });
     }
 
     function loadQueue() {
-      client.from("game_accounts").select("*").order("updated_at", { ascending: false }).then(function (res) {
-        if (res.error) return;
+      client.from("game_accounts").select("*").eq("verification_status", "pending").order("updated_at", { ascending: false }).then(function (res) {
+        if (res.error) {
+          var errorEl = document.getElementById("admin-error");
+          errorEl.textContent = res.error.message;
+          errorEl.classList.add("is-visible");
+          return;
+        }
         renderRows(res.data || []);
       });
     }
