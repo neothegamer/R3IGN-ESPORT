@@ -886,7 +886,14 @@
       var rows = document.getElementById("player-lookup-rows");
       term = (term || "").trim();
       if (!term) return;
-            var isLeagueId = /^R3E/i.test(term);
+      var isLeagueId = /^R3E/i.test(term);
+      term = isLeagueId ? term.toUpperCase() : term;
+      if (isLeagueId) {
+        client.from("profiles").select("league_id, display_name, id").eq("league_id", term).limit(10).then(function (res) {
+          renderPlayerLookupResults(res, resultBox, emptyEl, rows);
+        });
+        return;
+      }
       var query = client.from("profiles").select("league_id, display_name, email, avatar_url, id");
       query = isLeagueId ? query.ilike("league_id", term + "%") : query.or("email.ilike.%" + term + "%,display_name.ilike.%" + term + "%");
       query.limit(10).then(function (res) {
@@ -902,6 +909,11 @@
         }
         return res;
       }).then(function (res) {
+        renderPlayerLookupResults(res, resultBox, emptyEl, rows);
+      });
+    }
+
+    function renderPlayerLookupResults(res, resultBox, emptyEl, rows) {
         if (res.error || !res.data || !res.data.length) {
           resultBox.style.display = "none";
           emptyEl.style.display = "block";
@@ -928,7 +940,6 @@
           });
           resultBox.style.display = "block";
         });
-      });
     }
     document.getElementById("btn-player-lookup").addEventListener("click", function () {
       runPlayerLookup(document.getElementById("admin-player-lookup").value);
