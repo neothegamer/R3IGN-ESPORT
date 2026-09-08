@@ -170,7 +170,7 @@
 
       var footHtml = "";
       if (isOwn) {
-        footHtml = '<div class="market-card-foot"><span class="field-hint">This is your listing</span></div>';
+        footHtml = '<div class="market-card-foot"><span class="field-hint">This is your listing</span><button type="button" class="btn btn-ghost mp-delete-listing" data-listing-id="' + listing.id + '">Delete Listing</button></div>';
       } else if (canMessage) {
         var isSample = String(listing.id).indexOf("sample-") === 0;
         var url = "messages.html?to=" + encodeURIComponent(listing.profile_id) +
@@ -191,6 +191,31 @@
       var tags = card.querySelectorAll(".market-tag");
       tags[0].textContent = (listing.league || "rcml").toUpperCase();
       tags[1].textContent = listing.region || "Region TBD";
+      var deleteBtn = card.querySelector(".mp-delete-listing");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", function () {
+          if (!window.confirm("Delete this player listing?")) return;
+          deleteBtn.disabled = true;
+          deleteBtn.textContent = "Deleting...";
+          var client = window.R3IGNAuth.client;
+          var removeImage = listing.profile_screenshot_path
+            ? client.storage.from("player-market-uploads").remove([listing.profile_screenshot_path])
+            : Promise.resolve();
+          removeImage.catch(function () {}).then(function () {
+            return client.from("player_listings").delete().eq("id", listing.id).eq("profile_id", currentUserId);
+          }).then(function (res) {
+            if (res.error) throw res.error;
+            card.remove();
+            if (!grid.querySelector(".market-card")) {
+              grid.innerHTML = '<p class="field-hint" style="padding:1.25rem">No listings yet &mdash; be the first to list yourself below.</p>';
+            }
+          }).catch(function (err) {
+            deleteBtn.disabled = false;
+            deleteBtn.textContent = "Delete Listing";
+            window.alert(err.message || "Could not delete the listing.");
+          });
+        });
+      }
       return card;
     }
 
