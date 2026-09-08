@@ -3,7 +3,6 @@
 -- It updates old or missing IDs and keeps future signup IDs in the same format.
 
 alter table public.profiles add column if not exists league_id text;
-alter table public.profiles add column if not exists email text;
 create unique index if not exists profiles_league_id_unique on public.profiles(league_id);
 
 create or replace function public.generate_league_id()
@@ -22,11 +21,10 @@ begin
 end;
 $$ language plpgsql set search_path = public;
 
-insert into public.profiles (id, display_name, email, league_id)
+insert into public.profiles (id, display_name, league_id)
 select
   u.id,
   coalesce(u.raw_user_meta_data->>'display_name', u.raw_user_meta_data->>'full_name', u.email),
-  u.email,
   public.generate_league_id()
 from auth.users u
 where not exists (
@@ -65,11 +63,10 @@ begin
   end if;
 
   if current_id is null then
-    insert into public.profiles (id, display_name, email, league_id)
+    insert into public.profiles (id, display_name, league_id)
     select
       u.id,
       coalesce(u.raw_user_meta_data->>'display_name', u.raw_user_meta_data->>'full_name', u.email),
-      u.email,
       public.generate_league_id()
     from auth.users u
     where u.id = auth.uid()
@@ -87,11 +84,10 @@ grant execute on function public.ensure_my_league_id() to authenticated;
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, display_name, email, league_id)
+  insert into public.profiles (id, display_name, league_id)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'display_name', new.raw_user_meta_data->>'full_name', new.email),
-    new.email,
     public.generate_league_id()
   );
   return new;
