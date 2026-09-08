@@ -188,7 +188,7 @@
       </div>
 
       <div class="center mt-lg">
-        <button class="btn btn-ghost" id="btn-sign-out">Sign Out</button>
+        <a class="btn btn-ghost" href="profile-settings.html">Profile Settings</a>
       </div>
     </div>
   </div>
@@ -390,11 +390,6 @@
         }).catch(function () { /* error already shown */ });
     });
 
-    document.getElementById("btn-sign-out").addEventListener("click", function () {
-      window.R3IGNAuth.signOut().then(function () {
-        window.location.href = "index.html";
-      });
-    });
   });
 })();
 </script>

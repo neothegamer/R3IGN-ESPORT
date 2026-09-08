@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0A0C0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile Settings · R3IGN</title>
+<meta name="description" content="Manage your R3IGN connected accounts and profile settings.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="profile-settings-page">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html" aria-label="R3IGN home">
+      <img src="assets/r3ign-logo-256.jpg" alt="R3IGN" class="brand-mark" fetchpriority="high">
+      <span>R3IGN<span style="color:var(--steel)">™</span></span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leagues.html">Leagues</a></li>
+        <li><a href="rankings.html">Rankings</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="organizations.html">Organizations</a></li>
+        <li><a href="player-market.html">Player Market</a></li>
+        <li><a href="match-highlights.html">Highlights</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li class="nav-links-signin"><a href="signin.html">Sign In</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <span id="nav-account" class="nav-account"><a href="signin.html" class="btn">Sign In</a></span>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu"><span></span></button>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true"><div class="ticker-track">
+    <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span><span>RFCL — REGISTRATION OPENING SOON</span><span>RBSL — REGISTRATION OPENING SOON</span><span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+    <span>RCML SEASON 4 — DIVISION 1 IN PROGRESS</span><span>RFCL — REGISTRATION OPENING SOON</span><span>RBSL — REGISTRATION OPENING SOON</span><span>1,500+ PLAYERS ACROSS 50+ ORGANIZATIONS</span>
+  </div></div>
+</header>
+<main id="main-content">
+  <div class="page-header"><div class="wrap">
+    <span class="breadcrumb"><a href="index.html">Home</a> / Profile Settings</span>
+    <h1 style="margin-top:1rem">Profile Settings</h1>
+    <p>Connect the sign-in methods you want to use with your R3IGN account.</p>
+  </div></div>
+  <section class="section-tight"><div class="wrap settings-shell">
+    <div class="auth-error" id="settings-error" role="alert"></div>
+    <div class="form-success" id="settings-success" role="status"></div>
+    <div class="settings-panel" id="settings-panel" hidden>
+      <span class="eyebrow">Connected Accounts</span>
+      <h2 style="margin-top:0.75rem">Sign-in methods</h2>
+      <p>Each connected method can be used to sign in to this same account.</p>
+      <div class="identity-row"><span class="identity-name">Email</span><span><span class="identity-status" id="email-status">Not connected</span></span></div>
+      <div class="identity-row"><span class="identity-name">Discord</span><span><span class="identity-status" id="discord-status">Not connected</span> <button type="button" class="btn btn-primary" id="connect-discord" style="padding:0.4rem 0.7rem;font-size:0.68rem">Connect</button></span></div>
+      <div class="identity-row"><span class="identity-name">TikTok</span><span><span class="identity-status" id="tiktok-status">Not connected</span> <button type="button" class="btn btn-primary" id="connect-tiktok" style="padding:0.4rem 0.7rem;font-size:0.68rem">Connect</button></span></div>
+    </div>
+    <div class="settings-panel" id="email-panel" hidden>
+      <span class="eyebrow">Email Access</span>
+      <h2 style="margin-top:0.75rem">Add email sign-in</h2>
+      <p>Set an email and password if this account was created with Discord or TikTok.</p>
+      <form id="email-link-form" novalidate>
+        <div class="field"><label for="settings-email">Email address</label><input type="email" id="settings-email" required autocomplete="email"></div>
+        <div class="field"><label for="settings-password">Password</label><input type="password" id="settings-password" required minlength="8" autocomplete="new-password"></div>
+        <button type="submit" class="btn btn-primary">Connect Email</button>
+      </form>
+    </div>
+    <div class="settings-actions" id="settings-actions" hidden>
+      <a href="account.html" class="btn btn-ghost">Back to Account</a>
+      <button type="button" class="btn btn-primary" id="btn-sign-out">Sign Out</button>
+    </div>
+  </div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script>
+(function () {
+  "use strict";
+  document.addEventListener("DOMContentLoaded", function () {
+    var auth = window.R3IGNAuth;
+    var errorEl = document.getElementById("settings-error");
+    var successEl = document.getElementById("settings-success");
+    function showError(message) { errorEl.textContent = message; errorEl.classList.add("is-visible"); successEl.classList.remove("is-visible"); }
+    function showSuccess(message) { successEl.textContent = message; successEl.classList.add("is-visible"); errorEl.classList.remove("is-visible"); }
+    function setStatus(id, connected) {
+      var el = document.getElementById(id);
+      el.textContent = connected ? "Connected" : "Not connected";
+      el.classList.toggle("is-connected", connected);
+    }
+    if (!auth || !auth.isConfigured()) { showError("Connect Supabase first to manage profile settings."); return; }
+    auth.getUser().then(function (res) {
+      var user = res.data && res.data.user;
+      if (!user) { window.location.href = "signin.html"; return; }
+      var identities = user.identities || [];
+      var providers = identities.map(function (identity) { return identity.provider; });
+      setStatus("email-status", providers.indexOf("email") !== -1);
+      setStatus("discord-status", providers.indexOf("discord") !== -1);
+      setStatus("tiktok-status", providers.indexOf("custom:tiktok") !== -1 || providers.indexOf("tiktok") !== -1);
+      document.getElementById("settings-panel").hidden = false;
+      document.getElementById("email-panel").hidden = providers.indexOf("email") !== -1;
+      document.getElementById("settings-actions").hidden = false;
+    }).catch(function (err) { showError(err.message || "Could not load your account settings."); });
+    document.getElementById("connect-discord").addEventListener("click", function () {
+      auth.linkWithDiscord().catch(function (err) { showError(err.message || "Could not connect Discord."); });
+    });
+    document.getElementById("connect-tiktok").addEventListener("click", function () {
+      auth.linkWithTikTok().catch(function (err) { showError(err.message || "Could not connect TikTok."); });
+    });
+    document.getElementById("email-link-form").addEventListener("submit", function (event) {
+      event.preventDefault();
+      var email = document.getElementById("settings-email").value.trim();
+      var password = document.getElementById("settings-password").value;
+      if (!email || password.length < 8) { showError("Enter a valid email and a password with at least 8 characters."); return; }
+      auth.addEmailPassword(email, password).then(function (res) {
+        if (res.error) { showError(res.error.message); return; }
+        showSuccess("Email sign-in connected. Check your inbox if confirmation is required.");
+        document.getElementById("email-panel").hidden = true;
+        setStatus("email-status", true);
+      }).catch(function (err) { showError(err.message || "Could not connect email sign-in."); });
+    });
+    document.getElementById("btn-sign-out").addEventListener("click", function () {
+      auth.signOut().then(function () { window.location.href = "index.html"; }).catch(function (err) { showError(err.message || "Could not sign out."); });
+    });
+  });
+})();
+</script>
+<div class="page-transition-overlay" aria-hidden="true"></div>
+</body>
+</html>

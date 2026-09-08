@@ -1357,6 +1357,19 @@ table.rank-table{
 .account-avatar-upload input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
 .account-avatar-upload:hover .account-avatar,
 .account-avatar-upload:focus-within .account-avatar{ border-color:var(--signal); box-shadow:0 0 0 2px var(--signal-dim); }
+.profile-settings-page{ --amber:var(--signal); --amber-dim:var(--signal-dim); background:var(--ink); color:var(--paper); }
+.settings-shell{ max-width:720px; }
+.settings-panel{ border:1px solid var(--signal); background:var(--panel); padding:clamp(1.5rem,4vw,2.5rem); }
+.settings-panel + .settings-panel{ margin-top:1rem; }
+.settings-panel h2{ margin:0; color:var(--paper); font-size:1.15rem; text-transform:uppercase; }
+.settings-panel > p{ color:var(--paper-dim); margin:0.6rem 0 1.25rem; }
+.identity-row{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.9rem 0; border-top:1px solid var(--line); }
+.identity-row:first-of-type{ border-top:0; }
+.identity-name{ font-family:var(--f-mono); text-transform:uppercase; letter-spacing:0.08em; }
+.identity-status{ color:var(--signal); font-family:var(--f-mono); font-size:0.7rem; text-transform:uppercase; }
+.identity-status.is-connected{ color:var(--signal); }
+.settings-actions{ display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1.25rem; }
+@media (max-width:520px){ .identity-row{ align-items:flex-start; flex-direction:column; } }
 .account-meta h3{ font-size:1.2rem; text-transform:uppercase; }
 .account-meta p{ margin-top:0.3rem; color:var(--paper-dim); font-family:var(--f-mono); font-size:0.85rem; }
 

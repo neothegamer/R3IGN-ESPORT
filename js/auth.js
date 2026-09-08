@@ -77,6 +77,32 @@
       });
     },
 
+    linkWithDiscord: function () {
+      if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
+      return client.auth.linkIdentity({
+        provider: "discord",
+        options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "profile-settings.html" }
+      });
+    },
+
+    linkWithTikTok: function () {
+      if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
+      return client.auth.linkIdentity({
+        provider: "custom:tiktok",
+        options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "profile-settings.html" }
+      });
+    },
+
+    addEmailPassword: function (email, password) {
+      if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
+      return client.auth.updateUser({ email: email, password: password });
+    },
+
+    getUser: function () {
+      if (!client) return Promise.resolve({ data: { user: null } });
+      return client.auth.getUser();
+    },
+
     signOut: function () {
       if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
       return client.auth.signOut();
@@ -103,7 +129,7 @@
       var onMessages = /messages\.html/i.test(window.location.pathname);
       slot.innerHTML =
         '<a href="messages.html" class="btn btn-ghost nav-message-link"' + (onMessages ? ' aria-current="page"' : '') + '><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span><span>Messages</span></a>' +
-        '<a href="account.html" class="btn btn-ghost">' + name.split("@")[0] + '</a>';
+        '<a href="profile-settings.html" class="btn btn-ghost">' + name.split("@")[0] + '</a>';
       refreshUnreadBadge(session.user.id);
     } else {
       slot.innerHTML = '<a href="signin.html" class="btn">Sign In</a>';
@@ -119,7 +145,7 @@
         var mName = (session.user.user_metadata && (session.user.user_metadata.display_name || session.user.user_metadata.full_name)) || session.user.email;
         mobileSlot.innerHTML =
           '<a href="messages.html" class="nav-message-link"><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span><span>Messages</span></a>' +
-          '<a href="account.html" style="margin-top:0.6rem">' + mName.split("@")[0] + '</a>';
+          '<a href="profile-settings.html" style="margin-top:0.6rem">' + mName.split("@")[0] + '</a>';
       } else {
         mobileSlot.innerHTML = '<a href="signin.html">Sign In</a>';
       }
