@@ -257,10 +257,10 @@
       document.getElementById("account-avatar").textContent = name.charAt(0).toUpperCase();
       document.getElementById("account-panel").style.display = "block";
 
-      return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).single();
+      return window.R3IGNAuth.client.rpc("ensure_my_league_id");
     }).then(function (res) {
-      if (res && res.data && res.data.league_id) {
-        leagueIdEl.textContent = res.data.league_id;
+      if (res && res.data) {
+        leagueIdEl.textContent = res.data;
       } else if (leagueIdEl) {
         leagueIdEl.textContent = "Unavailable";
       }

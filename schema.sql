@@ -101,6 +101,43 @@ set email = u.email
 from auth.users u
 where p.id = u.id and p.email is null;
 
+-- lets a signed-in account repair a missing or legacy ID on page load
+create or replace function public.ensure_my_league_id()
+returns text as $$
+declare
+  current_id text;
+begin
+  select league_id into current_id
+  from public.profiles
+  where id = auth.uid();
+
+  if current_id is null or current_id !~ '^R3E[0-9]{6}$' then
+    update public.profiles
+    set league_id = public.generate_league_id()
+    where id = auth.uid()
+    returning league_id into current_id;
+  end if;
+
+  if current_id is null then
+    insert into public.profiles (id, display_name, email, league_id)
+    select
+      u.id,
+      coalesce(u.raw_user_meta_data->>'display_name', u.raw_user_meta_data->>'full_name', u.email),
+      u.email,
+      public.generate_league_id()
+    from auth.users u
+    where u.id = auth.uid()
+    on conflict (id) do nothing
+    returning league_id into current_id;
+  end if;
+
+  return current_id;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+revoke all on function public.ensure_my_league_id() from public;
+grant execute on function public.ensure_my_league_id() to authenticated;
+
 -- ---------- organizations ----------
 create table if not exists public.organizations (
   id uuid default gen_random_uuid() primary key,
