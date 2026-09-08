@@ -217,7 +217,7 @@ The `rankings` table only has sample Season 4 numbers right now. To load your re
 |---|---|
 | Email/password sign up + sign in | Real — via Supabase Auth |
 | Discord / TikTok sign-in | Real, once you complete the steps above |
-| League ID (`R3L######`) | Real — auto-generated for every new profile |
+| League ID (`R3E######`) | Real — auto-generated once for every new profile |
 | Account page (`account.html`) | Real — game picker, IGN/UID, optional screenshot upload for review |
 | Admin page (`admin.html`) | Real — verify game accounts, post events, promote/remove other admins |
 | Events (`events.html`) | Real — reads from the `events` table; falls back to sample dates if not configured. "Add to Calendar" downloads a real `.ics` file (works on iOS/Android/macOS/Windows) and links to Google Calendar |
@@ -329,7 +329,7 @@ This build reconciles two parallel passes on the site (one that added PWA suppor
 - `admin.html` gained three new panels for managing all of this:
   - **Manage Scrims** — post a scrim, mark it ongoing/completed, publish its assigned-slots draw
   - **Manage Match Highlights** — post a clip link or upload a recording file directly from the browser
-  - **Player Review Assistant** — look up any player by R3L ID, email, or display name and see their linked game accounts + verification status in one table. The same lookup also works from the R3IGN Ops Bot chat widget while you're on the admin page and signed in — try typing "look up R3L482910" into it.
+  - **Player Review Assistant** — look up any player by R3E ID, email, or display name and see their linked game accounts + verification status in one table. The same lookup also works from the R3IGN Ops Bot chat widget while you're on the admin page and signed in — try typing "look up R3E482910" into it.
 
 **Sign-in / sign-up**
 - Discord and Twitch buttons on `signin.html`/`signup.html` now show the actual brand logos (`assets/icons/discord.jpg`, `assets/icons/twitch.jpg`) instead of a plain letter.

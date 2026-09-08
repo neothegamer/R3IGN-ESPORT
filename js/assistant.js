@@ -15,7 +15,7 @@
   "use strict";
 
   var IS_ADMIN_PAGE = /admin\.html/i.test(window.location.pathname);
-  var ADMIN_LOOKUP_TEST = /^r3l\d+$|look\s?up|find (a )?player|verification status|review (this|the) player/i;
+  var ADMIN_LOOKUP_TEST = /^r3e\d+$|look\s?up|find (a )?player|verification status|review (this|the) player/i;
 
   var KB = [
     {
@@ -94,22 +94,22 @@
   ];
 
   var ADMIN_QUICK_REPLIES = [
-    { label: "Look up a player", q: "Look up a player by R3L ID" },
+    { label: "Look up a player", q: "Look up a player by R3E ID" },
     { label: "Upcoming events", q: "What events are coming up?" },
     { label: "Rankings", q: "Where can I see rankings?" }
   ];
 
-  // Admin-only: extracts an R3L ID / email / name from the message and runs
+  // Admin-only: extracts an R3E ID / email / name from the message and runs
   // the same lookup wired into admin.html's Player Review Assistant panel,
-  // so admins can review a player and pull their R3L ID from chat instead of
+  // so admins can review a player and pull their R3E ID from chat instead of
   // scrolling to the panel. Falls back to the normal FAQ bot for everything
   // else, even on the admin page.
   function tryAdminLookup(text) {
     if (!IS_ADMIN_PAGE || !window.R3IGNAdminPlayerLookup) return null;
     if (!ADMIN_LOOKUP_TEST.test(text)) return null;
-    var idMatch = text.match(/r3l\d+/i);
+    var idMatch = text.match(/r3e\d+/i);
     var term = idMatch ? idMatch[0] : text.replace(ADMIN_LOOKUP_TEST, "").trim();
-    if (!term) return 'Give me an R3L ID (e.g. R3L482910), an email, or a display name and I\u2019ll pull their verification status.';
+    if (!term) return 'Give me an R3E ID (e.g. R3E482910), an email, or a display name and I\u2019ll pull their verification status.';
     window.R3IGNAdminPlayerLookup(term);
     return 'Checking the Player Review Assistant panel below for <strong>' + escapeHtml(term) + '</strong> \u2014 results are loading there now.';
   }
@@ -175,7 +175,7 @@
 
     renderQuickReplies();
     addMessage("bot", IS_ADMIN_PAGE
-      ? "Hey, I\u2019m the R3IGN Ops Bot \u2014 in admin mode I can also look up a player\u2019s R3L ID and verification status. Try \u201cLook up R3L482910\u201d."
+      ? "Hey, I\u2019m the R3IGN Ops Bot \u2014 in admin mode I can also look up a player\u2019s R3E ID and verification status. Try \u201cLook up R3E482910\u201d."
       : "Hey, I\u2019m the R3IGN Ops Bot. Ask me about leagues, rankings, registration, or the player market.");
 
     launcher.addEventListener("click", togglePanel);

@@ -166,13 +166,13 @@
 
       <div class="form-panel mt-lg">
         <span class="eyebrow">Manage Admins</span>
-        <p class="lede" style="margin-top:0.6rem">Promote a player to admin using their League ID (shown on their Account page, e.g. R3L482910) or their account email.</p>
+        <p class="lede" style="margin-top:0.6rem">Promote a player to admin using their League ID (shown on their Account page, e.g. R3E482910) or their account email.</p>
         <div class="auth-error" id="promote-error"></div>
         <div class="form-success" id="promote-success" role="status">Admin added.</div>
         <div class="field-row">
           <div class="field">
             <label for="promote-lookup">League ID or email <span class="req">*</span></label>
-            <input type="text" id="promote-lookup" placeholder="R3L482910 or player@email.com">
+            <input type="text" id="promote-lookup" placeholder="R3E482910 or player@email.com">
           </div>
           <div class="field" style="flex:0 0 auto;align-self:flex-end">
             <button type="button" class="btn btn-primary" id="btn-promote">Make Admin</button>
@@ -332,11 +332,11 @@
 
     <div class="form-panel mt-lg">
       <span class="eyebrow">Player Review Assistant</span>
-      <p class="lede" style="margin-top:0.6rem">Look a player up by R3L ID, League ID prefix, email, or display name &mdash; the assistant chat (bottom-right) answers with their verification status and account details while you&rsquo;re signed in as an admin.</p>
+      <p class="lede" style="margin-top:0.6rem">Look a player up by R3E ID, League ID prefix, email, or display name &mdash; the assistant chat (bottom-right) answers with their verification status and account details while you&rsquo;re signed in as an admin.</p>
       <div class="field-row">
         <div class="field" style="flex:1">
-          <label for="admin-player-lookup">R3L ID, email, or name</label>
-          <input type="text" id="admin-player-lookup" placeholder="R3L482910, player@email.com, or a display name">
+          <label for="admin-player-lookup">R3E ID, email, or name</label>
+          <input type="text" id="admin-player-lookup" placeholder="R3E482910, player@email.com, or a display name">
         </div>
         <div class="field" style="flex:0 0 auto;align-self:flex-end">
           <button type="button" class="btn btn-primary" id="btn-player-lookup">Look Up</button>
@@ -344,7 +344,7 @@
       </div>
       <div id="player-lookup-result" class="table-wrap" style="display:none;margin-top:0.5rem">
         <table class="rank-table">
-          <thead><tr><th>R3L ID</th><th>Name</th><th>Email</th><th>Game Accounts</th><th>Verification</th></tr></thead>
+            <thead><tr><th>R3E ID</th><th>Name</th><th>Email</th><th>Game Accounts</th><th>Verification</th></tr></thead>
           <tbody id="player-lookup-rows"></tbody>
         </table>
       </div>
@@ -886,7 +886,7 @@
       var rows = document.getElementById("player-lookup-rows");
       term = (term || "").trim();
       if (!term) return;
-      var isLeagueId = /^R3L/i.test(term);
+            var isLeagueId = /^R3E/i.test(term);
       var query = client.from("profiles").select("league_id, display_name, email, id");
       query = isLeagueId ? query.ilike("league_id", term + "%") : query.or("email.ilike.%" + term + "%,display_name.ilike.%" + term + "%");
       query.limit(10).then(function (res) {
@@ -925,7 +925,7 @@
       if (e.key === "Enter") runPlayerLookup(this.value);
     });
     // Exposed so the assistant chat widget (js/assistant.js) can trigger the
-    // same lookup when an admin types a player/R3L question into the bot.
+    // same lookup when an admin types a player/R3E question into the bot.
     window.R3IGNAdminPlayerLookup = runPlayerLookup;
 
     window.R3IGNAuth.getSession().then(function (res) {

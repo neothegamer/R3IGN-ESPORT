@@ -19,7 +19,7 @@ create table if not exists public.profiles (
   created_at timestamptz default now()
 );
 
--- added later: league ID (e.g. R3L482910) and a copy of the user's email,
+-- added later: league ID (e.g. R3E482910) and a copy of the user's email,
 -- so admins can look someone up without needing service_role access
 alter table public.profiles add column if not exists league_id text unique;
 alter table public.profiles add column if not exists email text;
@@ -34,15 +34,18 @@ drop policy if exists "Users can update their own profile" on public.profiles;
 create policy "Users can update their own profile"
   on public.profiles for update using (auth.uid() = id);
 
--- generates a unique league ID like R3L482910 (R3L + 6 random digits)
+-- generates a unique league ID like R3E482910 (R3E + 6 random digits)
 create or replace function public.generate_league_id()
 returns text as $$
 declare
   candidate text;
   taken boolean;
 begin
+  -- Serialize generation so two simultaneous signups cannot receive the
+  -- same candidate between the existence check and the profile insert.
+  perform pg_advisory_xact_lock(hashtext('r3ign-league-id'));
   loop
-    candidate := 'R3L' || lpad(floor(random() * 1000000)::text, 6, '0');
+    candidate := 'R3E' || lpad(floor(random() * 1000000)::text, 6, '0');
     select exists(select 1 from public.profiles where league_id = candidate) into taken;
     exit when not taken;
   end loop;
@@ -70,12 +73,13 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- backfill league IDs / emails for any accounts created before this ran
+-- backfill or migrate league IDs for accounts created before this ran
 do $$
 declare
   r record;
 begin
-  for r in select id from public.profiles where league_id is null loop
+  for r in select id from public.profiles
+    where league_id is null or league_id !~ '^R3E[0-9]{6}$' loop
     update public.profiles set league_id = public.generate_league_id() where id = r.id;
   end loop;
 end $$;
