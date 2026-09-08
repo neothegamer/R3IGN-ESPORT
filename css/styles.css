@@ -433,9 +433,9 @@ section{ padding-block: clamp(3rem, 7vw, 6rem); }
     color:var(--paper);
   }
   .nav-links-signin .mobile-account-icons{ display:flex; align-items:center; justify-content:center; gap:0.75rem; width:100%; }
-  .nav-links-signin .mobile-account-icons a{ display:inline-flex; width:42px; height:42px; padding:0; border:1px solid var(--line); color:var(--paper-dim); }
+  .nav-links-signin .mobile-account-icons a{ display:inline-flex; width:42px; height:42px; padding:0; border:0; color:var(--paper-dim); }
   .nav-links-signin .mobile-account-icons .nav-profile-link{ border-radius:50%; }
-  .nav-links-signin .mobile-account-icons a:hover{ border-color:var(--signal); color:var(--signal); }
+  .nav-links-signin .mobile-account-icons a:hover{ color:var(--signal); }
   .has-dropdown{ flex-direction:column; align-items:stretch; width:100%; }
   .has-dropdown a{ flex:1; }
   .dropdown-toggle{ position:absolute; right:0; top:0.4rem; width:34px; height:34px; }
@@ -1263,8 +1263,8 @@ table.rank-table{
 .social-card p{ margin-top:0.3rem; color:var(--steel); font-size:0.8rem; font-family:var(--f-mono); }
 
 .nav-account{ display:inline-flex; align-items:center; gap:0.45rem; }
-.nav-profile-link,.nav-icon-link{ display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; color:var(--paper-dim); border:1px solid var(--line); background:var(--panel); }
-.nav-profile-link:hover,.nav-icon-link:hover,.nav-profile-link[aria-current="page"],.nav-icon-link[aria-current="page"]{ color:var(--signal); border-color:var(--signal); }
+.nav-profile-link,.nav-icon-link{ display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; color:var(--paper-dim); border:0; background:transparent; }
+.nav-profile-link:hover,.nav-icon-link:hover,.nav-profile-link[aria-current="page"],.nav-icon-link[aria-current="page"]{ color:var(--signal); }
 .nav-profile-avatar{ width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%; color:var(--amber); background:var(--panel-2) center/cover no-repeat; font-family:var(--f-display); font-size:0.8rem; }
 .nav-message-link{ position:relative; }
 .nav-message-icon{ color:#E84836; display:inline-flex; line-height:1; }

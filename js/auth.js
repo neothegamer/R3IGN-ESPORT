@@ -130,7 +130,7 @@
       slot.innerHTML =
         '<a href="account.html" class="nav-profile-link" aria-label="Open my account"><span class="nav-profile-avatar">' + name.charAt(0).toUpperCase() + '</span></a>' +
         '<a href="messages.html" class="nav-icon-link nav-message-link" aria-label="Open messages"' + (onMessages ? ' aria-current="page"' : '') + '><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span></a>' +
-        '<a href="profile-settings.html" class="nav-icon-link nav-settings-link" aria-label="Open profile settings"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M5.64 18.36l1.42-1.42M16.94 7.06l1.42-1.42M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"></path></svg></span></a>';
+        '<a href="profile-settings.html" class="nav-icon-link nav-settings-link" aria-label="Open profile settings"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3.5l1 1.9 2.1.5 1.8-1 1.4 1.4-1 1.8.5 2.1 1.9 1v2l-1.9 1-.5 2.1 1 1.8-1.4 1.4-1.8-1-2.1.5-1 1.9h-2l-1-1.9-2.1-.5-1.8 1-1.4-1.4 1-1.8-.5-2.1-1.9-1v-2l1.9-1 .5-2.1-1-1.8 1.4-1.4 1.8 1 2.1-.5 1-1.9h2zM14.8 12a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0z"></path></svg></span></a>';
       refreshUnreadBadge(session.user.id);
       loadNavAvatar(session.user.id, slot.querySelector(".nav-profile-avatar"));
     } else {
@@ -148,7 +148,7 @@
         mobileSlot.innerHTML =
           '<span class="mobile-account-icons"><a href="account.html" class="nav-profile-link" aria-label="Open my account"><span class="nav-profile-avatar">' + mobileName.charAt(0).toUpperCase() + '</span></a>' +
           '<a href="messages.html" class="nav-icon-link nav-message-link" aria-label="Open messages"><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span></a>' +
-          '<a href="profile-settings.html" class="nav-icon-link nav-settings-link" aria-label="Open profile settings"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M5.64 18.36l1.42-1.42M16.94 7.06l1.42-1.42M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"></path></svg></span></a></span>';
+          '<a href="profile-settings.html" class="nav-icon-link nav-settings-link" aria-label="Open profile settings"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3.5l1 1.9 2.1.5 1.8-1 1.4 1.4-1 1.8.5 2.1 1.9 1v2l-1.9 1-.5 2.1 1 1.8-1.4 1.4-1.8-1-2.1.5-1 1.9h-2l-1-1.9-2.1-.5-1.8 1-1.4-1.4 1-1.8-.5-2.1-1.9-1v-2l1.9-1 .5-2.1-1-1.8 1.4-1.4 1.8 1 2.1-.5 1-1.9h2zM14.8 12a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0z"></path></svg></span></a></span>';
         loadNavAvatar(session.user.id, mobileSlot.querySelector(".nav-profile-avatar"));
       } else {
         mobileSlot.innerHTML = '<a href="signin.html">Sign In</a>';
