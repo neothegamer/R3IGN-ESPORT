@@ -266,6 +266,24 @@
         return conversations[otherId];
       }
 
+      function isSeedMessage(body) {
+        if (!body || typeof body !== "string") return false;
+        var normalized = body.trim().toLowerCase();
+        if (!normalized) return false;
+        var banList = [
+          "hi good evening",
+          "good evening",
+          "i would like to list you",
+          "would like to list you",
+          "list you",
+          "hello there",
+          "test message",
+          "sample message",
+          "demo message"
+        ];
+        return banList.some(function (phrase) { return normalized.indexOf(phrase) !== -1; });
+      }
+
       function loadAndRender() {
         return client
           .from("messages")
@@ -274,7 +292,7 @@
           .order("created_at", { ascending: true })
           .then(function (res) {
             if (res.error) return Promise.reject(res.error);
-            (res.data || []).forEach(function (m) {
+            (res.data || []).filter(function (m) { return !isSeedMessage(m.body); }).forEach(function (m) {
               var isMine = m.sender_id === user.id;
               var otherId = isMine ? m.recipient_id : m.sender_id;
               var otherName = isMine
