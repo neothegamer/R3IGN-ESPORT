@@ -95,7 +95,14 @@
         <div class="account-meta">
           <h3 id="account-name">&nbsp;</h3>
           <p id="account-email">&nbsp;</p>
-          <p style="margin-top:0.4rem"><span class="stamp stamp-live">League ID</span> <span id="account-league-id" style="font-family:var(--f-mono);letter-spacing:0.06em;margin-left:0.5em">&nbsp;</span></p>
+          <div style="margin-top:0.75rem">
+            <span class="eyebrow">Your League ID</span>
+            <div style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;margin-top:0.35rem">
+              <strong id="account-league-id" style="font-family:var(--f-mono);letter-spacing:0.08em">Loading...</strong>
+              <button type="button" class="btn btn-ghost" id="copy-league-id" style="padding:0.35rem 0.65rem;font-size:0.72rem">Copy ID</button>
+              <span class="field-hint" id="copy-league-status" aria-live="polite"></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -216,6 +223,26 @@
     });
 
     var currentUser = null;
+    var leagueIdEl = document.getElementById("account-league-id");
+    var copyLeagueBtn = document.getElementById("copy-league-id");
+    var copyLeagueStatus = document.getElementById("copy-league-status");
+
+    if (copyLeagueBtn) {
+      copyLeagueBtn.addEventListener("click", function () {
+        var leagueId = leagueIdEl && leagueIdEl.textContent.trim();
+        if (!leagueId || leagueId === "Loading..." || leagueId === "Unavailable") return;
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+          copyLeagueStatus.textContent = "Copy unavailable";
+          return;
+        }
+        navigator.clipboard.writeText(leagueId).then(function () {
+          copyLeagueStatus.textContent = "Copied";
+          setTimeout(function () { copyLeagueStatus.textContent = ""; }, 1800);
+        }).catch(function () {
+          copyLeagueStatus.textContent = "Copy unavailable";
+        });
+      });
+    }
 
     window.R3IGNAuth.getSession().then(function (res) {
       var session = res.data.session;
@@ -233,7 +260,9 @@
       return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).single();
     }).then(function (res) {
       if (res && res.data && res.data.league_id) {
-        document.getElementById("account-league-id").textContent = res.data.league_id;
+        leagueIdEl.textContent = res.data.league_id;
+      } else if (leagueIdEl) {
+        leagueIdEl.textContent = "Unavailable";
       }
       return window.R3IGNAuth.client.from("game_accounts").select("*").eq("profile_id", currentUser.id);
     }).then(function (res) {

@@ -78,7 +78,7 @@ r3ign/
 
 Rather than leave a warning that depends on someone reading it before typing `python3 build.py`, the file has been **renamed and moved** to `legacy/build.py.outdated-do-not-run` — that exact filename no longer exists at the project root, so the command it used to be run with simply won't find anything to execute. The `.html`/`.css`/`.js` files are the permanent source of truth now; edit them directly. The archived script (with a full explanation at the top of the file) is kept only in case someone wants to rebuild a template system from scratch later — it would need every template updated to match the current site before it's safe to use again.
 
-**If you've updated from an earlier copy of this site:** re-run `schema.sql` in the Supabase SQL Editor before testing — it adds the `league_id` column, the `events` table, the `registrations` table, and the two new storage buckets (`game-profiles`, `player-market-uploads`). It's safe to run again on an existing database — every statement uses `if not exists` / `create or replace` / `drop policy if exists` so it won't duplicate anything already there.
+**If you've updated from an earlier copy of this site:** run `migrations/league-id-r3e.sql` in the Supabase SQL Editor to migrate existing profiles to `R3E######` IDs. For a full setup or refresh, re-run `schema.sql`; it also includes the migration and is safe to run again on an existing database.
 
 ## Backend status: connected ✅
 
