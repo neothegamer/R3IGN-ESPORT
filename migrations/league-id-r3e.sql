@@ -21,6 +21,17 @@ begin
 end;
 $$ language plpgsql set search_path = public;
 
+insert into public.profiles (id, display_name, email, league_id)
+select
+  u.id,
+  coalesce(u.raw_user_meta_data->>'display_name', u.raw_user_meta_data->>'full_name', u.email),
+  u.email,
+  public.generate_league_id()
+from auth.users u
+where not exists (
+  select 1 from public.profiles p where p.id = u.id
+);
+
 do $$
 declare
   profile_row record;

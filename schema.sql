@@ -73,6 +73,18 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+-- create profiles for older auth users whose signup predated this trigger
+insert into public.profiles (id, display_name, email, league_id)
+select
+  u.id,
+  coalesce(u.raw_user_meta_data->>'display_name', u.raw_user_meta_data->>'full_name', u.email),
+  u.email,
+  public.generate_league_id()
+from auth.users u
+where not exists (
+  select 1 from public.profiles p where p.id = u.id
+);
+
 -- backfill or migrate league IDs for accounts created before this ran
 do $$
 declare
