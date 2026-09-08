@@ -263,18 +263,19 @@
       document.getElementById("account-avatar").textContent = name.charAt(0).toUpperCase();
       document.getElementById("account-panel").style.display = "block";
 
-      return window.R3IGNAuth.client.rpc("ensure_my_league_id").then(function (rpcRes) {
-        if (rpcRes && !rpcRes.error && rpcRes.data) {
-          return window.R3IGNAuth.client.from("profiles").select("avatar_url").eq("id", currentUser.id).maybeSingle().then(function (profileRes) {
-            return { data: { league_id: rpcRes.data, avatar_url: profileRes.data && profileRes.data.avatar_url } };
-          });
-        }
-        return window.R3IGNAuth.client.from("profiles").select("league_id, avatar_url").eq("id", currentUser.id).maybeSingle();
-      }).catch(function () {
-        return window.R3IGNAuth.client.from("profiles").select("league_id, avatar_url").eq("id", currentUser.id).maybeSingle().then(function (profileRes) {
-          if (!profileRes.error) return profileRes;
-          return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).maybeSingle();
+      return window.R3IGNAuth.client.from("profiles").select("league_id").eq("id", currentUser.id).maybeSingle().then(function (profileRes) {
+        if (!profileRes.error && profileRes.data && profileRes.data.league_id) return profileRes;
+        return window.R3IGNAuth.client.rpc("ensure_my_league_id").then(function (rpcRes) {
+          var rpcId = rpcRes && !rpcRes.error && rpcRes.data;
+          if (Array.isArray(rpcId)) rpcId = rpcId[0] && (rpcId[0].league_id || rpcId[0]);
+          return { data: { league_id: rpcId || null } };
         });
+      }).then(function (profileRes) {
+        return window.R3IGNAuth.client.from("profiles").select("avatar_url").eq("id", currentUser.id).maybeSingle()
+          .then(function (avatarRes) {
+            profileRes.data.avatar_url = avatarRes.data && !avatarRes.error ? avatarRes.data.avatar_url : null;
+            return profileRes;
+          });
       });
     }).then(function (res) {
       var leagueId = res && res.data && (typeof res.data === "string" ? res.data : res.data.league_id);
