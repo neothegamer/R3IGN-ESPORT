@@ -336,6 +336,7 @@
           .then(function (publicUrl) {
             document.getElementById("account-avatar").style.backgroundImage = "url('" + publicUrl + "')";
             document.getElementById("account-avatar").textContent = "";
+            document.dispatchEvent(new CustomEvent("r3ign:avatar-updated", { detail: { url: publicUrl } }));
             profilePictureStatus.textContent = "Profile picture updated.";
           })
           .catch(function (err) { profilePictureStatus.textContent = err.message || "Upload failed."; });

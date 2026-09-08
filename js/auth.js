@@ -128,9 +128,11 @@
       var name = (session.user.user_metadata && (session.user.user_metadata.display_name || session.user.user_metadata.full_name)) || session.user.email;
       var onMessages = /messages\.html/i.test(window.location.pathname);
       slot.innerHTML =
-        '<a href="messages.html" class="btn btn-ghost nav-message-link"' + (onMessages ? ' aria-current="page"' : '') + '><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span><span>Messages</span></a>' +
-        '<a href="profile-settings.html" class="btn btn-ghost">' + name.split("@")[0] + '</a>';
+        '<a href="account.html" class="nav-profile-link" aria-label="Open my account"><span class="nav-profile-avatar">' + name.charAt(0).toUpperCase() + '</span></a>' +
+        '<a href="messages.html" class="nav-icon-link nav-message-link" aria-label="Open messages"' + (onMessages ? ' aria-current="page"' : '') + '><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span></a>' +
+        '<a href="profile-settings.html" class="nav-icon-link nav-settings-link" aria-label="Open profile settings"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M5.64 18.36l1.42-1.42M16.94 7.06l1.42-1.42M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"></path></svg></span></a>';
       refreshUnreadBadge(session.user.id);
+      loadNavAvatar(session.user.id, slot.querySelector(".nav-profile-avatar"));
     } else {
       slot.innerHTML = '<a href="signin.html" class="btn">Sign In</a>';
     }
@@ -142,15 +144,35 @@
     var mobileSlot = document.querySelector(".nav-links-signin");
     if (mobileSlot) {
       if (session && session.user) {
-        var mName = (session.user.user_metadata && (session.user.user_metadata.display_name || session.user.user_metadata.full_name)) || session.user.email;
+        var mobileName = (session.user.user_metadata && (session.user.user_metadata.display_name || session.user.user_metadata.full_name)) || session.user.email;
         mobileSlot.innerHTML =
-          '<a href="messages.html" class="nav-message-link"><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span><span>Messages</span></a>' +
-          '<a href="profile-settings.html" style="margin-top:0.6rem">' + mName.split("@")[0] + '</a>';
+          '<span class="mobile-account-icons"><a href="account.html" class="nav-profile-link" aria-label="Open my account"><span class="nav-profile-avatar">' + mobileName.charAt(0).toUpperCase() + '</span></a>' +
+          '<a href="messages.html" class="nav-icon-link nav-message-link" aria-label="Open messages"><span class="nav-message-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span></a>' +
+          '<a href="profile-settings.html" class="nav-icon-link nav-settings-link" aria-label="Open profile settings"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M5.64 18.36l1.42-1.42M16.94 7.06l1.42-1.42M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"></path></svg></span></a></span>';
+        loadNavAvatar(session.user.id, mobileSlot.querySelector(".nav-profile-avatar"));
       } else {
         mobileSlot.innerHTML = '<a href="signin.html">Sign In</a>';
       }
     }
   }
+
+  function loadNavAvatar(userId, avatarEl) {
+    if (!client || !avatarEl) return;
+    client.from("profiles").select("avatar_url").eq("id", userId).maybeSingle().then(function (res) {
+      if (res.error || !res.data || !res.data.avatar_url) return;
+      avatarEl.textContent = "";
+      avatarEl.style.backgroundImage = "url('" + res.data.avatar_url + "')";
+    }).catch(function () {});
+  }
+
+  document.addEventListener("r3ign:avatar-updated", function (event) {
+    var avatarUrl = event.detail && event.detail.url;
+    if (!avatarUrl) return;
+    document.querySelectorAll(".nav-profile-avatar").forEach(function (avatar) {
+      avatar.textContent = "";
+      avatar.style.backgroundImage = "url('" + avatarUrl + "')";
+    });
+  });
 
   // Lightweight unread-DM indicator on the nav "Messages" link. Best-effort:
   // if this query fails for any reason (e.g. RLS not applied yet), it just
