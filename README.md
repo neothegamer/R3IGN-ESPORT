@@ -62,6 +62,8 @@ r3ign/
 │   ├── auth.js
 │   ├── assistant.js
 │   └── supabase-config.js
+├── scripts/
+│   └── generate-config.js
 ├── assets/
 │   ├── r3ign-logo.jpg
 │   ├── r3ign-logo-256.jpg
@@ -80,8 +82,9 @@ Rather than leave a warning that depends on someone reading it before typing `py
 
 ## Backend status: connected ✅
 
-This copy of the site is already wired to a live Supabase project (`nyditfrfzarntmekcyli`, region eu-west-2):
-- `js/supabase-config.js` has your real Project URL and anon key filled in
+This copy of the site is already wired to a live Supabase project (region eu-west-2):
+- `.env` stores the local Project URL and anon key and is ignored by Git
+- `npm run build` generates `js/supabase-config.js` from those environment variables
 - `schema.sql` has been applied — `profiles`, `organizations`, `rankings`, `player_listings`, and `registrations` tables all exist with row-level security on
 - `rankings` is seeded with 5 sample Season 4 rows — `rankings.html` is already reading them live
 - Email/password sign-up and sign-in work right now, with no further setup
@@ -170,11 +173,20 @@ This site uses [Supabase](https://supabase.com) as its backend — a free hosted
 1. Go to [supabase.com](https://supabase.com) → **New project** (free tier is enough to start)
 2. Once it's created, go to **Project Settings → API**
 3. Copy the **Project URL** and the **`anon` `public`** key (never use the `service_role` key in front-end code — it bypasses all security rules)
-4. Open `js/supabase-config.js` and paste them in:
+4. Copy `.env.example` to `.env` and fill in the values:
    ```js
-   window.SUPABASE_URL = "https://your-project.supabase.co";
-   window.SUPABASE_ANON_KEY = "your-anon-key";
+  SUPABASE_URL=https://your-project.supabase.co
+  SUPABASE_ANON_KEY=your-anon-key
    ```
+5. Run `npm run build` before opening the site locally. The generated `js/supabase-config.js` is ignored by the deployment workflow's source configuration and must not be edited manually.
+
+### Deployment environment variables
+
+The GitHub Pages workflow generates the browser config during deployment. Add these repository secrets under **Settings → Secrets and variables → Actions**:
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+
+The anon key is designed to be exposed to the browser and must be protected by Supabase Row Level Security. Never put a `service_role` key in `.env`, `js/supabase-config.js`, or any static page.
 
 ### 2. Create the database tables
 1. In Supabase, open **SQL Editor → New query**
