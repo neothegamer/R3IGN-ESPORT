@@ -94,7 +94,7 @@
   ];
 
   var ADMIN_QUICK_REPLIES = [
-    { label: "Look up a player", q: "Look up a player by R3E ID" },
+    { label: "Look up a player", q: "Look up a player" },
     { label: "Upcoming events", q: "What events are coming up?" },
     { label: "Rankings", q: "Where can I see rankings?" }
   ];
@@ -108,8 +108,11 @@
     if (!IS_ADMIN_PAGE || !window.R3IGNAdminPlayerLookup) return null;
     if (!ADMIN_LOOKUP_TEST.test(text)) return null;
     var idMatch = text.match(/r3e\d+/i);
+    if (!idMatch && /look\s?up|find (a )?player|verification status|review (this|the) player/i.test(text)) {
+      return "Please input the user ID.";
+    }
     var term = idMatch ? idMatch[0] : text.replace(ADMIN_LOOKUP_TEST, "").trim();
-    if (!term) return 'Give me an R3E ID (e.g. R3E482910), an email, or a display name and I\u2019ll pull their verification status.';
+    if (!term) return "Please input the user ID.";
     window.R3IGNAdminPlayerLookup(term);
     return 'Checking the Player Review Assistant panel below for <strong>' + escapeHtml(term) + '</strong> \u2014 results are loading there now.';
   }
