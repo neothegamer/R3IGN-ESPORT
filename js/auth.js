@@ -85,20 +85,9 @@
       });
     },
 
-    signInWithTikTok: function () {
-      if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
-      // TikTok isn't one of Supabase's built-in OAuth providers, so this uses
-      // Supabase's "Custom OAuth/OIDC Providers" feature instead — the
-      // provider must be registered in the Supabase dashboard first with the
-      // identifier below. See README for the exact setup steps.
-      return client.auth.signInWithOAuth({
-        provider: "custom:tiktok",
-        options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "account.html" }
-      }).then(function (res) {
-        if (res.error) return Promise.reject(res.error);
-        return res;
-      });
-    },
+   signInWithTikTok: function () {
+  window.location.href = "https://nyditfrfzarntmekcyli.supabase.co/functions/v1/tiktok-login-start";
+},
 
     linkWithDiscord: function () {
       if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
