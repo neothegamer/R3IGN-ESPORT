@@ -392,19 +392,3 @@
   update();
 })();
 
-
-/* ==========================================================================
-   BUILD TIMESTAMP
-   ========================================================================== */
-(function () {
-  "use strict";
-  var footers = document.querySelectorAll("footer .wrap p:last-child, footer .wrap .copyright");
-  footers.forEach(function (el) {
-    if (el && el.textContent.indexOf("Build") === -1) {
-      var span = document.createElement("span");
-      span.style.cssText = "display:block; margin-top:0.5rem; color:var(--steel); font-size:0.65rem; font-family:var(--f-mono); letter-spacing:0.05em";
-      span.textContent = "Build 2026-09-08 09:05 UTC";
-      el.appendChild(span);
-    }
-  });
-})();
