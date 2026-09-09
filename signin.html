@@ -95,12 +95,39 @@
           <input type="password" id="si-password" name="password" required minlength="6">
           <div class="field-error">Enter your password.</div>
         </div>
+        <p style="margin:-0.35rem 0 1rem;text-align:right;font-size:0.82rem"><button type="button" class="link-btn" id="btn-forgot-password">Forgot password?</button></p>
         <div class="field checkbox-field" id="terms-consent-field">
           <input type="checkbox" id="signin-terms" name="terms">
           <label for="signin-terms">I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> before continuing.</label>
           <div class="field-error">You must accept the Terms &amp; Conditions before continuing.</div>
         </div>
         <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+
+      <form id="reset-request-form" style="display:none" novalidate>
+        <p class="lede">Enter your account email and we&rsquo;ll send a secure password reset link.</p>
+        <div class="field">
+          <label for="reset-email">Email <span class="req">*</span></label>
+          <input type="email" id="reset-email" required>
+          <div class="field-error">Enter a valid email address.</div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Send Reset Link</button>
+        <p class="auth-switch"><button type="button" class="link-btn" id="btn-back-to-signin">Back to sign in</button></p>
+      </form>
+
+      <form id="update-password-form" style="display:none" novalidate>
+        <p class="lede">Choose a new password for your R3IGN account.</p>
+        <div class="field">
+          <label for="new-password">New password <span class="req">*</span></label>
+          <input type="password" id="new-password" minlength="6" required>
+          <div class="field-error">Password must be at least 6 characters.</div>
+        </div>
+        <div class="field">
+          <label for="confirm-password">Confirm password <span class="req">*</span></label>
+          <input type="password" id="confirm-password" minlength="6" required>
+          <div class="field-error">Passwords must match.</div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Update Password</button>
       </form>
 
       <p class="auth-switch">Don&rsquo;t have an account? <a href="signup.html">Create one</a></p>
@@ -168,9 +195,64 @@
     }
 
     var form = document.getElementById("signin-form");
+    var resetRequestForm = document.getElementById("reset-request-form");
+    var updatePasswordForm = document.getElementById("update-password-form");
+    var oauthGroup = document.querySelector(".oauth-group");
+    var authDivider = document.querySelector(".auth-divider");
+    var authSwitch = document.querySelector(".auth-switch");
     var emailField = document.getElementById("si-email");
     var passwordField = document.getElementById("si-password");
     var submitBtn = form.querySelector('button[type="submit"]');
+
+    function showAuthMode(mode) {
+      var signIn = mode === "signin";
+      form.style.display = signIn ? "" : "none";
+      if (resetRequestForm) resetRequestForm.style.display = mode === "reset-request" ? "block" : "none";
+      if (updatePasswordForm) updatePasswordForm.style.display = mode === "update-password" ? "block" : "none";
+      if (oauthGroup) oauthGroup.style.display = signIn ? "" : "none";
+      if (authDivider) authDivider.style.display = signIn ? "" : "none";
+      if (authSwitch) authSwitch.style.display = signIn ? "" : "none";
+    }
+
+    document.getElementById("btn-forgot-password").addEventListener("click", function () {
+      document.getElementById("reset-email").value = emailField.value.trim();
+      showAuthMode("reset-request");
+    });
+    document.getElementById("btn-back-to-signin").addEventListener("click", function () {
+      showAuthMode("signin");
+    });
+
+    resetRequestForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var email = document.getElementById("reset-email");
+      var valid = validateField(email, function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); });
+      if (!valid) return;
+      window.R3IGNAuth.sendPasswordReset(email.value.trim()).then(function (res) {
+        if (res.error) { showError(res.error.message); return; }
+        showError("If an account exists for that email, a password reset link has been sent.");
+        document.getElementById("auth-error").classList.add("is-visible");
+      }).catch(function (e) {
+        showError(e.message === "NOT_CONFIGURED" ? "Connect Supabase first (see README) to reset your password." : e.message);
+      });
+    });
+
+    updatePasswordForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var next = document.getElementById("new-password");
+      var confirm = document.getElementById("confirm-password");
+      var nextOk = validateField(next, function (v) { return v.length >= 6; });
+      var confirmOk = validateField(confirm, function (v) { return v === next.value && v.length >= 6; });
+      if (!nextOk || !confirmOk) return;
+      window.R3IGNAuth.updatePassword(next.value).then(function (res) {
+        if (res.error) { showError(res.error.message); return; }
+        showError("Password updated. You can now sign in.");
+        showAuthMode("signin");
+      }).catch(function (e) { showError(e.message); });
+    });
+
+    window.R3IGNAuth.onAuthStateChange(function (event) {
+      if (event === "PASSWORD_RECOVERY") showAuthMode("update-password");
+    });
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();

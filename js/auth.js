@@ -57,6 +57,23 @@
       return client.auth.signInWithPassword({ email: email, password: password });
     },
 
+    sendPasswordReset: function (email) {
+      if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
+      return client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "signin.html"
+      });
+    },
+
+    updatePassword: function (password) {
+      if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
+      return client.auth.updateUser({ password: password });
+    },
+
+    onAuthStateChange: function (callback) {
+      if (!client) return { data: { subscription: { unsubscribe: function () {} } } };
+      return client.auth.onAuthStateChange(callback);
+    },
+
     signInWithDiscord: function () {
       if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
       return client.auth.signInWithOAuth({
