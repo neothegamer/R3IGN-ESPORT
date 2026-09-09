@@ -62,6 +62,9 @@
       return client.auth.signInWithOAuth({
         provider: "discord",
         options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "account.html" }
+      }).then(function (res) {
+        if (res.error) return Promise.reject(res.error);
+        return res;
       });
     },
 
@@ -74,6 +77,9 @@
       return client.auth.signInWithOAuth({
         provider: "custom:tiktok",
         options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "account.html" }
+      }).then(function (res) {
+        if (res.error) return Promise.reject(res.error);
+        return res;
       });
     },
 
