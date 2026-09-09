@@ -273,6 +273,184 @@
   }
 })();
 
+/* ==========================================================================
+   SITE-WIDE SEARCH
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var SEARCH_INDEX = [
+    { title: "Home", url: "index.html", description: "R3IGN mobile esports competition, leagues, events, and community.", category: "Page" },
+    { title: "Leagues", url: "leagues.html", description: "RCML, RFCL, and RBSL league formats, seasons, and competition.", category: "Page" },
+    { title: "Rankings", url: "rankings.html", description: "Current team standings, divisions, wins, losses, and points.", category: "Page" },
+    { title: "Events", url: "events.html", description: "Upcoming match nights, tournaments, and R3IGN league events.", category: "Page" },
+    { title: "Organizations", url: "organizations.html", description: "Browse registered R3IGN esports organizations and teams.", category: "Page" },
+    { title: "Player Market", url: "player-market.html", description: "Find free agents and list yourself for esports opportunities.", category: "Page" },
+    { title: "Match Highlights", url: "match-highlights.html", description: "Watch match footage, highlights, and standout plays.", category: "Page" },
+    { title: "News", url: "news.html", description: "R3IGN announcements, results, and community news.", category: "Page" },
+    { title: "About R3IGN", url: "about.html", description: "Learn about R3IGN and structured mobile esports competition.", category: "Page" },
+    { title: "Support", url: "support.html", description: "Frequently asked questions and contact support.", category: "Page" },
+    { title: "Guide", url: "guide.html", description: "How to compete, register, manage teams, and use R3IGN.", category: "Page" },
+    { title: "Divisions", url: "divisions.html", description: "The six-division ladder, promotion, and relegation system.", category: "Page" },
+    { title: "Tournament Brackets", url: "brackets.html", description: "Live tournament bracket and match progression.", category: "Page" },
+    { title: "Awards", url: "awards.html", description: "R3IGN awards and hall of champions.", category: "Page" },
+    { title: "Media", url: "media.html", description: "R3IGN media, broadcasts, and community coverage.", category: "Page" },
+    { title: "Merch", url: "merch.html", description: "Official R3IGN merchandise and store updates.", category: "Page" },
+    { title: "Partnerships", url: "partnerships.html", description: "Sponsorship and partnership opportunities.", category: "Page" },
+    { title: "Community", url: "community.html", description: "Join the R3IGN community and official channels.", category: "Page" },
+    { title: "Messages", url: "messages.html", description: "Manage player market conversations and messages.", category: "Page" },
+    { title: "Register Organization", url: "register.html", description: "Submit an organization registration for review.", category: "Page" },
+    { title: "Sign In", url: "signin.html", description: "Sign in to manage your account and competition profile.", category: "Page" },
+    { title: "Create Account", url: "signup.html", description: "Create a R3IGN account and verify your email.", category: "Page" },
+    { title: "Account", url: "account.html", description: "Manage your profile, linked game accounts, and submissions.", category: "Page" },
+    { title: "Profile Settings", url: "profile-settings.html", description: "Update your R3IGN profile and account details.", category: "Page" },
+    { title: "Terms & Conditions", url: "terms.html", description: "Rules and conditions for using the R3IGN service.", category: "Page" },
+    { title: "Privacy Policy", url: "privacy.html", description: "How R3IGN collects, uses, and protects information.", category: "Page" },
+    { title: "Copyright Policy", url: "copyright.html", description: "Copyright reporting, takedowns, and intellectual property policy.", category: "Page" },
+    { title: "R3IGN Organization", url: "org.html", description: "Organization profile and team information.", category: "Page" },
+    { title: "Aether Esports", url: "rankings.html", description: "Competitive R3IGN organization competing in RCML.", category: "Team" },
+    { title: "Siroxx", url: "rankings.html", description: "Competitive R3IGN organization and ranked team.", category: "Team" },
+    { title: "Infinite", url: "rankings.html", description: "Competitive R3IGN organization and ranked team.", category: "Team" },
+    { title: "Nova United", url: "rankings.html", description: "R3IGN ranked esports organization.", category: "Team" },
+    { title: "Free Agent Player", url: "player-market.html", description: "Browse available players looking for a competitive team.", category: "Player" },
+    { title: "RCML", url: "leagues.html", description: "R3IGN Call of Duty: Mobile League.", category: "League" },
+    { title: "RFCL", url: "leagues.html", description: "R3IGN Free Fire Championship League.", category: "League" },
+    { title: "RBSL", url: "leagues.html", description: "R3IGN Blood Strike League.", category: "League" },
+    { title: "Season 4 is underway", url: "news.html", description: "RCML Season 4 competition and current league updates.", category: "News" },
+    { title: "Registration updates", url: "news.html", description: "Latest registration and organization announcements.", category: "News" },
+    { title: "Community spotlight", url: "news.html", description: "Stories from the R3IGN esports community.", category: "News" }
+  ];
+  window.R3IGNSearchIndex = SEARCH_INDEX;
+
+  var overlay, modal, input, results, live, previousFocus, selectedIndex = -1;
+
+  function escapeHtml(value) {
+    var div = document.createElement("div");
+    div.textContent = value;
+    return div.innerHTML;
+  }
+
+  function highlight(value, terms) {
+    var safe = escapeHtml(value);
+    terms.forEach(function (term) {
+      if (!term) return;
+      safe = safe.replace(new RegExp("(" + term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "ig"), '<mark>$1</mark>');
+    });
+    return safe;
+  }
+
+  function render(query) {
+    var terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    var matches = !terms.length ? SEARCH_INDEX.slice(0, 8) : SEARCH_INDEX.filter(function (item) {
+      var text = (item.title + " " + item.description).toLowerCase();
+      return terms.some(function (term) { return text.indexOf(term) !== -1; });
+    }).slice(0, 8);
+    results.innerHTML = "";
+    if (!matches.length) {
+      results.innerHTML = '<div class="search-empty">No results found. Try searching for \'RCML\', \'Aether\', or \'rankings\'.</div>';
+    } else {
+      var lastCategory = "";
+      matches.forEach(function (item, index) {
+        if (item.category !== lastCategory) {
+          var heading = document.createElement("div");
+          heading.className = "search-category";
+          heading.textContent = item.category;
+          results.appendChild(heading);
+          lastCategory = item.category;
+        }
+        var link = document.createElement("a");
+        link.className = "search-result";
+        link.href = item.url;
+        link.setAttribute("data-search-index", String(index));
+        link.innerHTML = '<span class="r-title">' + highlight(item.title, terms) + '</span>' +
+          '<span class="r-meta">' + escapeHtml(item.description) + '</span>';
+        results.appendChild(link);
+      });
+    }
+    selectedIndex = -1;
+    live.textContent = matches.length + (matches.length === 1 ? " result" : " results") + " found.";
+  }
+
+  function close() {
+    if (!overlay) return;
+    overlay.classList.remove("is-open");
+    document.body.classList.remove("search-is-open");
+    if (previousFocus) previousFocus.focus();
+  }
+
+  function open() {
+    if (!overlay) build();
+    previousFocus = document.activeElement;
+    overlay.classList.add("is-open");
+    document.body.classList.add("search-is-open");
+    input.value = "";
+    render("");
+    setTimeout(function () { input.focus(); }, 0);
+  }
+
+  function moveSelection(step) {
+    var items = results.querySelectorAll(".search-result");
+    if (!items.length) return;
+    selectedIndex = (selectedIndex + step + items.length) % items.length;
+    items.forEach(function (item, i) { item.classList.toggle("is-active", i === selectedIndex); });
+    items[selectedIndex].scrollIntoView({ block: "nearest" });
+  }
+
+  function build() {
+    var trigger = document.createElement("button");
+    trigger.className = "search-trigger";
+    trigger.type = "button";
+    trigger.setAttribute("aria-label", "Search");
+    trigger.title = "Search (Ctrl+K)";
+    trigger.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>';
+    var cta = document.querySelector(".nav-cta");
+    if (cta) cta.insertBefore(trigger, cta.firstChild);
+    trigger.addEventListener("click", open);
+
+    overlay = document.createElement("div");
+    overlay.className = "search-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", "Site search");
+    overlay.innerHTML = '<div class="search-modal">' +
+      '<div class="search-input-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>' +
+      '<input id="site-search-input" type="search" placeholder="Search teams, players, news, pages…" autocomplete="off" aria-label="Search teams, players, news, pages">' +
+      '<button class="search-close" type="button" aria-label="Close search">&times;</button></div>' +
+      '<div class="search-results" id="site-search-results"></div><span class="visually-hidden" id="site-search-live" aria-live="polite"></span></div>';
+    document.body.appendChild(overlay);
+    modal = overlay.querySelector(".search-modal");
+    input = overlay.querySelector("#site-search-input");
+    results = overlay.querySelector("#site-search-results");
+    live = overlay.querySelector("#site-search-live");
+    input.addEventListener("input", function () { render(input.value.trim()); });
+    overlay.querySelector(".search-close").addEventListener("click", close);
+    overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown") { e.preventDefault(); moveSelection(1); }
+      if (e.key === "ArrowUp") { e.preventDefault(); moveSelection(-1); }
+      if (e.key === "Enter") {
+        var selected = results.querySelector(".search-result.is-active") || results.querySelector(".search-result");
+        if (selected) window.location.href = selected.href;
+      }
+    });
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); open(); return; }
+    if (e.key === "Escape" && overlay && overlay.classList.contains("is-open")) { close(); return; }
+    if (overlay && overlay.classList.contains("is-open") && e.key === "Tab") {
+      var focusable = modal.querySelectorAll("input, button, a[href]");
+      if (!focusable.length) return;
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  window.R3IGNSearch = { open: open, close: close };
+  document.addEventListener("DOMContentLoaded", build);
+})();
+
 
 /* ==========================================================================
    PAGE TRANSITIONS
@@ -415,7 +593,7 @@
 
 /* ==========================================================================
    KEYBOARD SHORTCUTS
-   / = open assistant    Esc = close assistant/modals
+   / = open search    ? = open assistant    Esc = close assistant/modals
    ========================================================================== */
 (function () {
   "use strict";
@@ -424,17 +602,14 @@
     var tag = e.target.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.target.isContentEditable) return;
 
-    if (e.key === "/") {
+    if (e.key === "/" && !e.shiftKey) {
       e.preventDefault();
-      var assistantInput = document.getElementById("assistant-input");
-      if (assistantInput) {
-        assistantInput.focus();
-        // Also open assistant if it's closed
-        var assistant = document.querySelector(".assistant");
-        if (assistant && !assistant.classList.contains("is-open")) {
-          assistant.classList.add("is-open");
-        }
-      }
+      if (window.R3IGNSearch) window.R3IGNSearch.open();
+    }
+    if (e.key === "?" || (e.key === "/" && e.shiftKey)) {
+      e.preventDefault();
+      var assistantLauncher = document.getElementById("assistant-launcher");
+      if (assistantLauncher) assistantLauncher.click();
     }
     if (e.key === "Escape") {
       // Close assistant

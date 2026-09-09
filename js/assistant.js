@@ -71,6 +71,10 @@
       reply: 'For anything I can’t answer, visit <a href="support.html">Support &amp; FAQ</a> or reach the team on <a href="https://discord.gg/85qGDxyCdp" target="_blank" rel="noopener">Discord</a>.'
     },
     {
+      test: /search/i,
+      reply: 'Press Cmd+K (or Ctrl+K) or click the search icon to search the site.'
+    },
+    {
       test: /what is r3ign|about|who (are|is) r3ign/i,
       reply: 'R3IGN runs structured mobile esports competition — leagues, divisions, and daily competition. More on <a href="about.html">About R3IGN</a>.'
     },
@@ -216,6 +220,10 @@
   }
 
   function handleUserMessage(text) {
+    if (/search/i.test(text) && window.R3IGNSearch) {
+      window.R3IGNSearch.open();
+      return;
+    }
     addMessage("user", escapeHtml(text));
     var typing = document.createElement("div");
     typing.className = "assistant-typing";
