@@ -77,6 +77,11 @@
         Auth isn't connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code> to enable account creation. See the README for setup steps.
       </div>
       <div class="auth-error" id="auth-error"></div>
+      <div class="field checkbox-field" id="terms-consent-field">
+        <input type="checkbox" id="signup-terms" name="terms" required>
+        <label for="signup-terms">I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</label>
+        <div class="field-error">You must accept the Terms &amp; Conditions before creating an account.</div>
+      </div>
 
       <div class="oauth-group" id="signup-oauth">
         <button class="btn btn-oauth" id="btn-discord"><span class="glyph"><img src="assets/icons/discord.jpg" alt="" loading="lazy"></span> Continue with Discord</button>
@@ -138,6 +143,18 @@
       el.classList.add("is-visible");
     }
 
+    function requireTerms() {
+      var checkbox = document.getElementById("signup-terms");
+      var field = document.getElementById("terms-consent-field");
+      var accepted = checkbox && checkbox.checked;
+      if (field) field.classList.toggle("has-error", !accepted);
+      if (!accepted) {
+        showError("Accept the Terms & Conditions before continuing.");
+        if (checkbox) checkbox.focus();
+      }
+      return accepted;
+    }
+
     // Supabase redirects OAuth failures back here with #error=...&error_description=...
     // in the URL hash. Surface that instead of failing silently.
     (function checkOAuthRedirectError() {
@@ -152,11 +169,13 @@
     })();
 
     document.getElementById("btn-discord").addEventListener("click", function () {
+      if (!requireTerms()) return;
       window.R3IGNAuth.signInWithDiscord().catch(function (e) {
         showError(e.message === "NOT_CONFIGURED" ? "Connect Supabase first (see README) to enable Discord sign-in." : e.message);
       });
     });
     document.getElementById("btn-tiktok").addEventListener("click", function () {
+      if (!requireTerms()) return;
       window.R3IGNAuth.signInWithTikTok().catch(function (e) {
         showError(e.message === "NOT_CONFIGURED" ? "Connect Supabase first (see README) to enable TikTok sign-in." : e.message);
       });
@@ -174,6 +193,7 @@
     var nameField = document.getElementById("su-name");
     var emailField = document.getElementById("su-email");
     var passwordField = document.getElementById("su-password");
+    var termsField = document.getElementById("signup-terms");
     var submitBtn = form.querySelector('button[type="submit"]');
 
     var pendingEmail = null;
@@ -191,12 +211,14 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
+      var termsOk = requireTerms();
       var nameOk = validateField(nameField);
       var emailOk = validateField(emailField, function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); });
       var passwordOk = validateField(passwordField, function (v) { return v.length >= 6; });
 
-      if (!nameOk || !emailOk || !passwordOk) {
+      if (!termsOk || !nameOk || !emailOk || !passwordOk) {
         var firstError = form.querySelector(".has-error input");
+        if (!firstError && termsField && !termsField.checked) firstError = termsField;
         if (firstError) firstError.focus();
         return;
       }

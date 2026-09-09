@@ -77,6 +77,11 @@
         Auth isn't connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code> to enable sign-in. See the README for setup steps.
       </div>
       <div class="auth-error" id="auth-error"></div>
+      <div class="field checkbox-field" id="terms-consent-field">
+        <input type="checkbox" id="signin-terms" name="terms">
+        <label for="signin-terms">I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> before continuing with social sign-in.</label>
+        <div class="field-error">You must accept the Terms &amp; Conditions before continuing with social sign-in.</div>
+      </div>
 
       <div class="oauth-group">
         <button class="btn btn-oauth" id="btn-discord"><span class="glyph"><img src="assets/icons/discord.jpg" alt="" loading="lazy"></span> Continue with Discord</button>
@@ -117,6 +122,18 @@
       el.classList.add("is-visible");
     }
 
+    function requireTerms() {
+      var checkbox = document.getElementById("signin-terms");
+      var field = document.getElementById("terms-consent-field");
+      var accepted = checkbox && checkbox.checked;
+      if (field) field.classList.toggle("has-error", !accepted);
+      if (!accepted) {
+        showError("Accept the Terms & Conditions before continuing with social sign-in.");
+        if (checkbox) checkbox.focus();
+      }
+      return accepted;
+    }
+
     // Supabase redirects OAuth failures back here with #error=...&error_description=...
     // in the URL hash. Surface that instead of failing silently.
     (function checkOAuthRedirectError() {
@@ -131,11 +148,13 @@
     })();
 
     document.getElementById("btn-discord").addEventListener("click", function () {
+      if (!requireTerms()) return;
       window.R3IGNAuth.signInWithDiscord().catch(function (e) {
         showError(e.message === "NOT_CONFIGURED" ? "Connect Supabase first (see README) to enable Discord sign-in." : e.message);
       });
     });
     document.getElementById("btn-tiktok").addEventListener("click", function () {
+      if (!requireTerms()) return;
       window.R3IGNAuth.signInWithTikTok().catch(function (e) {
         showError(e.message === "NOT_CONFIGURED" ? "Connect Supabase first (see README) to enable TikTok sign-in." : e.message);
       });
