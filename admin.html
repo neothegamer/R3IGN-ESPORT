@@ -564,9 +564,11 @@
         if (res.error) {
           errEl.textContent = res.error.message;
           errEl.classList.add("is-visible");
+          window.R3IGNToast.show(res.error.message, "error");
           return;
         }
         okEl.classList.add("is-visible");
+        window.R3IGNToast.show("Event published successfully.", "success");
         document.getElementById("ev-title").value = "";
         document.getElementById("ev-description").value = "";
         document.getElementById("ev-location").value = "";
@@ -597,9 +599,11 @@
         if (res.error) {
           errEl.textContent = res.error.message;
           errEl.classList.add("is-visible");
+          window.R3IGNToast.show(res.error.message, "error");
           return;
         }
         okEl.classList.add("is-visible");
+        window.R3IGNToast.show("Player promoted to admin.", "success");
         document.getElementById("promote-lookup").value = "";
         loadAdmins();
       }).catch(function () { /* error already shown */ });
@@ -664,8 +668,9 @@
         season: document.getElementById("rk-season").value.trim() || "Season 4",
         wins: 0, losses: 0, points: 0
       }).then(function (res) {
-        if (res.error) { errEl.textContent = res.error.message; errEl.classList.add("is-visible"); return; }
+        if (res.error) { errEl.textContent = res.error.message; errEl.classList.add("is-visible"); window.R3IGNToast.show(res.error.message, "error"); return; }
         okEl.classList.add("is-visible");
+        window.R3IGNToast.show("Ranking entry added.", "success");
         document.getElementById("rk-team").value = "";
         document.getElementById("rk-tag").value = "";
         loadRankings();

@@ -343,6 +343,7 @@
         }
         form.hidden = true;
         document.getElementById("mp-success").classList.add("is-visible");
+        window.R3IGNToast.show("Listing submitted. You'll be visible once reviewed.", "success");
       }).catch(function (err) {
         submitBtn.disabled = false;
         submitBtn.textContent = "List Yourself";

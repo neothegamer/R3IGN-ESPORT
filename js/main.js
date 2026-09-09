@@ -2,6 +2,91 @@
 (function () {
   "use strict";
 
+  /* ---------- toast notifications ---------- */
+  (function () {
+    var activeToasts = [];
+    var defaultDuration = 4000;
+
+    function getContainer() {
+      var container = document.querySelector(".toast-container");
+      if (!container) {
+        container = document.createElement("div");
+        container.className = "toast-container";
+        container.setAttribute("aria-live", "polite");
+        container.setAttribute("aria-atomic", "false");
+        document.body.appendChild(container);
+      }
+      return container;
+    }
+
+    function dismiss(toast, immediate) {
+      if (!toast || toast.dismissed) return;
+      toast.dismissed = true;
+      if (toast.timer) clearTimeout(toast.timer);
+      var remove = function () {
+        if (toast.element.parentNode) toast.element.parentNode.removeChild(toast.element);
+        activeToasts = activeToasts.filter(function (item) { return item !== toast; });
+      };
+      if (immediate) {
+        remove();
+        return;
+      }
+      toast.element.classList.add("is-dismissing");
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) remove();
+      else toast.element.addEventListener("transitionend", remove, { once: true });
+      setTimeout(remove, 350);
+    }
+
+    function startTimer(toast) {
+      if (!toast.duration) return;
+      toast.startedAt = Date.now();
+      toast.timer = setTimeout(function () { dismiss(toast); }, toast.remaining);
+    }
+
+    window.R3IGNToast = {
+      show: function (message, type, duration) {
+        type = ["success", "error", "info", "warning"].indexOf(type) !== -1 ? type : "info";
+        var container = getContainer();
+        var toast = {
+          duration: duration === undefined ? defaultDuration : duration,
+          remaining: duration === undefined ? defaultDuration : duration,
+          dismissed: false,
+          timer: null
+        };
+        var element = document.createElement("div");
+        element.className = "toast toast--" + type;
+        element.setAttribute("role", type === "success" || type === "info" ? "status" : "alert");
+        element.innerHTML =
+          '<div class="toast__label">' + type + '</div>' +
+          '<div class="toast__message"></div>' +
+          '<button class="toast__close" type="button" aria-label="Dismiss notification">&times;</button>';
+        element.querySelector(".toast__message").innerHTML = String(message);
+        element.querySelector(".toast__close").addEventListener("click", function () { dismiss(toast); });
+        element.addEventListener("mouseenter", function () {
+          if (!toast.timer) return;
+          clearTimeout(toast.timer);
+          toast.timer = null;
+          toast.remaining = Math.max(0, toast.remaining - (Date.now() - toast.startedAt));
+        });
+        element.addEventListener("mouseleave", function () {
+          if (!toast.dismissed) startTimer(toast);
+        });
+        toast.element = element;
+        activeToasts.unshift(toast);
+        if (activeToasts.length > 5) dismiss(activeToasts[activeToasts.length - 1], true);
+        container.insertBefore(element, container.firstChild);
+        if (!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+          requestAnimationFrame(function () { element.classList.add("is-visible"); });
+        } else {
+          element.classList.add("is-visible");
+        }
+        startTimer(toast);
+        return toast;
+      },
+      dismiss: dismiss
+    };
+  })();
+
   /* ---------- measured header height (keeps mobile menu background flush) ---------- */
   var headerEl = document.querySelector(".site-header");
   function syncHeaderHeight() {
@@ -391,4 +476,3 @@
   window.addEventListener("resize", update);
   update();
 })();
-

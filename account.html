@@ -385,6 +385,7 @@
           return Promise.all(uploads);
         }).then(function () {
           okEl.classList.add("is-visible");
+          window.R3IGNToast.show("Game accounts updated.", "success");
         }).catch(function () { /* error already shown */ });
     });
 

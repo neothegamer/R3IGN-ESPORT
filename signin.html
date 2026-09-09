@@ -229,6 +229,7 @@
       if (!valid) return;
       window.R3IGNAuth.sendPasswordReset(email.value.trim()).then(function (res) {
         if (res.error) { showError(res.error.message); return; }
+        window.R3IGNToast.show("If an account exists for that email, a password reset link has been sent.", "info");
         showError("If an account exists for that email, a password reset link has been sent.");
         document.getElementById("auth-error").classList.add("is-visible");
       }).catch(function (e) {
@@ -245,6 +246,7 @@
       if (!nextOk || !confirmOk) return;
       window.R3IGNAuth.updatePassword(next.value).then(function (res) {
         if (res.error) { showError(res.error.message); return; }
+        window.R3IGNToast.show("Password updated. You can now sign in.", "success");
         showError("Password updated. You can now sign in.");
         showAuthMode("signin");
       }).catch(function (e) { showError(e.message); });
@@ -272,6 +274,7 @@
       window.R3IGNAuth.signInWithEmail(email, password).then(function (res) {
         submitBtn.disabled = false;
         if (res.error) { showError(res.error.message); return; }
+        window.R3IGNToast.show("Welcome back.", "success");
         window.location.href = "account.html";
       }).catch(function (e) {
         submitBtn.disabled = false;

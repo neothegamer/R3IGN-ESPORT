@@ -266,6 +266,7 @@
       window.R3IGNAuth.verifySignupCode(pendingEmail, code).then(function (res) {
         verifyBtn.disabled = false;
         if (res.error) { showVerifyError(res.error.message); return; }
+        window.R3IGNToast.show("Account created successfully.", "success");
         window.location.href = "account.html";
       }).catch(function (e) {
         verifyBtn.disabled = false;
