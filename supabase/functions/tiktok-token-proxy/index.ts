@@ -51,27 +51,56 @@ serve(async (req) => {
     return new Response(`Failed to fetch TikTok profile: ${JSON.stringify(profileData)}`, { status: 502 });
   }
 
-  // 3. Find or create a matching Supabase Auth user, keyed by TikTok open_id
-  const syntheticEmail = `tiktok_${profile.open_id}@r3ign.tiktok`;
+// 3. Find or create a matching Supabase Auth user, keyed by TikTok open_id
+const syntheticEmail = `tiktok_${profile.open_id}@r3ign.tiktok`;
 
-  const { data: existing } = await supabaseAdmin.auth.admin.listUsers();
-  let user = existing.users.find((u) => u.email === syntheticEmail);
+let user = null;
 
-  if (!user) {
-    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: syntheticEmail,
-      email_confirm: true,
-      user_metadata: {
-        provider: "tiktok",
-        tiktok_open_id: profile.open_id,
-        display_name: profile.display_name,
-        avatar_url: profile.avatar_url,
-      },
-    });
-    if (createErr) return new Response(`User creation failed: ${createErr.message}`, { status: 500 });
-    user = created.user;
+// Try to create the user. If it already exists we just continue.
+const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+  email: syntheticEmail,
+  email_confirm: true,
+  user_metadata: {
+    provider: "tiktok",
+    tiktok_open_id: profile.open_id,
+    display_name: profile.display_name,
+    avatar_url: profile.avatar_url,
+  },
+});
+
+if (createErr) {
+  // User already exists — this is fine, we just need a session
+  if (
+    createErr.message?.includes("already been registered") ||
+    createErr.message?.includes("User already registered") ||
+    createErr.status === 422
+  ) {
+    // continue — we'll generate a magic link below
+  } else {
+    return new Response(`User creation failed: ${createErr.message}`, { status: 500 });
   }
+} else {
+  user = created.user;
+}
 
+// 4. Issue a session via a magic-link action link, then redirect the browser through it
+const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+  type: "magiclink",
+  email: syntheticEmail,
+  options: { redirectTo: FRONTEND_URL },
+});
+
+if (linkErr) {
+  return new Response(`Session creation failed: ${linkErr.message}`, { status: 500 });
+}
+
+return new Response(null, {
+  status: 302,
+  headers: {
+    Location: linkData.properties.action_link,
+    "Set-Cookie": "tiktok_oauth_state=; Path=/; Max-Age=0",
+  },
+});
   // 4. Issue a session via a magic-link action link, then redirect the browser through it
   const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
     type: "magiclink",
