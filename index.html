@@ -360,6 +360,34 @@
   </div>
 </section>
 
+<section class="section-tight">
+  <div class="wrap" style="max-width:560px;text-align:center">
+    <span class="eyebrow" style="justify-content:center">Stay in the loop</span>
+    <h2 style="margin-top:0.75rem">League updates &amp; registration windows</h2>
+    <p class="lede">Get notified when RFCL / RBSL registration opens and when major RCML announcements drop.</p>
+
+    <div id="newsletter-success" class="form-success" role="status" style="margin-top:1.25rem">
+      You&rsquo;re on the list. Watch your inbox for league news.
+    </div>
+    <div id="newsletter-error" class="auth-error" style="margin-top:1rem"></div>
+
+    <form id="newsletter-form" style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center;align-items:flex-start">
+      <!-- Honeypot -->
+      <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden" aria-hidden="true">
+        <label for="newsletter-website">Website</label>
+        <input type="text" id="newsletter-website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="field" style="flex:1 1 220px;margin:0;text-align:left">
+        <label for="newsletter-email" class="sr-only">Email</label>
+        <input type="email" id="newsletter-email" name="email" required placeholder="you@email.com" autocomplete="email" style="width:100%">
+      </div>
+      <button type="submit" class="btn btn-primary" id="newsletter-submit">Subscribe</button>
+    </form>
+    <p class="field-hint" style="margin-top:0.75rem">No spam. Unsubscribe any time. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  </div>
+</section>
+
 <div class="cta-band">
   <div class="wrap">
     <span class="eyebrow" style="justify-content:center">Enlist Your Roster</span>
@@ -371,6 +399,74 @@
     </div>
   </div>
 </div>
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.getElementById("newsletter-form");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (document.getElementById("newsletter-website").value.trim()) return;
+
+      var email = document.getElementById("newsletter-email").value.trim();
+      var errEl = document.getElementById("newsletter-error");
+      errEl.classList.remove("is-visible");
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errEl.textContent = "Enter a valid email address.";
+        errEl.classList.add("is-visible");
+        return;
+      }
+
+      if (!window.R3IGNAuth || !window.R3IGNAuth.isConfigured()) {
+        errEl.textContent = "Newsletter is not connected yet.";
+        errEl.classList.add("is-visible");
+        return;
+      }
+
+      var btn = document.getElementById("newsletter-submit");
+      btn.disabled = true;
+      btn.textContent = "Subscribing…";
+
+      // IMPORTANT: no .select() — anon cannot read the row back
+      window.R3IGNAuth.client
+        .from("newsletter_subscribers")
+        .insert({
+          email: email,
+          league_interests: ["rcml", "rfcl", "rbsl"],
+          confirmed: false
+        })
+        .then(function (res) {
+          btn.disabled = false;
+          btn.textContent = "Subscribe";
+          if (res.error) {
+            // Unique violation is fine — treat as success
+            if (res.error.code === "23505" || /duplicate|unique/i.test(res.error.message || "")) {
+              form.hidden = true;
+              document.getElementById("newsletter-success").classList.add("is-visible");
+              if (window.R3IGNToast) window.R3IGNToast.show("You're already subscribed.", "info");
+              return;
+            }
+            errEl.textContent = res.error.message || "Something went wrong. Try again later.";
+            errEl.classList.add("is-visible");
+            return;
+          }
+          form.hidden = true;
+          document.getElementById("newsletter-success").classList.add("is-visible");
+          if (window.R3IGNToast) window.R3IGNToast.show("Subscribed. Welcome to the list.", "success");
+        })
+        .catch(function () {
+          btn.disabled = false;
+          btn.textContent = "Subscribe";
+          errEl.textContent = "Network error. Please try again.";
+          errEl.classList.add("is-visible");
+        });
+    });
+  });
+})();
+</script>
 </main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
   <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
   <div class="consent-actions">

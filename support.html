@@ -98,6 +98,70 @@
 </section>
 
 <section>
+  <div class="wrap" style="max-width:640px">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Send a Message</span>
+        <h2>Contact form</h2>
+      </div>
+      <p class="lede">Prefer a form? Submit your request here and it goes straight into the R3IGN support queue.</p>
+    </div>
+
+    <div class="form-panel">
+      <div class="auth-notice" id="contact-config-notice">
+        Backend isn&rsquo;t connected yet. Add your Supabase project URL and anon key to <code>js/supabase-config.js</code> to enable the form.
+      </div>
+      <div class="form-success" id="contact-success" role="status">
+        Message received. A member of the R3IGN team will follow up by email.
+      </div>
+      <div class="auth-error" id="contact-error"></div>
+
+      <form id="contact-form" novalidate>
+        <!-- Honeypot — leave empty -->
+        <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden" aria-hidden="true">
+          <label for="contact-website">Website</label>
+          <input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="contact-name">Name <span class="req">*</span></label>
+          <input type="text" id="contact-name" name="name" required autocomplete="name">
+          <div class="field-error">Enter your name.</div>
+        </div>
+
+        <div class="field">
+          <label for="contact-email">Email <span class="req">*</span></label>
+          <input type="email" id="contact-email" name="email" required autocomplete="email">
+          <div class="field-error">Enter a valid email address.</div>
+        </div>
+
+        <div class="field">
+          <label for="contact-subject">Subject <span class="req">*</span></label>
+          <select id="contact-subject" name="subject" required>
+            <option value="">Select a topic</option>
+            <option value="General Support">General Support</option>
+            <option value="Team Registration">Team Registration</option>
+            <option value="Match Dispute">Match Dispute</option>
+            <option value="Account / Verification">Account / Verification</option>
+            <option value="Partnerships">Partnerships</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="field-error">Choose a subject.</div>
+        </div>
+
+        <div class="field">
+          <label for="contact-message">Message <span class="req">*</span></label>
+          <textarea id="contact-message" name="message" rows="5" required placeholder="Describe your request clearly so we can help faster."></textarea>
+          <div class="field-error">Enter your message.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="contact-submit">Send Message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section>
   <div class="wrap">
     <div class="section-head">
       <div><span class="eyebrow">FAQ</span><h2>Frequently asked questions</h2></div>
@@ -154,6 +218,103 @@
     </div>
   </div>
 </section>
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var configured = window.R3IGNAuth && window.R3IGNAuth.isConfigured();
+    if (!configured) {
+      var notice = document.getElementById("contact-config-notice");
+      if (notice) notice.classList.add("is-visible");
+    }
+
+    var form = document.getElementById("contact-form");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Honeypot
+      if (document.getElementById("contact-website").value.trim()) return;
+
+      // Simple client-side rate limit (3 / hour)
+      try {
+        var key = "r3ign-contact-ts";
+        var raw = localStorage.getItem(key);
+        var times = raw ? JSON.parse(raw) : [];
+        var hourAgo = Date.now() - 60 * 60 * 1000;
+        times = times.filter(function (t) { return t > hourAgo; });
+        if (times.length >= 3) {
+          var errEl = document.getElementById("contact-error");
+          errEl.textContent = "Too many messages. Please try again later or email r3ignhq@gmail.com.";
+          errEl.classList.add("is-visible");
+          return;
+        }
+        times.push(Date.now());
+        localStorage.setItem(key, JSON.stringify(times));
+      } catch (err) { /* storage blocked — ignore */ }
+
+      var valid = true;
+      form.querySelectorAll("[required]").forEach(function (input) {
+        var field = input.closest(".field");
+        var isEmpty = !input.value.trim();
+        if (isEmpty) {
+          valid = false;
+          if (field) field.classList.add("has-error");
+        } else if (field) {
+          field.classList.remove("has-error");
+        }
+      });
+
+      var emailInput = document.getElementById("contact-email");
+      if (emailInput.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
+        valid = false;
+        emailInput.closest(".field").classList.add("has-error");
+      }
+      if (!valid) return;
+
+      if (!configured) {
+        document.getElementById("contact-error").textContent = "Backend isn't connected yet — see the notice above.";
+        document.getElementById("contact-error").classList.add("is-visible");
+        return;
+      }
+
+      var submitBtn = document.getElementById("contact-submit");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending…";
+      document.getElementById("contact-error").classList.remove("is-visible");
+
+      // IMPORTANT: no .select() — anon cannot read the row back
+      window.R3IGNAuth.client
+        .from("contact_submissions")
+        .insert({
+          name: document.getElementById("contact-name").value.trim(),
+          email: document.getElementById("contact-email").value.trim(),
+          subject: document.getElementById("contact-subject").value,
+          message: document.getElementById("contact-message").value.trim(),
+          status: "new"
+        })
+        .then(function (res) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Send Message";
+          if (res.error) {
+            document.getElementById("contact-error").textContent = res.error.message || "Something went wrong. Please try email instead.";
+            document.getElementById("contact-error").classList.add("is-visible");
+            return;
+          }
+          form.hidden = true;
+          document.getElementById("contact-success").classList.add("is-visible");
+          if (window.R3IGNToast) window.R3IGNToast.show("Message sent. We'll get back to you soon.", "success");
+        })
+        .catch(function () {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Send Message";
+          document.getElementById("contact-error").textContent = "Network error. Please try again or email r3ignhq@gmail.com.";
+          document.getElementById("contact-error").classList.add("is-visible");
+        });
+    });
+  });
+})();
+</script>
 </main><div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie notice">
   <p>We use essential cookies to run this site, plus optional analytics cookies to understand traffic. See our <a href="privacy.html">Privacy Policy</a>.</p>
   <div class="consent-actions">
