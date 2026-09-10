@@ -7,7 +7,6 @@ const TIKTOK_CLIENT_SECRET = Deno.env.get("TIKTOK_CLIENT_SECRET")!;
 const REDIRECT_URI = Deno.env.get("TIKTOK_REDIRECT_URI")!;
 const FRONTEND_URL = Deno.env.get("FRONTEND_URL") ?? "https://r3ign-esport.vercel.app";
 
-// auto-injected by Supabase for every Edge Function — no need to set these
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -51,63 +50,44 @@ serve(async (req) => {
     return new Response(`Failed to fetch TikTok profile: ${JSON.stringify(profileData)}`, { status: 502 });
   }
 
-// 3. Find or create a matching Supabase Auth user, keyed by TikTok open_id
-const syntheticEmail = `tiktok_${profile.open_id}@r3ign.tiktok`;
+  // 3. Create (or reuse) the synthetic user
+  const syntheticEmail = `tiktok_${profile.open_id}@r3ign.tiktok`;
 
-let user = null;
+  const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
+    email: syntheticEmail,
+    email_confirm: true,
+    user_metadata: {
+      provider: "tiktok",
+      tiktok_open_id: profile.open_id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+    },
+  });
 
-// Try to create the user. If it already exists we just continue.
-const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-  email: syntheticEmail,
-  email_confirm: true,
-  user_metadata: {
-    provider: "tiktok",
-    tiktok_open_id: profile.open_id,
-    display_name: profile.display_name,
-    avatar_url: profile.avatar_url,
-  },
-});
+  // Ignore "already registered" — that just means the user already exists
+  if (createErr) {
+    const msg = createErr.message || "";
+    const alreadyExists =
+      msg.includes("already been registered") ||
+      msg.includes("User already registered") ||
+      msg.includes("already exists") ||
+      createErr.status === 422;
 
-if (createErr) {
-  // User already exists — this is fine, we just need a session
-  if (
-    createErr.message?.includes("already been registered") ||
-    createErr.message?.includes("User already registered") ||
-    createErr.status === 422
-  ) {
-    // continue — we'll generate a magic link below
-  } else {
-    return new Response(`User creation failed: ${createErr.message}`, { status: 500 });
+    if (!alreadyExists) {
+      return new Response(`User creation failed: ${createErr.message}`, { status: 500 });
+    }
   }
-} else {
-  user = created.user;
-}
 
-// 4. Issue a session via a magic-link action link, then redirect the browser through it
-const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
-  type: "magiclink",
-  email: syntheticEmail,
-  options: { redirectTo: FRONTEND_URL },
-});
-
-if (linkErr) {
-  return new Response(`Session creation failed: ${linkErr.message}`, { status: 500 });
-}
-
-return new Response(null, {
-  status: 302,
-  headers: {
-    Location: linkData.properties.action_link,
-    "Set-Cookie": "tiktok_oauth_state=; Path=/; Max-Age=0",
-  },
-});
-  // 4. Issue a session via a magic-link action link, then redirect the browser through it
+  // 4. Generate a magic link session and redirect the browser
   const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
     type: "magiclink",
     email: syntheticEmail,
     options: { redirectTo: FRONTEND_URL },
   });
-  if (linkErr) return new Response(`Session creation failed: ${linkErr.message}`, { status: 500 });
+
+  if (linkErr) {
+    return new Response(`Session creation failed: ${linkErr.message}`, { status: 500 });
+  }
 
   return new Response(null, {
     status: 302,
