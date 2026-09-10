@@ -328,6 +328,74 @@
           </table>
         </div>
       </div>
+
+      <!-- ========== Contact Submissions ========== -->
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Contact Submissions</span>
+        <p class="lede" style="margin-top:0.6rem">Messages from the <a href="support.html" style="color:var(--paper)">Support</a> form. Mark as resolved when handled.</p>
+        <div class="auth-error" id="contact-error"></div>
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="contact-admin-rows"></tbody>
+          </table>
+        </div>
+        <p class="field-hint" id="contact-admin-empty" style="display:none;margin-top:1rem">No contact submissions yet.</p>
+      </div>
+
+      <!-- ========== Newsletter Subscribers ========== -->
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Newsletter Subscribers</span>
+        <p class="lede" style="margin-top:0.6rem">Email list from the homepage signup. League interests are stored when provided.</p>
+        <div class="auth-error" id="newsletter-error"></div>
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Interests</th>
+                <th>Confirmed</th>
+                <th>Joined</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="newsletter-admin-rows"></tbody>
+          </table>
+        </div>
+        <p class="field-hint" id="newsletter-admin-empty" style="display:none;margin-top:1rem">No newsletter subscribers yet.</p>
+      </div>
+
+      <!-- ========== Match Results Review ========== -->
+      <div class="form-panel mt-lg">
+        <span class="eyebrow">Match Results Review</span>
+        <p class="lede" style="margin-top:0.6rem">Results submitted via <a href="submit-result.html" style="color:var(--paper)">Submit Result</a>. Approve to publish or reject with a note.</p>
+        <div class="auth-error" id="match-results-error"></div>
+        <div class="table-wrap mt-lg">
+          <table class="rank-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>League</th>
+                <th>Match</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="match-results-admin-rows"></tbody>
+          </table>
+        </div>
+        <p class="field-hint" id="match-results-admin-empty" style="display:none;margin-top:1rem">No pending match results.</p>
+      </div>
     </div>
 
     <div class="form-panel mt-lg">
@@ -895,6 +963,219 @@
       });
     });
 
+    /* ---------- Contact Submissions ---------- */
+    function loadContactSubmissions() {
+      var tbody = document.getElementById("contact-admin-rows");
+      var emptyEl = document.getElementById("contact-admin-empty");
+      client.from("contact_submissions")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(40)
+        .then(function (res) {
+          if (res.error) {
+            var errEl = document.getElementById("contact-error");
+            errEl.textContent = res.error.message;
+            errEl.classList.add("is-visible");
+            return;
+          }
+          tbody.innerHTML = "";
+          if (!res.data || !res.data.length) {
+            emptyEl.style.display = "block";
+            return;
+          }
+          emptyEl.style.display = "none";
+          res.data.forEach(function (row) {
+            var date = row.created_at ? new Date(row.created_at).toLocaleDateString() : "—";
+            var status = row.status || "new";
+            var statusColor = status === "resolved" ? "var(--steel)" : (status === "in_progress" ? "var(--amber)" : "var(--signal)");
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+              "<td>" + date + "</td>" +
+              "<td class=\"team-name\">" + (row.name || "—") + "</td>" +
+              "<td>" + (row.email || "—") + "</td>" +
+              "<td>" + (row.subject || "—") + "</td>" +
+              "<td style=\"color:" + statusColor + "\">" + status + "</td>" +
+              "<td>" +
+                "<button class=\"btn btn-ghost\" data-view-contact=\"" + row.id + "\" style=\"padding:0.4em 0.8em;font-size:0.68rem\">View</button> " +
+                (status !== "resolved"
+                  ? "<button class=\"btn btn-ghost\" data-resolve-contact=\"" + row.id + "\" style=\"padding:0.4em 0.8em;font-size:0.68rem\">Resolve</button>"
+                  : "") +
+              "</td>";
+            tbody.appendChild(tr);
+          });
+
+          tbody.querySelectorAll("[data-view-contact]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var id = btn.getAttribute("data-view-contact");
+              var item = res.data.find(function (r) { return String(r.id) === id; });
+              if (!item) return;
+              var msg = "From: " + (item.name || "") + " <" + (item.email || "") + ">\n" +
+                        "Subject: " + (item.subject || "") + "\n\n" +
+                        (item.message || "") +
+                        (item.admin_notes ? "\n\n--- Admin notes ---\n" + item.admin_notes : "");
+              alert(msg);
+            });
+          });
+
+          tbody.querySelectorAll("[data-resolve-contact]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var notes = prompt("Optional admin notes (will be saved with resolved status):") || "";
+              client.from("contact_submissions")
+                .update({ status: "resolved", admin_notes: notes || null })
+                .eq("id", btn.getAttribute("data-resolve-contact"))
+                .then(function (r) {
+                  if (r.error) {
+                    var errEl = document.getElementById("contact-error");
+                    errEl.textContent = r.error.message;
+                    errEl.classList.add("is-visible");
+                    return;
+                  }
+                  if (window.R3IGNToast) window.R3IGNToast.show("Submission marked resolved.", "success");
+                  loadContactSubmissions();
+                });
+            });
+          });
+        });
+    }
+
+    /* ---------- Newsletter Subscribers ---------- */
+    function loadNewsletterSubscribers() {
+      var tbody = document.getElementById("newsletter-admin-rows");
+      var emptyEl = document.getElementById("newsletter-admin-empty");
+      client.from("newsletter_subscribers")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100)
+        .then(function (res) {
+          if (res.error) {
+            var errEl = document.getElementById("newsletter-error");
+            errEl.textContent = res.error.message;
+            errEl.classList.add("is-visible");
+            return;
+          }
+          tbody.innerHTML = "";
+          if (!res.data || !res.data.length) {
+            emptyEl.style.display = "block";
+            return;
+          }
+          emptyEl.style.display = "none";
+          res.data.forEach(function (row) {
+            var interests = Array.isArray(row.league_interests)
+              ? row.league_interests.join(", ")
+              : (row.league_interests || "—");
+            var date = row.created_at ? new Date(row.created_at).toLocaleDateString() : "—";
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+              "<td>" + (row.email || "—") + "</td>" +
+              "<td>" + interests + "</td>" +
+              "<td>" + (row.confirmed ? "Yes" : "No") + "</td>" +
+              "<td>" + date + "</td>" +
+              "<td><button class=\"btn btn-ghost\" data-delete-subscriber=\"" + row.id + "\" style=\"padding:0.4em 0.8em;font-size:0.68rem\">Remove</button></td>";
+            tbody.appendChild(tr);
+          });
+
+          tbody.querySelectorAll("[data-delete-subscriber]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              if (!confirm("Remove this subscriber?")) return;
+              client.from("newsletter_subscribers")
+                .delete()
+                .eq("id", btn.getAttribute("data-delete-subscriber"))
+                .then(function () {
+                  if (window.R3IGNToast) window.R3IGNToast.show("Subscriber removed.", "success");
+                  loadNewsletterSubscribers();
+                });
+            });
+          });
+        });
+    }
+
+    /* ---------- Match Results Review ---------- */
+    function loadMatchResultsAdmin() {
+      var tbody = document.getElementById("match-results-admin-rows");
+      var emptyEl = document.getElementById("match-results-admin-empty");
+      client.from("match_results")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(40)
+        .then(function (res) {
+          if (res.error) {
+            var errEl = document.getElementById("match-results-error");
+            errEl.textContent = res.error.message;
+            errEl.classList.add("is-visible");
+            return;
+          }
+          tbody.innerHTML = "";
+          if (!res.data || !res.data.length) {
+            emptyEl.style.display = "block";
+            return;
+          }
+          emptyEl.style.display = "none";
+          res.data.forEach(function (row) {
+            var date = row.match_date || row.created_at
+              ? new Date(row.match_date || row.created_at).toLocaleDateString()
+              : "—";
+            var matchLabel = (row.team_a || "?") + " vs " + (row.team_b || "?");
+            var score = (row.score_a != null ? row.score_a : "—") + " – " + (row.score_b != null ? row.score_b : "—");
+            var status = row.status || "pending";
+            var statusColor = status === "approved" ? "var(--signal)" : (status === "rejected" ? "var(--steel)" : "var(--amber)");
+            var actions = "";
+            if (status === "pending") {
+              actions =
+                "<button class=\"btn btn-ghost\" data-approve-result=\"" + row.id + "\" style=\"padding:0.4em 0.8em;font-size:0.68rem\">Approve</button> " +
+                "<button class=\"btn btn-ghost\" data-reject-result=\"" + row.id + "\" style=\"padding:0.4em 0.8em;font-size:0.68rem\">Reject</button>";
+            } else {
+              actions = "<span style=\"color:var(--steel)\">—</span>";
+            }
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+              "<td>" + date + "</td>" +
+              "<td>" + (row.league ? row.league.toUpperCase() : "—") + "</td>" +
+              "<td class=\"team-name\">" + matchLabel + "</td>" +
+              "<td>" + score + "</td>" +
+              "<td style=\"color:" + statusColor + "\">" + status + "</td>" +
+              "<td>" + actions + "</td>";
+            tbody.appendChild(tr);
+          });
+
+          tbody.querySelectorAll("[data-approve-result]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              client.from("match_results")
+                .update({ status: "approved" })
+                .eq("id", btn.getAttribute("data-approve-result"))
+                .then(function (r) {
+                  if (r.error) {
+                    var errEl = document.getElementById("match-results-error");
+                    errEl.textContent = r.error.message;
+                    errEl.classList.add("is-visible");
+                    return;
+                  }
+                  if (window.R3IGNToast) window.R3IGNToast.show("Match result approved.", "success");
+                  loadMatchResultsAdmin();
+                });
+            });
+          });
+
+          tbody.querySelectorAll("[data-reject-result]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var reason = prompt("Optional rejection reason:") || "";
+              client.from("match_results")
+                .update({ status: "rejected", admin_notes: reason || null })
+                .eq("id", btn.getAttribute("data-reject-result"))
+                .then(function (r) {
+                  if (r.error) {
+                    var errEl = document.getElementById("match-results-error");
+                    errEl.textContent = r.error.message;
+                    errEl.classList.add("is-visible");
+                    return;
+                  }
+                  if (window.R3IGNToast) window.R3IGNToast.show("Match result rejected.", "info");
+                  loadMatchResultsAdmin();
+                });
+            });
+          });
+        });
+    }
+
     /* ---------- Player Review Assistant lookup ---------- */
     function runPlayerLookup(term) {
       var resultBox = document.getElementById("player-lookup-result");
@@ -987,6 +1268,9 @@
         loadHighlightsAdmin();
         loadNewsAdmin();
         loadAwardsAdmin();
+        loadContactSubmissions();
+        loadNewsletterSubscribers();
+        loadMatchResultsAdmin();
       }
       loadQueue();
     });

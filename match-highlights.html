@@ -124,25 +124,79 @@
         '<span class="eyebrow">' + (h.match_label || (h.league ? h.league.toUpperCase() : "Highlight")) + '</span>' +
         '<h3></h3><p></p>' +
         '<div class="news-foot"><span></span>' +
-          '<button class="btn btn-ghost share-btn" style="padding:0.3em 0.6em;font-size:0.7rem" title="Share">&#128279; Share</button>' +
+          '<button type="button" class="btn btn-ghost share-btn" style="padding:0.3em 0.6em;font-size:0.7rem" title="Share this highlight">Share</button>' +
         '</div>' +
       '</div>';
     card.querySelector("h3").textContent = h.title || "Match Highlight";
     card.querySelector("p").textContent = h.description || "";
     card.querySelector(".news-foot span").textContent = h.created_at ? new Date(h.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+
     var shareBtn = card.querySelector(".share-btn");
-    if (shareBtn && navigator.share) {
+    if (shareBtn) {
       shareBtn.addEventListener("click", function () {
-        navigator.share({
+        var shareData = {
           title: h.title || "R3IGN Match Highlight",
           text: h.description || "Check out this match highlight on R3IGN.",
-          url: h.video_url || window.location.href
-        }).catch(function () {});
+          url: h.video_url || (window.location.origin + window.location.pathname)
+        };
+
+        // Prefer native Web Share API (mobile / supported browsers)
+        if (navigator.share) {
+          navigator.share(shareData).catch(function () {
+            // User cancelled or share failed — fall through to clipboard
+            copyShareLink(shareData.url, shareBtn);
+          });
+        } else {
+          // Desktop fallback: copy link to clipboard
+          copyShareLink(shareData.url, shareBtn);
+        }
       });
-    } else if (shareBtn) {
-      shareBtn.style.display = "none";
     }
     return card;
+  }
+
+  function copyShareLink(url, btn) {
+    if (!url) url = window.location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () {
+        var original = btn.textContent;
+        btn.textContent = "Link copied";
+        btn.style.color = "var(--amber)";
+        if (window.R3IGNToast) window.R3IGNToast.show("Link copied to clipboard.", "success");
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.style.color = "";
+        }, 1800);
+      }).catch(function () {
+        fallbackCopy(url, btn);
+      });
+    } else {
+      fallbackCopy(url, btn);
+    }
+  }
+
+  function fallbackCopy(url, btn) {
+    var ta = document.createElement("textarea");
+    ta.value = url;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "absolute";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      var original = btn.textContent;
+      btn.textContent = "Link copied";
+      btn.style.color = "var(--amber)";
+      if (window.R3IGNToast) window.R3IGNToast.show("Link copied to clipboard.", "success");
+      setTimeout(function () {
+        btn.textContent = original;
+        btn.style.color = "";
+      }, 1800);
+    } catch (e) {
+      if (window.R3IGNToast) window.R3IGNToast.show("Unable to copy link.", "error");
+    }
+    document.body.removeChild(ta);
   }
 
   function sampleHighlights() {
