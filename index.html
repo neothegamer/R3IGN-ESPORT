@@ -371,7 +371,7 @@
     </div>
     <div id="newsletter-error" class="auth-error" style="margin-top:1rem"></div>
 
-    <form id="newsletter-form" style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center;align-items:center">
+    <form id="newsletter-form" style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:0.65rem;justify-content:center;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto">
       <!-- Honeypot -->
       <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden" aria-hidden="true">
         <label for="newsletter-website">Website</label>
@@ -379,8 +379,10 @@
       </div>
 
       <label for="newsletter-email" class="visually-hidden">Email</label>
-      <input type="email" id="newsletter-email" name="email" required placeholder="you@email.com" autocomplete="email" style="flex:1 1 220px;max-width:320px;margin:0">
-      <button type="submit" class="btn btn-primary" id="newsletter-submit">Subscribe</button>
+      <input type="email" id="newsletter-email" name="email" required placeholder="you@email.com" autocomplete="email"
+        style="flex:1 1 200px;min-width:0;margin:0;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);color:var(--paper);padding:0.9em 1em;font-family:var(--f-body);font-size:0.95rem;line-height:1.25;height:auto">
+      <button type="submit" class="btn btn-primary" id="newsletter-submit"
+        style="align-self:stretch;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0.9em 1.5em">Subscribe</button>
     </form>
     <p class="field-hint" style="margin-top:0.75rem">No spam. Unsubscribe any time. See our <a href="privacy.html">Privacy Policy</a>.</p>
   </div>
