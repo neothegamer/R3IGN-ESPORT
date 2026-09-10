@@ -273,16 +273,38 @@ section{ padding-block: clamp(3rem, 7vw, 6rem); }
 }
 .nav > nav{ margin-right:auto; margin-left:clamp(1rem,3vw,3rem); }
 .brand{
-  display:flex; align-items:center; gap:0.6rem;
+  display:flex; align-items:center; gap:0.65rem;
   font-family:var(--f-display);
   font-size:1.15rem;
   letter-spacing:0.06em;
   color:var(--paper);
-  cursor:default;
+  text-decoration:none;
   user-select:none;
 }
+.brand:hover{ color:var(--paper); }
 .brand svg{ width:30px; height:30px; }
-.brand-mark{ width:34px; height:34px; object-fit:cover; border-radius:0; display:block; }
+.brand-mark{ width:34px; height:34px; object-fit:cover; border-radius:0; display:block; flex-shrink:0; }
+.brand-text{
+  display:flex;
+  flex-direction:column;
+  gap:0.1rem;
+  line-height:1.15;
+}
+.brand-name{
+  font-family:var(--f-display);
+  font-size:1.05rem;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--paper);
+}
+.brand-tagline{
+  font-family:var(--f-mono);
+  font-size:0.58rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--steel);
+  font-weight:400;
+}
 .nav-links{
   display:flex;
   gap:1rem;
