@@ -270,7 +270,7 @@
         verifyBtn.disabled = false;
         if (res.error) { showVerifyError(res.error.message); return; }
         window.R3IGNToast.show("Account created successfully.", "success");
-        window.location.href = "account.html";
+        window.location.href = "onboarding.html";
       }).catch(function (e) {
         verifyBtn.disabled = false;
         showVerifyError(e.message);
@@ -392,6 +392,7 @@
 <script src="js/auth.js"></script>
 <script src="js/main.js"></script>
 <script src="js/assistant.js"></script>
+<script src="js/onboarding-gate.js"></script>
   <div class="page-transition-overlay" aria-hidden="true"></div>
 </body>
 </html>

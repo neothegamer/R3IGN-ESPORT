@@ -93,6 +93,13 @@
     </div>
 
     <div id="account-panel" style="display:none">
+      <div id="ob-resume-banner" class="dossier" hidden style="margin-bottom:1.5rem;padding:1rem 1.25rem;border:1px solid var(--signal);">
+        <strong style="font-family:var(--f-display);letter-spacing:0.04em;">PROFILE SETUP INCOMPLETE</strong>
+        <p style="margin:0.5rem 0 0.85rem;color:var(--paper-dim);font-size:0.9rem;">
+          Finish your player profile to unlock the full R3IGN experience.
+        </p>
+        <a class="btn btn-primary" href="onboarding.html">Continue onboarding →</a>
+      </div>
       <div class="account-card">
         <label class="account-avatar-upload" for="profile-picture" aria-label="Upload profile picture">
           <span class="account-avatar" id="account-avatar">R</span>
@@ -610,6 +617,26 @@
 <script src="js/auth.js"></script>
 <script src="js/main.js"></script>
 <script src="js/assistant.js"></script>
+<script>
+(function () {
+  if (!window.R3IGNAuth || !window.R3IGNAuth.client) return;
+  window.R3IGNAuth.getUser().then(function (res) {
+    var user = res.data && res.data.user;
+    if (!user) return;
+    window.R3IGNAuth.client.from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(function (r) {
+        if (r.data && r.data.onboarding_completed === false) {
+          var el = document.getElementById("ob-resume-banner");
+          if (el) el.hidden = false;
+        }
+      });
+  });
+})();
+</script>
+<script src="js/onboarding-gate.js"></script>
   <div class="page-transition-overlay" aria-hidden="true"></div>
 </body>
 </html>
