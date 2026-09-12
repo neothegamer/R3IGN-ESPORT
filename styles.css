@@ -982,27 +982,30 @@ table.rank-table{
 .field.has-error textarea{ border-color:var(--signal); }
 .field.has-error .field-error{ display:block; }
 
-/* Password reveal button */
+/* ============================================================
+   PASSWORD REVEAL + STRENGTH METER
+   ============================================================ */
 .password-wrap {
   position: relative;
 }
 .password-wrap input {
-  padding-right: 3rem;
+  padding-right: 3rem !important;
 }
 .password-toggle {
   position: absolute;
-  right: 0.75rem;
+  right: 0.7rem;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
+  background: transparent;
   border: none;
   color: var(--steel);
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0.3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  line-height: 0;
+  z-index: 2;
 }
 .password-toggle:hover {
   color: var(--paper);
@@ -1011,9 +1014,10 @@ table.rank-table{
   width: 20px;
   height: 20px;
   display: block;
+  pointer-events: none;
 }
 
-/* Password strength (signup only) */
+/* Strength meter – hidden until user types */
 .password-strength {
   margin-top: 0.75rem;
   display: none;
@@ -1026,18 +1030,18 @@ table.rank-table{
   background: var(--line);
   border-radius: 2px;
   overflow: hidden;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.7rem;
 }
 .password-strength-bar span {
   display: block;
   height: 100%;
-  width: 0%;
+  width: 0;
   background: var(--signal);
   transition: width 0.25s ease, background 0.25s ease;
 }
-.password-strength-bar.is-weak span { width: 25%; background: var(--signal); }
-.password-strength-bar.is-fair span { width: 50%; background: #c79a3d; }
-.password-strength-bar.is-good span { width: 75%; background: #6f9f68; }
+.password-strength-bar.is-weak span   { width: 25%;  background: var(--signal); }
+.password-strength-bar.is-fair span   { width: 50%;  background: #c79a3d; }
+.password-strength-bar.is-good span   { width: 75%;  background: #6f9f68; }
 .password-strength-bar.is-strong span { width: 100%; background: #4caf50; }
 
 .password-reqs {
@@ -1050,14 +1054,16 @@ table.rank-table{
 .password-reqs li {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 0.3rem;
+  gap: 0.5rem;
+  margin-bottom: 0.28rem;
+  line-height: 1.3;
 }
 .password-reqs li::before {
   content: "✗";
   color: var(--signal);
   font-weight: 700;
-  width: 1em;
+  width: 1.1em;
+  flex-shrink: 0;
 }
 .password-reqs li.is-met {
   color: var(--paper);
