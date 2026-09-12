@@ -51,6 +51,24 @@
   <section class="section-tight"><div class="wrap settings-shell">
     <div class="auth-error" id="settings-error" role="alert"></div>
     <div class="form-success" id="settings-success" role="status"></div>
+    <div class="settings-panel" id="photo-panel" hidden>
+      <span class="eyebrow">Profile Photo</span>
+      <h2 style="margin-top:0.75rem">Profile picture</h2>
+      <p>Upload, change, or remove the photo shown on your account.</p>
+      <div class="account-card" style="margin-top:1.25rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
+        <div class="account-avatar-block">
+          <label class="account-avatar-upload" for="settings-profile-picture" aria-label="Change profile picture">
+            <span class="account-avatar" id="settings-avatar">R</span>
+            <input type="file" id="settings-profile-picture" accept="image/png,image/jpeg,image/webp,image/gif">
+          </label>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <button type="button" class="btn btn-ghost" id="settings-btn-change-avatar" style="padding:0.4rem 0.85rem;font-size:0.72rem;width:fit-content">Change photo</button>
+          <button type="button" class="btn btn-ghost" id="settings-btn-remove-avatar" style="padding:0.4rem 0.85rem;font-size:0.72rem;width:fit-content;display:none">Remove photo</button>
+          <p class="field-hint" id="settings-photo-status" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
     <div class="settings-panel" id="settings-panel" hidden>
       <span class="eyebrow">Connected Accounts</span>
       <h2 style="margin-top:0.75rem">Sign-in methods</h2>
@@ -102,10 +120,112 @@
       setStatus("email-status", providers.indexOf("email") !== -1);
       setStatus("discord-status", providers.indexOf("discord") !== -1);
       setStatus("tiktok-status", providers.indexOf("custom:tiktok") !== -1 || providers.indexOf("tiktok") !== -1);
+      document.getElementById("photo-panel").hidden = false;
       document.getElementById("settings-panel").hidden = false;
       document.getElementById("email-panel").hidden = providers.indexOf("email") !== -1;
       document.getElementById("settings-actions").hidden = false;
+
+      var displayName = (user.user_metadata && (user.user_metadata.display_name || user.user_metadata.full_name)) || (user.email || "R").split("@")[0];
+      window.__r3ignSettingsUser = user;
+      setSettingsAvatar(null, displayName);
+      return auth.client.from("profiles").select("avatar_url, display_name").eq("id", user.id).maybeSingle().then(function (pres) {
+        if (pres && pres.data) {
+          setSettingsAvatar(pres.data.avatar_url || null, pres.data.display_name || displayName);
+        }
+      });
     }).catch(function (err) { showError(err.message || "Could not load your account settings."); });
+
+    function setSettingsAvatar(url, displayName) {
+      var el = document.getElementById("settings-avatar");
+      var removeBtn = document.getElementById("settings-btn-remove-avatar");
+      if (!el) return;
+      if (url) {
+        el.style.backgroundImage = "url('" + url + "')";
+        el.textContent = "";
+        if (removeBtn) removeBtn.style.display = "";
+      } else {
+        el.style.backgroundImage = "";
+        el.textContent = (displayName || "R").charAt(0).toUpperCase();
+        if (removeBtn) removeBtn.style.display = "none";
+      }
+    }
+
+    var photoInput = document.getElementById("settings-profile-picture");
+    var photoStatus = document.getElementById("settings-photo-status");
+    var btnChange = document.getElementById("settings-btn-change-avatar");
+    var btnRemove = document.getElementById("settings-btn-remove-avatar");
+
+    if (btnChange && photoInput) {
+      btnChange.addEventListener("click", function () { photoInput.click(); });
+    }
+
+    if (photoInput) {
+      photoInput.addEventListener("change", function () {
+        var user = window.__r3ignSettingsUser;
+        var file = photoInput.files && photoInput.files[0];
+        if (!file || !user) return;
+        if (file.size > 5 * 1024 * 1024) {
+          if (photoStatus) photoStatus.textContent = "Choose an image smaller than 5 MB.";
+          photoInput.value = "";
+          return;
+        }
+        if (photoStatus) photoStatus.textContent = "Uploading...";
+        var path = user.id + "/avatar" + (file.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0].toLowerCase();
+        auth.client.storage.from("profile-avatars").upload(path, file, { upsert: true, contentType: file.type })
+          .then(function (uploadRes) {
+            if (uploadRes.error) throw uploadRes.error;
+            var publicUrl = auth.client.storage.from("profile-avatars").getPublicUrl(path).data.publicUrl;
+            return auth.client.from("profiles").update({ avatar_url: publicUrl }).eq("id", user.id).then(function (updateRes) {
+              if (updateRes.error) throw updateRes.error;
+              return publicUrl + "?t=" + Date.now();
+            });
+          })
+          .then(function (publicUrl) {
+            setSettingsAvatar(publicUrl);
+            if (photoStatus) photoStatus.textContent = "Profile picture updated.";
+            if (window.R3IGNToast) window.R3IGNToast.show("Profile picture updated.", "success");
+            document.dispatchEvent(new CustomEvent("r3ign:avatar-updated", { detail: { url: publicUrl } }));
+          })
+          .catch(function (err) {
+            if (photoStatus) photoStatus.textContent = err.message || "Upload failed.";
+            if (window.R3IGNToast) window.R3IGNToast.show(err.message || "Upload failed.", "error");
+          });
+      });
+    }
+
+    if (btnRemove) {
+      btnRemove.addEventListener("click", function () {
+        var user = window.__r3ignSettingsUser;
+        if (!user) return;
+        var runRemove = function () {
+          if (photoStatus) photoStatus.textContent = "Removing...";
+          auth.client.from("profiles").update({ avatar_url: null }).eq("id", user.id)
+            .then(function (res) {
+              if (res.error) throw res.error;
+              var name = (user.user_metadata && (user.user_metadata.display_name || user.user_metadata.full_name)) || (user.email || "R").split("@")[0];
+              setSettingsAvatar(null, name);
+              if (photoStatus) photoStatus.textContent = "Profile picture removed.";
+              if (photoInput) photoInput.value = "";
+              if (window.R3IGNToast) window.R3IGNToast.show("Profile picture removed.", "success");
+              document.dispatchEvent(new CustomEvent("r3ign:avatar-updated", { detail: { url: null } }));
+            })
+            .catch(function (err) {
+              if (photoStatus) photoStatus.textContent = err.message || "Could not remove picture.";
+              if (window.R3IGNToast) window.R3IGNToast.show(err.message || "Could not remove picture.", "error");
+            });
+        };
+        if (window.R3IGNConfirm) {
+          window.R3IGNConfirm("Remove your profile picture?", {
+            title: "Remove photo",
+            confirmLabel: "Remove",
+            cancelLabel: "Cancel"
+          }).then(function (ok) { if (ok) runRemove(); });
+        } else if (window.confirm("Remove your profile picture?")) {
+          runRemove();
+        }
+      });
+    }
+
     document.getElementById("connect-discord").addEventListener("click", function () {
       auth.linkWithDiscord().catch(function (err) { showError(err.message || "Could not connect Discord."); });
     });
