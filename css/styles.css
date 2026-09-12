@@ -1379,20 +1379,81 @@ table.rank-table{
 }
 .auth-panel h1{ font-size:1.6rem; }
 .auth-panel .lede{ margin-top:0.6rem; color:var(--paper-dim); font-size:0.9rem; }
-.oauth-group{ display:flex; flex-direction:column; gap:0.75rem; margin-top:1.75rem; }
-.btn-oauth{
-  width:100%;
-  justify-content:center;
-  border-color:var(--line);
-  background:var(--panel-2);
+.oauth-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
 }
-.btn-oauth:hover{ background:var(--ink); color:var(--paper); border-color:var(--steel); }
-.btn-oauth .glyph{
-  width:18px; height:18px; border-radius:50%;
-  display:inline-flex; align-items:center; justify-content:center; font-size:0.6rem;
-  overflow:hidden; flex-shrink:0;
+
+/* Side-by-side icon buttons (no borders) */
+.oauth-group.oauth-icons {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
 }
-.btn-oauth .glyph img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.btn-oauth-icon {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--paper);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  padding: 0;
+}
+
+.btn-oauth-icon:hover {
+  background: var(--ink);
+  transform: translateY(-2px);
+}
+
+.btn-oauth-icon:active {
+  transform: translateY(0);
+}
+
+.btn-oauth-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Keep old full-width style available if needed elsewhere */
+.btn-oauth {
+  width: 100%;
+  justify-content: center;
+  border-color: var(--line);
+  background: var(--panel-2);
+}
+.btn-oauth:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--steel);
+}
+.btn-oauth .glyph {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.btn-oauth .glyph img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .auth-divider{
   display:flex; align-items:center; gap:1rem;
   margin:1.75rem 0;
