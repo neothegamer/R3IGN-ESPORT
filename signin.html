@@ -99,7 +99,7 @@
         </div>
         <p style="margin:-0.35rem 0 1rem;text-align:right;font-size:0.82rem"><button type="button" class="link-btn" id="btn-forgot-password">Forgot password?</button></p>
         <div class="field checkbox-field" id="terms-consent-field">
-          <input type="checkbox" id="signin-terms" name="terms">
+          <input type="checkbox" id="signin-terms" name="terms" required>
           <label for="signin-terms">I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> before continuing.</label>
           <div class="field-error">You must accept the Terms &amp; Conditions before continuing.</div>
         </div>
@@ -293,11 +293,16 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
+      var termsOk = requireTerms();
       var emailOk = validateField(emailField, function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); });
       var passwordOk = validateField(passwordField);
 
-      if (!emailOk || !passwordOk) {
+      if (!termsOk || !emailOk || !passwordOk) {
         var firstError = form.querySelector(".has-error input");
+        if (!firstError) {
+          var termsField = document.getElementById("signin-terms");
+          if (termsField && !termsField.checked) firstError = termsField;
+        }
         if (firstError) firstError.focus();
         return;
       }
