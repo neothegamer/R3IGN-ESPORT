@@ -93,12 +93,34 @@
         </div>
         <div class="field">
           <label for="su-password">Password <span class="req">*</span></label>
-          <input type="password" id="su-password" name="password" required minlength="6" autocomplete="new-password">
-          <div class="field-error">Password must be at least 6 characters.</div>
+          <div class="password-wrap">
+            <input type="password" id="su-password" name="password" required minlength="8" autocomplete="new-password" placeholder="Enter your password">
+            <button type="button" class="password-toggle" aria-label="Show password" data-target="su-password">
+              <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <div class="password-strength" id="password-strength">
+            <div class="password-strength-bar" id="strength-bar"><span></span></div>
+            <ul class="password-reqs" id="password-reqs">
+              <li data-req="length">At least 8 characters</li>
+              <li data-req="number">At least 1 number</li>
+              <li data-req="lower">At least 1 lowercase letter</li>
+              <li data-req="upper">At least 1 uppercase letter</li>
+              <li data-req="special">At least 1 special character</li>
+            </ul>
+          </div>
+          <div class="field-error">Password does not meet the requirements.</div>
         </div>
         <div class="field">
           <label for="su-password-confirm">Confirm password <span class="req">*</span></label>
-          <input type="password" id="su-password-confirm" name="password_confirm" required minlength="6" autocomplete="new-password">
+          <div class="password-wrap">
+            <input type="password" id="su-password-confirm" name="password_confirm" required minlength="8" autocomplete="new-password" placeholder="Enter your password">
+            <button type="button" class="password-toggle" aria-label="Show password" data-target="su-password-confirm">
+              <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
           <div class="field-error">Passwords do not match.</div>
         </div>
         <div class="field checkbox-field" id="terms-consent-field">
@@ -196,11 +218,74 @@
       return !bad;
     }
 
+    // Password reveal toggles
+    document.querySelectorAll(".password-toggle").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var input = document.getElementById(btn.getAttribute("data-target"));
+        var open = btn.querySelector(".eye-open");
+        var closed = btn.querySelector(".eye-closed");
+        if (input.type === "password") {
+          input.type = "text";
+          open.style.display = "none";
+          closed.style.display = "block";
+          btn.setAttribute("aria-label", "Hide password");
+        } else {
+          input.type = "password";
+          open.style.display = "block";
+          closed.style.display = "none";
+          btn.setAttribute("aria-label", "Show password");
+        }
+      });
+    });
+
+    // Password strength meter
+    var passwordField = document.getElementById("su-password");
+    var passwordConfirmField = document.getElementById("su-password-confirm");
+    var strengthBox = document.getElementById("password-strength");
+    var strengthBar = document.getElementById("strength-bar");
+    var reqs = document.getElementById("password-reqs");
+
+    function checkPasswordStrength(value) {
+      var checks = {
+        length: value.length >= 8,
+        number: /\d/.test(value),
+        lower: /[a-z]/.test(value),
+        upper: /[A-Z]/.test(value),
+        special: /[^A-Za-z0-9]/.test(value)
+      };
+
+      var met = 0;
+      Object.keys(checks).forEach(function (key) {
+        var li = reqs.querySelector('[data-req="' + key + '"]');
+        if (checks[key]) {
+          li.classList.add("is-met");
+          met++;
+        } else {
+          li.classList.remove("is-met");
+        }
+      });
+
+      strengthBar.className = "password-strength-bar";
+      if (met <= 1) strengthBar.classList.add("is-weak");
+      else if (met === 2 || met === 3) strengthBar.classList.add("is-fair");
+      else if (met === 4) strengthBar.classList.add("is-good");
+      else strengthBar.classList.add("is-strong");
+
+      return met === 5;
+    }
+
+    passwordField.addEventListener("input", function () {
+      if (passwordField.value.length > 0) {
+        strengthBox.classList.add("is-visible");
+        checkPasswordStrength(passwordField.value);
+      } else {
+        strengthBox.classList.remove("is-visible");
+      }
+    });
+
     var form = document.getElementById("signup-form");
     var nameField = document.getElementById("su-name");
     var emailField = document.getElementById("su-email");
-    var passwordField = document.getElementById("su-password");
-    var passwordConfirmField = document.getElementById("su-password-confirm");
     var termsField = document.getElementById("signup-terms");
     var submitBtn = form.querySelector('button[type="submit"]');
 
@@ -222,9 +307,9 @@
       var termsOk = requireTerms();
       var nameOk = validateField(nameField);
       var emailOk = validateField(emailField, function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); });
-      var passwordOk = validateField(passwordField, function (v) { return v.length >= 6; });
+      var passwordOk = validateField(passwordField, function (v) { return checkPasswordStrength(v); });
       var confirmOk = validateField(passwordConfirmField, function (v) {
-        return v.length >= 6 && v === passwordField.value;
+        return v.length >= 8 && v === passwordField.value;
       });
 
       if (!termsOk || !nameOk || !emailOk || !passwordOk || !confirmOk) {
