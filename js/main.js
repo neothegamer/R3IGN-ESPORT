@@ -55,66 +55,6 @@
         };
         var element = document.createElement("div");
         element.className = "toast toast--" + type;
-  /* Themed confirm dialog (replaces window.confirm) */
-  window.R3IGNConfirm = function (message, options) {
-    options = options || {};
-    var title = options.title || "Confirm";
-    var confirmLabel = options.confirmLabel || "OK";
-    var cancelLabel = options.cancelLabel || "Cancel";
-    var danger = options.danger !== false;
-
-    return new Promise(function (resolve) {
-      var existing = document.querySelector(".r3ign-confirm-overlay");
-      if (existing) existing.remove();
-
-      var overlay = document.createElement("div");
-      overlay.className = "r3ign-confirm-overlay";
-      overlay.setAttribute("role", "dialog");
-      overlay.setAttribute("aria-modal", "true");
-      overlay.innerHTML =
-        '<div class="r3ign-confirm">' +
-        '<h3 class="r3ign-confirm__title"></h3>' +
-        '<p class="r3ign-confirm__message"></p>' +
-        '<div class="r3ign-confirm__actions">' +
-        '<button type="button" class="btn btn-ghost" data-confirm-cancel></button>' +
-        '<button type="button" class="btn ' + (danger ? "btn-primary" : "btn-primary") + '" data-confirm-ok></button>' +
-        "</div></div>";
-
-      overlay.querySelector(".r3ign-confirm__title").textContent = title;
-      overlay.querySelector(".r3ign-confirm__message").textContent = message;
-      overlay.querySelector("[data-confirm-cancel]").textContent = cancelLabel;
-      overlay.querySelector("[data-confirm-ok]").textContent = confirmLabel;
-
-      function close(result) {
-        overlay.classList.remove("is-open");
-        setTimeout(function () {
-          if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-        }, 200);
-        document.removeEventListener("keydown", onKey);
-        resolve(result);
-      }
-
-      function onKey(e) {
-        if (e.key === "Escape") close(false);
-        if (e.key === "Enter") close(true);
-      }
-
-      overlay.querySelector("[data-confirm-cancel]").addEventListener("click", function () { close(false); });
-      overlay.querySelector("[data-confirm-ok]").addEventListener("click", function () { close(true); });
-      overlay.addEventListener("click", function (e) {
-        if (e.target === overlay) close(false);
-      });
-      document.addEventListener("keydown", onKey);
-
-      document.body.appendChild(overlay);
-      requestAnimationFrame(function () {
-        overlay.classList.add("is-open");
-        overlay.querySelector("[data-confirm-ok]").focus();
-      });
-    });
-  };
-
-
         element.setAttribute("role", type === "success" || type === "info" ? "status" : "alert");
         element.innerHTML =
           '<div class="toast__label">' + type + '</div>' +
@@ -146,6 +86,68 @@
       dismiss: dismiss
     };
   })();
+
+
+  /* Themed confirm dialog (replaces window.confirm) */
+  window.R3IGNConfirm = function (message, options) {
+    options = options || {};
+    var title = options.title || "Confirm";
+    var confirmLabel = options.confirmLabel || "OK";
+    var cancelLabel = options.cancelLabel || "Cancel";
+
+    return new Promise(function (resolve) {
+      var existing = document.querySelector(".r3ign-confirm-overlay");
+      if (existing) existing.remove();
+
+      var overlay = document.createElement("div");
+      overlay.className = "r3ign-confirm-overlay";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      overlay.innerHTML =
+        '<div class="r3ign-confirm">' +
+        '<h3 class="r3ign-confirm__title"></h3>' +
+        '<p class="r3ign-confirm__message"></p>' +
+        '<div class="r3ign-confirm__actions">' +
+        '<button type="button" class="btn btn-ghost" data-confirm-cancel></button>' +
+        '<button type="button" class="btn btn-primary" data-confirm-ok></button>' +
+        "</div></div>";
+
+      overlay.querySelector(".r3ign-confirm__title").textContent = title;
+      overlay.querySelector(".r3ign-confirm__message").textContent = message;
+      overlay.querySelector("[data-confirm-cancel]").textContent = cancelLabel;
+      overlay.querySelector("[data-confirm-ok]").textContent = confirmLabel;
+
+      function close(result) {
+        overlay.classList.remove("is-open");
+        setTimeout(function () {
+          if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }, 200);
+        document.removeEventListener("keydown", onKey);
+        resolve(result);
+      }
+
+      function onKey(e) {
+        if (e.key === "Escape") close(false);
+        if (e.key === "Enter") {
+          e.preventDefault();
+          close(true);
+        }
+      }
+
+      overlay.querySelector("[data-confirm-cancel]").addEventListener("click", function () { close(false); });
+      overlay.querySelector("[data-confirm-ok]").addEventListener("click", function () { close(true); });
+      overlay.addEventListener("click", function (e) {
+        if (e.target === overlay) close(false);
+      });
+      document.addEventListener("keydown", onKey);
+
+      document.body.appendChild(overlay);
+      requestAnimationFrame(function () {
+        overlay.classList.add("is-open");
+        overlay.querySelector("[data-confirm-ok]").focus();
+      });
+    });
+  };
 
   /* ---------- measured header height (keeps mobile menu background flush) ---------- */
   var headerEl = document.querySelector(".site-header");
