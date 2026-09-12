@@ -159,7 +159,7 @@
 
     var profileRes = await client
       .from("profiles")
-      .select("display_name, country, bio, player_id, avatar_url, selected_games, r3ign_hq_joined, onboarding_step, onboarding_completed")
+      .select("display_name, country, bio, player_id, league_id, avatar_url, selected_games, r3ign_hq_joined, onboarding_step, onboarding_completed")
       .eq("id", state.userId)
       .maybeSingle();
 
@@ -174,7 +174,9 @@
       state.profile.display_name = p.display_name || "";
       state.profile.country = p.country || "Nigeria";
       state.profile.bio = p.bio || "";
-      state.profile.player_id = p.player_id || "";
+      // League ID is the single official ID; keep player_id in sync with it
+      state.profile.player_id = p.league_id || p.player_id || "";
+      state.profile.league_id = p.league_id || p.player_id || "";
       state.profile.avatar_url = p.avatar_url || null;
       state.profile.selected_games = Array.isArray(p.selected_games) ? p.selected_games : [];
       state.profile.r3ign_hq_joined = !!p.r3ign_hq_joined;
@@ -210,7 +212,7 @@
             (again.data && again.data.player_id) || candidate;
         }
       } catch (e) {
-        state.profile.player_id = "R3HQ-PENDING";
+        state.profile.player_id = "R3E-PENDING";
       }
     }
 
@@ -384,7 +386,7 @@
 
     if (nameInput) nameInput.value = state.profile.display_name || "";
     if (bioInput) bioInput.value = state.profile.bio || "";
-    if (playerIdEl) playerIdEl.textContent = state.profile.player_id || "R3HQ-…";
+    if (playerIdEl) playerIdEl.textContent = state.profile.player_id || "R3E…";
     if (countrySelect && window.R3IGNCountries) {
       window.R3IGNCountries.fillSelect(countrySelect, state.profile.country || "Nigeria");
     }
