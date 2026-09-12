@@ -101,10 +101,16 @@
         <a class="btn btn-primary" href="onboarding.html">Continue onboarding →</a>
       </div>
       <div class="account-card">
-        <label class="account-avatar-upload" for="profile-picture" aria-label="Upload profile picture">
-          <span class="account-avatar" id="account-avatar">R</span>
-          <input type="file" id="profile-picture" accept="image/png,image/jpeg,image/webp,image/gif">
-        </label>
+        <div class="account-avatar-block">
+          <label class="account-avatar-upload" for="profile-picture" aria-label="Change profile picture">
+            <span class="account-avatar" id="account-avatar">R</span>
+            <input type="file" id="profile-picture" accept="image/png,image/jpeg,image/webp,image/gif">
+          </label>
+          <div class="account-avatar-actions" style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.65rem">
+            <button type="button" class="btn btn-ghost" id="btn-change-avatar" style="padding:0.35rem 0.65rem;font-size:0.72rem">Change photo</button>
+            <button type="button" class="btn btn-ghost" id="btn-remove-avatar" style="padding:0.35rem 0.65rem;font-size:0.72rem;display:none">Remove photo</button>
+          </div>
+        </div>
         <div class="account-meta">
           <h3 id="account-name">&nbsp;</h3>
           <p id="account-email">&nbsp;</p>
@@ -258,6 +264,81 @@
       });
     }
 
+    function setAvatarDisplay(url, displayName) {
+      var el = document.getElementById("account-avatar");
+      var removeBtn = document.getElementById("btn-remove-avatar");
+      if (!el) return;
+      if (url) {
+        el.style.backgroundImage = "url('" + url + "')";
+        el.textContent = "";
+        if (removeBtn) removeBtn.style.display = "";
+      } else {
+        el.style.backgroundImage = "";
+        el.textContent = (displayName || "R").charAt(0).toUpperCase();
+        if (removeBtn) removeBtn.style.display = "none";
+      }
+    }
+
+    var btnChangeAvatar = document.getElementById("btn-change-avatar");
+    if (btnChangeAvatar && profilePictureInput) {
+      btnChangeAvatar.addEventListener("click", function () {
+        profilePictureInput.click();
+      });
+    }
+
+    var btnRemoveAvatar = document.getElementById("btn-remove-avatar");
+    if (btnRemoveAvatar) {
+      btnRemoveAvatar.addEventListener("click", function () {
+        if (!currentUser) return;
+        if (!confirm("Remove your profile picture?")) return;
+        profilePictureStatus.textContent = "Removing...";
+        window.R3IGNAuth.client.from("profiles").update({ avatar_url: null }).eq("id", currentUser.id)
+          .then(function (res) {
+            if (res.error) throw res.error;
+            var name = (document.getElementById("account-name") || {}).textContent || "R";
+            setAvatarDisplay(null, name);
+            document.dispatchEvent(new CustomEvent("r3ign:avatar-updated", { detail: { url: null } }));
+            profilePictureStatus.textContent = "Profile picture removed.";
+            if (profilePictureInput) profilePictureInput.value = "";
+          })
+          .catch(function (err) {
+            profilePictureStatus.textContent = err.message || "Could not remove picture.";
+          });
+      });
+    }
+
+    if (profilePictureInput) {
+      profilePictureInput.addEventListener("change", function () {
+        var file = profilePictureInput.files && profilePictureInput.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          profilePictureStatus.textContent = "Choose an image smaller than 5 MB.";
+          profilePictureInput.value = "";
+          return;
+        }
+        profilePictureStatus.textContent = "Uploading...";
+        var path = currentUser.id + "/avatar" + (file.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0].toLowerCase();
+        window.R3IGNAuth.client.storage.from("profile-avatars").upload(path, file, { upsert: true, contentType: file.type })
+          .then(function (uploadRes) {
+            if (uploadRes.error) throw uploadRes.error;
+            var publicUrl = window.R3IGNAuth.client.storage.from("profile-avatars").getPublicUrl(path).data.publicUrl;
+            // Cache-bust so the new image shows immediately
+            publicUrl = publicUrl + (publicUrl.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
+            return window.R3IGNAuth.client.from("profiles").update({ avatar_url: publicUrl.split("?")[0] }).eq("id", currentUser.id).then(function (updateRes) {
+              if (updateRes.error) throw updateRes.error;
+              return publicUrl;
+            });
+          })
+          .then(function (publicUrl) {
+            setAvatarDisplay(publicUrl);
+            document.dispatchEvent(new CustomEvent("r3ign:avatar-updated", { detail: { url: publicUrl } }));
+            profilePictureStatus.textContent = "Profile picture updated.";
+          })
+          .catch(function (err) { profilePictureStatus.textContent = err.message || "Upload failed."; });
+      });
+    }
+
+
     window.R3IGNAuth.getSession().then(function (res) {
       var session = res.data.session;
       if (!session) {
@@ -293,8 +374,9 @@
         leagueIdEl.textContent = "Unavailable";
       }
       if (res && res.data && res.data.avatar_url) {
-        document.getElementById("account-avatar").style.backgroundImage = "url('" + res.data.avatar_url + "')";
-        document.getElementById("account-avatar").textContent = "";
+        setAvatarDisplay(res.data.avatar_url);
+      } else if (res && res.data) {
+        setAvatarDisplay(null, res.data.display_name || "R");
       }
       return window.R3IGNAuth.client.from("game_accounts").select("*").eq("profile_id", currentUser.id);
     }).then(function (res) {
@@ -429,36 +511,6 @@
             });
           });
         });
-    }
-
-    if (profilePictureInput) {
-      profilePictureInput.addEventListener("change", function () {
-        var file = profilePictureInput.files && profilePictureInput.files[0];
-        if (!file) return;
-        if (file.size > 5 * 1024 * 1024) {
-          profilePictureStatus.textContent = "Choose an image smaller than 5 MB.";
-          profilePictureInput.value = "";
-          return;
-        }
-        profilePictureStatus.textContent = "Uploading...";
-        var path = currentUser.id + "/avatar" + (file.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0].toLowerCase();
-        window.R3IGNAuth.client.storage.from("profile-avatars").upload(path, file, { upsert: true, contentType: file.type })
-          .then(function (uploadRes) {
-            if (uploadRes.error) throw uploadRes.error;
-            var publicUrl = window.R3IGNAuth.client.storage.from("profile-avatars").getPublicUrl(path).data.publicUrl;
-            return window.R3IGNAuth.client.from("profiles").update({ avatar_url: publicUrl }).eq("id", currentUser.id).then(function (updateRes) {
-              if (updateRes.error) throw updateRes.error;
-              return publicUrl;
-            });
-          })
-          .then(function (publicUrl) {
-            document.getElementById("account-avatar").style.backgroundImage = "url('" + publicUrl + "')";
-            document.getElementById("account-avatar").textContent = "";
-            document.dispatchEvent(new CustomEvent("r3ign:avatar-updated", { detail: { url: publicUrl } }));
-            profilePictureStatus.textContent = "Profile picture updated.";
-          })
-          .catch(function (err) { profilePictureStatus.textContent = err.message || "Upload failed."; });
-      });
     }
 
     document.getElementById("btn-save-games").addEventListener("click", function () {
