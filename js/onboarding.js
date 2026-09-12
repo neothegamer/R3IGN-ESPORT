@@ -51,10 +51,10 @@
       required: false,
       connectLabel: "Connect Discord",
       connectedLabel: "✓ Discord Connected",
-      // Uses existing R3IGNAuth.linkWithDiscord when available
       connect: function () {
         if (window.R3IGNAuth && window.R3IGNAuth.linkWithDiscord) {
-          return window.R3IGNAuth.linkWithDiscord();
+          // Return to onboarding after OAuth instead of profile-settings
+          return window.R3IGNAuth.linkWithDiscord("onboarding.html");
         }
         toast("Discord linking is not configured yet.", "error");
         return Promise.reject(new Error("Discord not configured"));
@@ -64,12 +64,11 @@
       id: "tiktok",
       label: "TikTok",
       required: false,
-      optional: true,
       connectLabel: "Connect TikTok",
       connectedLabel: "✓ TikTok Connected",
       connect: function () {
         if (window.R3IGNAuth && window.R3IGNAuth.linkWithTikTok) {
-          return window.R3IGNAuth.linkWithTikTok();
+          return window.R3IGNAuth.linkWithTikTok("onboarding.html");
         }
         toast("TikTok linking is not configured yet.", "error");
         return Promise.reject(new Error("TikTok not configured"));
@@ -79,7 +78,6 @@
       id: "google",
       label: "Google",
       required: false,
-      // Shown as already connected via primary R3IGN auth account
       alwaysConnected: true,
       connectedLabel: "✓ Connected"
     }
@@ -830,7 +828,6 @@
         '<span class="ob-conn-name">' +
         p.label +
         "</span>" +
-        (p.optional ? '<span class="optional">Optional</span>' : "") +
         "</div>" +
         '<div class="ob-conn-action">' +
         statusHtml +

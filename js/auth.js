@@ -89,19 +89,23 @@
   window.location.href = "https://nyditfrfzarntmekcyli.supabase.co/functions/v1/tiktok-login-start";
 },
 
-    linkWithDiscord: function () {
+    linkWithDiscord: function (returnPage) {
       if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
+      var page = returnPage || "profile-settings.html";
+      var base = window.location.origin + window.location.pathname.replace(/[^/]+$/, "");
       return client.auth.linkIdentity({
         provider: "discord",
-        options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "profile-settings.html" }
+        options: { redirectTo: base + page }
       });
     },
 
-    linkWithTikTok: function () {
+    linkWithTikTok: function (returnPage) {
       if (!client) return Promise.reject(new Error("NOT_CONFIGURED"));
+      var page = returnPage || "profile-settings.html";
+      var base = window.location.origin + window.location.pathname.replace(/[^/]+$/, "");
       return client.auth.linkIdentity({
         provider: "custom:tiktok",
-        options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]+$/, "") + "profile-settings.html" }
+        options: { redirectTo: base + page }
       });
     },
 
