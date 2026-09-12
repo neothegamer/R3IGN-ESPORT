@@ -14,21 +14,17 @@ alter table public.profiles
   add column if not exists selected_games text[] default '{}',
   add column if not exists r3ign_hq_joined boolean default false;
 
--- Player ID generator: R3HQ-XXXXXX (6 alphanumeric, uppercase)
+-- Player ID generator: R3N-XXXXXX (6 random digits)
 create or replace function public.generate_player_id()
 returns text as $$
 declare
   candidate text;
   taken boolean;
-  alphabet text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; -- no 0/O/1/I to avoid ambiguity
-  i int;
 begin
   perform pg_advisory_xact_lock(hashtext('r3ign-player-id'));
   loop
-    candidate := 'R3HQ-';
-    for i in 1..6 loop
-      candidate := candidate || substr(alphabet, 1 + floor(random() * length(alphabet))::int, 1);
-    end loop;
+    -- R3N- + 6 random digits (000000–999999)
+    candidate := 'R3N-' || lpad(floor(random() * 1000000)::int::text, 6, '0');
     select exists(select 1 from public.profiles where player_id = candidate) into taken;
     exit when not taken;
   end loop;
@@ -36,19 +32,30 @@ begin
 end;
 $$ language plpgsql set search_path = public;
 
--- Ensure existing profiles get a player_id if missing
+-- Ensure every profile has a Player ID in the new R3N- format
+-- (fills nulls and converts any old R3HQ- / other formats)
 do $$
 declare
   r record;
 begin
-  for r in select id from public.profiles where player_id is null loop
-    update public.profiles set player_id = public.generate_player_id() where id = r.id;
+  for r in
+    select id from public.profiles
+    where player_id is null
+       or player_id not like 'R3N-%'
+  loop
+    update public.profiles
+    set player_id = public.generate_player_id()
+    where id = r.id;
   end loop;
 end $$;
 
--- Update handle_new_user to also set player_id
+-- Keep handle_new_user in sync so brand-new signups get R3N- IDs
 create or replace function public.handle_new_user()
-returns trigger as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
 begin
   insert into public.profiles (id, display_name, email, league_id, player_id)
   values (
@@ -61,8 +68,23 @@ begin
   on conflict (id) do update set
     player_id = coalesce(public.profiles.player_id, public.generate_player_id());
   return new;
+exception
+  when others then
+    begin
+      insert into public.profiles (id, display_name, email)
+      values (
+        new.id,
+        coalesce(new.raw_user_meta_data->>'display_name', new.raw_user_meta_data->>'full_name', new.email),
+        new.email
+      )
+      on conflict (id) do nothing;
+    exception
+      when others then
+        null;
+    end;
+    return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 -- ---------- game_profiles (richer than the existing game_accounts table) ----------
 -- One row per user per game. Stores all Step 3 fields.
