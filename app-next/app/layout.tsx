@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import NavAccount from "@/components/NavAccount";
 
 export const metadata: Metadata = {
   title: "Home · R3IGN HQ",
@@ -37,7 +38,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <Header />
+        <Header accountSlot={<NavAccount />} />
         {children}
         <Footer />
       </body>

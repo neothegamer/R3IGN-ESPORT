@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
-export default function Header() {
+type Props = {
+  /** Server-rendered account area — avoids client flash */
+  accountSlot: ReactNode;
+};
+
+export default function Header({ accountSlot }: Props) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -15,7 +20,6 @@ export default function Header() {
   useEffect(() => {
     const header = document.querySelector(".site-header") as HTMLElement;
     if (!header) return;
-
     const sync = () => {
       document.documentElement.style.setProperty(
         "--header-h",
@@ -109,11 +113,7 @@ export default function Header() {
         </nav>
 
         <div className="nav-cta">
-          <span id="nav-account" className="nav-account">
-            <Link href="/signin" className="btn">
-              Sign In
-            </Link>
-          </span>
+          {accountSlot}
           <button
             className="nav-toggle"
             aria-expanded={menuOpen}

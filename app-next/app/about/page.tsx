@@ -1,5 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 export const metadata = {
   title: "About · R3IGN HQ",
@@ -10,7 +8,6 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <>
-      <Header />
       <main id="main-content">
         <div className="page-header">
           <div className="wrap">
@@ -133,7 +130,6 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }
