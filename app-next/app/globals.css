@@ -2470,3 +2470,7 @@ body::after{
 img[loading="lazy"] {
   opacity: 1 !important;
 }
+/* Auth pages: hide full site footer (cleaner match to focused auth panel) */
+body:has(.auth-wrap) .site-footer {
+  display: none;
+}

@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NavAccount from "@/components/NavAccount";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Home · R3IGN HQ",
@@ -27,11 +28,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const h = await headers();
+  const path = h.get("x-pathname") || h.get("x-url") || "";
+  // Fallback: middleware can set x-pathname; also check via next-url if present
+  const isAuthPage =
+    path.includes("/signin") ||
+    path.includes("/signup") ||
+    path.includes("/auth/");
+
   return (
     <html lang="en">
       <body>
@@ -40,7 +49,7 @@ export default function RootLayout({
         </a>
         <Header accountSlot={<NavAccount />} />
         {children}
-        <Footer />
+        {!isAuthPage && <Footer />}
       </body>
     </html>
   );
