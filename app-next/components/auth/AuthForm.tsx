@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,17 +9,36 @@ type AuthFormProps = {
   mode: "signin" | "signup";
 };
 
+function passwordChecks(pw: string) {
+  return {
+    length: pw.length >= 8,
+    number: /\d/.test(pw),
+    lower: /[a-z]/.test(pw),
+    upper: /[A-Z]/.test(pw),
+    special: /[^A-Za-z0-9]/.test(pw),
+  };
+}
+
 export default function AuthForm({ mode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [verifyMode, setVerifyMode] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
   const router = useRouter();
   const supabase = createClient();
+
+  const checks = useMemo(() => passwordChecks(password), [password]);
+  const strengthScore = Object.values(checks).filter(Boolean).length;
+  const passwordStrong = strengthScore === 5;
+  const passwordsMatch = password === passwordConfirm && passwordConfirm.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +47,16 @@ export default function AuthForm({ mode }: AuthFormProps) {
     if (!termsAccepted) {
       setError("You must accept the Terms & Conditions before continuing.");
       return;
+    }
+    if (mode === "signup") {
+      if (!passwordStrong) {
+        setError("Password does not meet the requirements.");
+        return;
+      }
+      if (!passwordsMatch) {
+        setError("Passwords do not match.");
+        return;
+      }
     }
     setLoading(true);
     try {
@@ -41,7 +70,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
           },
         });
         if (error) throw error;
-        setMessage("Check your email for the confirmation link.");
+        setVerifyMode(true);
+        setMessage("We sent a 6-digit code to your email. Enter it below.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -52,8 +82,41 @@ export default function AuthForm({ mode }: AuthFormProps) {
         router.refresh();
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
-      setError(msg);
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode.trim(),
+        type: "email",
+      });
+      if (error) throw error;
+      router.push("/");
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Invalid or expired code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      setMessage("A new code was sent to your email.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not resend code.");
     } finally {
       setLoading(false);
     }
@@ -68,9 +131,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "discord",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) {
       setError(error.message);
@@ -87,6 +148,42 @@ export default function AuthForm({ mode }: AuthFormProps) {
       "https://nyditfrfzarntmekcyli.supabase.co/functions/v1/tiktok-login-start";
   };
 
+  if (verifyMode) {
+    return (
+      <>
+        {error && <div className="auth-error is-visible">{error}</div>}
+        {message && <div className="auth-success is-visible">{message}</div>}
+        <form onSubmit={handleVerifyOtp} noValidate>
+          <div className="field">
+            <label htmlFor="otp-code">
+              Verification code <span className="req">*</span>
+            </label>
+            <input
+              id="otp-code"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value)}
+              required
+              maxLength={6}
+              placeholder="6-digit code"
+            />
+            <div className="field-error">Enter the 6-digit code from your email.</div>
+          </div>
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+            {loading ? "Verifying…" : "Verify & continue"}
+          </button>
+        </form>
+        <p className="auth-switch">
+          <button type="button" className="link-btn" onClick={handleResendCode} disabled={loading}>
+            Resend code
+          </button>
+        </p>
+      </>
+    );
+  }
+
   return (
     <>
       {error && <div className="auth-error is-visible">{error}</div>}
@@ -95,48 +192,50 @@ export default function AuthForm({ mode }: AuthFormProps) {
       <form onSubmit={handleSubmit} noValidate>
         {mode === "signup" && (
           <div className="field">
-            <label htmlFor="display-name">
-              Display Name <span className="req">*</span>
+            <label htmlFor="su-name">
+              Display name <span className="req">*</span>
             </label>
             <input
-              id="display-name"
+              id="su-name"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
               autoComplete="name"
             />
+            <div className="field-error">Enter a display name.</div>
           </div>
         )}
 
         <div className="field">
-          <label htmlFor="email">
+          <label htmlFor="auth-email">
             Email <span className="req">*</span>
           </label>
           <input
-            id="email"
+            id="auth-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
           />
+          <div className="field-error">Enter a valid email address.</div>
         </div>
 
         <div className="field">
-          <label htmlFor="password">
+          <label htmlFor="auth-password">
             Password <span className="req">*</span>
           </label>
           <div className="password-wrap">
             <input
-              id="password"
+              id="auth-password"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={mode === "signup" ? 8 : 6}
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              placeholder={mode === "signin" ? "Enter your password" : undefined}
+              placeholder="Enter your password"
             />
             <button
               type="button"
@@ -144,17 +243,111 @@ export default function AuthForm({ mode }: AuthFormProps) {
               aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? (
-                <svg className="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+              <img
+                className="eye-closed"
+                src="/assets/eye-closed.png"
+                alt=""
+                width={20}
+                height={20}
+                style={{ display: showPassword ? "none" : "block" }}
+              />
+              <svg
+                className="eye-open"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                width={20}
+                height={20}
+                style={{ display: showPassword ? "block" : "none" }}
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          </div>
+
+          {mode === "signup" && (
+            <div className="password-strength" id="password-strength">
+              <div
+                className="password-strength-bar"
+                id="strength-bar"
+                data-score={strengthScore}
+              >
+                <span style={{ width: `${(strengthScore / 5) * 100}%` }} />
+              </div>
+              <ul className="password-reqs" id="password-reqs">
+                <li data-req="length" className={checks.length ? "is-met" : undefined}>
+                  At least 8 characters
+                </li>
+                <li data-req="number" className={checks.number ? "is-met" : undefined}>
+                  At least 1 number
+                </li>
+                <li data-req="lower" className={checks.lower ? "is-met" : undefined}>
+                  At least 1 lowercase letter
+                </li>
+                <li data-req="upper" className={checks.upper ? "is-met" : undefined}>
+                  At least 1 uppercase letter
+                </li>
+                <li data-req="special" className={checks.special ? "is-met" : undefined}>
+                  At least 1 special character
+                </li>
+              </ul>
+            </div>
+          )}
+          <div className="field-error">
+            {mode === "signup" ? "Password does not meet the requirements." : "Enter your password."}
+          </div>
+        </div>
+
+        {mode === "signup" && (
+          <div className="field">
+            <label htmlFor="su-password-confirm">
+              Confirm password <span className="req">*</span>
+            </label>
+            <div className="password-wrap">
+              <input
+                id="su-password-confirm"
+                type={showPasswordConfirm ? "text" : "password"}
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                aria-label={showPasswordConfirm ? "Hide password" : "Show password"}
+                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+              >
+                <img
+                  className="eye-closed"
+                  src="/assets/eye-closed.png"
+                  alt=""
+                  width={20}
+                  height={20}
+                  style={{ display: showPasswordConfirm ? "none" : "block" }}
+                />
+                <svg
+                  className="eye-open"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  width={20}
+                  height={20}
+                  style={{ display: showPasswordConfirm ? "block" : "none" }}
+                >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg>
-              ) : (
-                <img className="eye-closed" src="/assets/eye-closed.png" alt="" width="20" height="20" />
-              )}
-            </button>
+              </button>
+            </div>
+            <div className="field-error">Passwords do not match.</div>
           </div>
-        </div>
+        )}
 
         {mode === "signin" && (
           <p style={{ margin: "-0.35rem 0 1rem", textAlign: "right", fontSize: "0.82rem" }}>
@@ -164,15 +357,15 @@ export default function AuthForm({ mode }: AuthFormProps) {
           </p>
         )}
 
-        <div className="field checkbox-field">
+        <div className="field checkbox-field" id="terms-consent-field">
           <input
             type="checkbox"
-            id="terms"
+            id="auth-terms"
             checked={termsAccepted}
             onChange={(e) => setTermsAccepted(e.target.checked)}
             required
           />
-          <label htmlFor="terms">
+          <label htmlFor="auth-terms">
             I agree to the{" "}
             <Link href="/terms" target="_blank" rel="noopener">
               Terms &amp; Conditions
@@ -180,17 +373,23 @@ export default function AuthForm({ mode }: AuthFormProps) {
             and{" "}
             <Link href="/privacy" target="_blank" rel="noopener">
               Privacy Policy
-            </Link>{" "}
-            before continuing.
+            </Link>
+            {mode === "signin" ? " before continuing." : "."}
           </label>
         </div>
 
         <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-          {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Create Account"}
+          {loading
+            ? "Please wait..."
+            : mode === "signin"
+            ? "Sign In"
+            : "Create Account"}
         </button>
       </form>
 
-      <div className="auth-divider">or continue with</div>
+      <div className="auth-divider" id="signin-divider">
+        or continue with
+      </div>
 
       <div className="oauth-group oauth-icons">
         <button
@@ -218,8 +417,17 @@ export default function AuthForm({ mode }: AuthFormProps) {
         >
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path
-              fill="currentColor"
-              d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.16 15.3a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.73a8.18 8.18 0 0 0 4.76 1.52V6.84a4.84 4.84 0 0 1-1.01-.15z"
+              d="M12.8 2.5v10.1a4.7 4.7 0 1 1-3.3-4.5v3.1a1.8 1.8 0 1 0 1.4 1.7V2.5h2.5c.3 1.5 1.2 2.6 2.7 3.2v2.6c-1.3-.2-2.4-.8-3.3-1.6v5.9a4.7 4.7 0 1 1-3.3-4.5v3.1a1.8 1.8 0 1 0 1.4 1.7V2.5h1.9Z"
+              fill="#25F4EE"
+            />
+            <path
+              d="M12.8 2.5v10.1a4.7 4.7 0 1 1-3.3-4.5v3.1a1.8 1.8 0 1 0 1.4 1.7V2.5h2.5c.3 1.5 1.2 2.6 2.7 3.2v2.6c-1.3-.2-2.4-.8-3.3-1.6v5.9a4.7 4.7 0 1 1-3.3-4.5v3.1a1.8 1.8 0 1 0 1.4 1.7V2.5h1.9Z"
+              fill="#FE2C55"
+              opacity=".85"
+            />
+            <path
+              d="M13.5 3v10.1a4.7 4.7 0 1 1-3.3-4.5v3.1a1.8 1.8 0 1 0 1.4 1.7V3h2.5c.3 1.5 1.2 2.6 2.7 3.2v2.6c-1.3-.2-2.4-.8-3.3-1.6v5.9a4.7 4.7 0 1 1-3.3-4.5v3.1a1.8 1.8 0 1 0 1.4 1.7V3h1.9Z"
+              fill="#fff"
             />
           </svg>
         </button>
