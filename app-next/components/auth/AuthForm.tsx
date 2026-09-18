@@ -31,6 +31,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [verifyMode, setVerifyMode] = useState(false);
+  const [panelMode, setPanelMode] = useState<"auth" | "reset-request">("auth");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState("");
   const router = useRouter();
   const supabase = createClient();
@@ -122,6 +125,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
     }
   };
 
+
+  const handleResetRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setResetMessage(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/auth/callback?next=/signin`,
+      });
+      if (error) throw error;
+      setResetMessage("If an account exists for that email, a reset link is on its way.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not send reset link.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDiscord = async () => {
     if (!termsAccepted) {
       setError("Accept the Terms & Conditions before continuing with social sign-in.");
@@ -147,6 +169,45 @@ export default function AuthForm({ mode }: AuthFormProps) {
     window.location.href =
       "https://nyditfrfzarntmekcyli.supabase.co/functions/v1/tiktok-login-start";
   };
+
+
+  if (mode === "signin" && panelMode === "reset-request") {
+    return (
+      <>
+        {error && <div className="auth-error is-visible">{error}</div>}
+        {resetMessage && <div className="auth-success is-visible">{resetMessage}</div>}
+        <p className="lede">Enter your account email and we&rsquo;ll send a secure password reset link.</p>
+        <form onSubmit={handleResetRequest} noValidate>
+          <div className="field">
+            <label htmlFor="reset-email">
+              Email <span className="req">*</span>
+            </label>
+            <input
+              id="reset-email"
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+            <div className="field-error">Enter a valid email address.</div>
+          </div>
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+            {loading ? "Sending…" : "Send Reset Link"}
+          </button>
+          <p className="auth-switch">
+            <button
+              type="button"
+              className="link-btn"
+              onClick={() => { setPanelMode("auth"); setError(null); setResetMessage(null); }}
+            >
+              Back to sign in
+            </button>
+          </p>
+        </form>
+      </>
+    );
+  }
 
   if (verifyMode) {
     return (
@@ -351,9 +412,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
         {mode === "signin" && (
           <p style={{ margin: "-0.35rem 0 1rem", textAlign: "right", fontSize: "0.82rem" }}>
-            <Link href="/signin?reset=1" className="link-btn">
+            <button type="button" className="link-btn" onClick={() => { setPanelMode("reset-request"); setError(null); setMessage(null); }}>
               Forgot password?
-            </Link>
+            </button>
           </p>
         )}
 
