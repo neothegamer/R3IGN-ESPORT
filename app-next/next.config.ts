@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
       { source: "/terms.html", destination: "/terms", permanent: true },
       { source: "/privacy.html", destination: "/privacy", permanent: true },
       { source: "/copyright.html", destination: "/copyright", permanent: true },
+
+      // Extra pages present in the live site but outside the original 23
+      { source: "/signup.html", destination: "/signup", permanent: true },
+      { source: "/account.html", destination: "/account", permanent: true },
+      { source: "/profile-settings.html", destination: "/profile-settings", permanent: true },
+      { source: "/merch.html", destination: "/merch", permanent: true },
+      { source: "/onboarding.html", destination: "/onboarding", permanent: true },
+      { source: "/admin.html", destination: "/admin", permanent: true },
+      { source: "/org.html", destination: "/org", permanent: true },
+      { source: "/404.html", destination: "/404", permanent: true },
     ];
   },
 };
