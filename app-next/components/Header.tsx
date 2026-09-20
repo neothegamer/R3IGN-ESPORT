@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, type ReactNode } from "react";
+import SiteSearch from "@/components/SiteSearch";
 
 type Props = {
   /** Server-rendered account area — avoids client flash */
@@ -113,6 +114,7 @@ export default function Header({ accountSlot }: Props) {
         </nav>
 
         <div className="nav-cta">
+          <SiteSearch />
           {accountSlot}
           <button
             className="nav-toggle"

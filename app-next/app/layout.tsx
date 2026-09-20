@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NavAccount from "@/components/NavAccount";
+import CookieConsent from "@/components/CookieConsent";
 import { headers } from "next/headers";
 
 export const metadata: Metadata = {
@@ -50,6 +51,7 @@ export default async function RootLayout({
         <Header accountSlot={<NavAccount />} />
         {children}
         {!isAuthPage && <Footer />}
+        <CookieConsent />
       </body>
     </html>
   );
