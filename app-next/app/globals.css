@@ -1911,6 +1911,7 @@ table.rank-table{
   --bracket-gap: 3.5rem;
   --match-h: 72px;
   --pair-gap: 1.75rem;
+  --pair-gap-base: var(--pair-gap);
   display:flex;
   gap:var(--bracket-gap);
   min-width:max-content;
@@ -1931,7 +1932,8 @@ table.rank-table{
   flex:1;
   display:flex;
   flex-direction:column;
-  justify-content:space-around;
+  justify-content:center;
+  gap:var(--pair-gap);
 }
 .bracket-pair{
   position:relative;
@@ -1998,6 +2000,22 @@ table.rank-table{
 
 .bracket-pair.is-single .bracket-match::after{
   width:var(--bracket-gap);
+}
+
+/*
+  Each round back from the final needs its own matches spaced twice as
+  far apart as the round before it - that's what makes a pair's
+  connector midpoint land exactly on the center of the match it feeds
+  into. nth-last-child(2) is the semifinal-equivalent round (the one
+  feeding the final); it builds off --pair-gap-base (the original,
+  unshadowed value) rather than --pair-gap itself, since a custom
+  property can't reference its own name without creating an invalid
+  cycle. Add nth-last-child(3) with the next expansion (3 * match-h +
+  4 * pair-gap-base) if a Round-of-16 round is introduced ahead of
+  this one.
+*/
+.bracket-round:nth-last-child(2){
+  --pair-gap: calc(var(--match-h) + 2 * var(--pair-gap-base));
 }
 
 .bracket-round:last-child .bracket-match::after,
