@@ -231,6 +231,11 @@ export default function HomePage() {
               <div className="dossier-body">
                 <h3>R3IGN Free Fire Clash Squad League</h3>
                 <p>Competitive Free Fire Clash Squad operations.</p>
+                <div
+                  className="countdown-inline"
+                  data-countdown="2026-10-15T00:00:00"
+                  data-countdown-label="Registration opens in"
+                ></div>
               </div>
               <div className="dossier-foot">
                 <span>Season TBA</span>
@@ -245,6 +250,11 @@ export default function HomePage() {
               <div className="dossier-body">
                 <h3>R3IGN Blood Strike Squad Fight League</h3>
                 <p>Competitive Blood Strike Squad Fight operations.</p>
+                <div
+                  className="countdown-inline"
+                  data-countdown="2026-11-01T00:00:00"
+                  data-countdown-label="Registration opens in"
+                ></div>
               </div>
               <div className="dossier-foot">
                 <span>Season TBA</span>
@@ -331,6 +341,321 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FEATURED NEWS */}
+      <section>
+        <div className="wrap">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">Featured News</span>
+              <h2>From the newsroom</h2>
+            </div>
+            <Link href="/news" className="btn btn-ghost">
+              View All News
+            </Link>
+          </div>
+          <div className="news-grid">
+            <div className="news-card">
+              <div className="news-thumb">
+                <span className="eyebrow">League Update</span>
+              </div>
+              <div className="news-body">
+                <span className="eyebrow">News</span>
+                <h3>RCML Season 4 enters its final stretch</h3>
+                <p>
+                  A legendary season filled with intense battles and
+                  unforgettable moments.
+                </p>
+                <div className="news-foot">
+                  <span>May 28, 2026</span>
+                  <Link href="/news">Read More →</Link>
+                </div>
+              </div>
+            </div>
+            <div className="news-card">
+              <div className="news-thumb">
+                <span className="eyebrow">Announcement</span>
+              </div>
+              <div className="news-body">
+                <span className="eyebrow">News</span>
+                <h3>RFCL registration window opens next month</h3>
+                <p>
+                  A legendary season filled with intense battles and
+                  unforgettable moments.
+                </p>
+                <div className="news-foot">
+                  <span>May 28, 2026</span>
+                  <Link href="/news">Read More →</Link>
+                </div>
+              </div>
+            </div>
+            <div className="news-card">
+              <div className="news-thumb">
+                <span className="eyebrow">Match Recap</span>
+              </div>
+              <div className="news-body">
+                <span className="eyebrow">News</span>
+                <h3>Aether Esports edges Siroxx in a top-of-table clash</h3>
+                <p>
+                  A legendary season filled with intense battles and
+                  unforgettable moments.
+                </p>
+                <div className="news-foot">
+                  <span>May 28, 2026</span>
+                  <Link href="/news">Read More →</Link>
+                </div>
+              </div>
+            </div>
+            <div className="news-card">
+              <div className="news-thumb">
+                <span className="eyebrow">Community</span>
+              </div>
+              <div className="news-body">
+                <span className="eyebrow">News</span>
+                <h3>Player pool crosses 1,500 across 50+ teams</h3>
+                <p>
+                  A legendary season filled with intense battles and
+                  unforgettable moments.
+                </p>
+                <div className="news-foot">
+                  <span>May 28, 2026</span>
+                  <Link href="/news">Read More →</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* LEAGUE · CHAMPIONS */}
+      <section>
+        <div className="wrap">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">League · Champions</span>
+              <h2>Honoring the champions</h2>
+            </div>
+            <p className="lede">
+              Honoring the champions who have risen, dominated, and left their
+              mark in R3IGN HQ.
+            </p>
+          </div>
+          <div className="champions-rail">
+            <div className="champion-card">
+              <div className="season">RCML · Season 3</div>
+              <div className="title">Champion</div>
+              <h3>7SIN Esports</h3>
+              <div className="date">March 2026</div>
+            </div>
+            <div className="champion-card">
+              <div className="season">RCML · Season 4</div>
+              <div className="title">Champion</div>
+              <h3>Aether Esports</h3>
+              <div className="date">June 2026</div>
+            </div>
+            <div className="champion-card">
+              <div className="season">RFCL · Season 1</div>
+              <div className="title">Champion</div>
+              <h3>To Be Determined</h3>
+              <div className="date">Season not yet started</div>
+            </div>
+            <div className="champion-card">
+              <div className="season">RBSL · Season 1</div>
+              <div className="title">Champion</div>
+              <h3>To Be Determined</h3>
+              <div className="date">Season not yet started</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* MORE FROM R3IGN */}
+      <section className="section-tight">
+        <div className="wrap">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">More From R3IGN</span>
+              <h2>Explore the ecosystem</h2>
+            </div>
+          </div>
+          <div className="dossier-grid">
+            <div className="dossier">
+              <div className="dossier-head">
+                <span>Divisions</span>
+              </div>
+              <div className="dossier-body">
+                <h3>Six-division ladder</h3>
+                <p>Promotion &amp; relegation across every RCML tier.</p>
+              </div>
+              <div className="dossier-foot">
+                <span>&nbsp;</span>
+                <Link href="/divisions">View Ladder →</Link>
+              </div>
+            </div>
+            <div className="dossier">
+              <div className="dossier-head">
+                <span>Player Market</span>
+              </div>
+              <div className="dossier-body">
+                <h3>Find a roster spot</h3>
+                <p>Browse free agents or list yourself as available.</p>
+              </div>
+              <div className="dossier-foot">
+                <span>&nbsp;</span>
+                <Link href="/player-market">Browse Market →</Link>
+              </div>
+            </div>
+            <div className="dossier">
+              <div className="dossier-head">
+                <span>Awards</span>
+              </div>
+              <div className="dossier-body">
+                <h3>Hall of Champions</h3>
+                <p>Season MVPs and annual recognition.</p>
+              </div>
+              <div className="dossier-foot">
+                <span>&nbsp;</span>
+                <Link href="/awards">View Awards →</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* NEWSLETTER */}
+      <section className="section-tight">
+        <div className="wrap" style={{ maxWidth: 560, textAlign: "center" }}>
+          <span className="eyebrow" style={{ justifyContent: "center" }}>
+            Stay in the loop
+          </span>
+          <h2 style={{ marginTop: "0.75rem" }}>
+            League updates &amp; registration windows
+          </h2>
+          <p className="lede">
+            Get notified when RFCL / RBSL registration opens and when major
+            RCML announcements drop.
+          </p>
+
+          <div
+            id="newsletter-success"
+            className="form-success"
+            role="status"
+            style={{ marginTop: "1.25rem" }}
+          >
+            You&rsquo;re on the list. Watch your inbox for league news.
+          </div>
+          <div
+            id="newsletter-error"
+            className="auth-error"
+            style={{ marginTop: "1rem" }}
+          ></div>
+
+          <form
+            id="newsletter-form"
+            style={{
+              marginTop: "1.5rem",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.65rem",
+              justifyContent: "center",
+              alignItems: "stretch",
+              maxWidth: 420,
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            {/* Honeypot */}
+            <div
+              style={{
+                position: "absolute",
+                left: "-9999px",
+                opacity: 0,
+                height: 0,
+                overflow: "hidden",
+              }}
+              aria-hidden="true"
+            >
+              <label htmlFor="newsletter-website">Website</label>
+              <input
+                type="text"
+                id="newsletter-website"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
+
+            <label htmlFor="newsletter-email" className="visually-hidden">
+              Email
+            </label>
+            <input
+              type="email"
+              id="newsletter-email"
+              name="email"
+              required
+              placeholder="you@email.com"
+              autoComplete="email"
+              style={{
+                flex: "1 1 200px",
+                minWidth: 0,
+                margin: 0,
+                boxSizing: "border-box",
+                background: "var(--panel)",
+                border: "1px solid var(--line)",
+                color: "var(--paper)",
+                padding: "0.9em 1em",
+                fontFamily: "var(--f-body)",
+                fontSize: "0.95rem",
+                lineHeight: 1.25,
+                height: "auto",
+              }}
+            />
+            <button
+              type="submit"
+              className="btn btn-primary"
+              id="newsletter-submit"
+              style={{
+                alignSelf: "stretch",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxSizing: "border-box",
+                padding: "0.9em 1.5em",
+              }}
+            >
+              Subscribe
+            </button>
+          </form>
+          <p className="field-hint" style={{ marginTop: "0.75rem" }}>
+            No spam. Unsubscribe any time. See our{" "}
+            <Link href="/privacy">Privacy Policy</Link>.
+          </p>
+        </div>
+      </section>
+
+      {/* CTA BAND */}
+      <div className="cta-band">
+        <div className="wrap">
+          <span className="eyebrow" style={{ justifyContent: "center" }}>
+            Enlist Your Roster
+          </span>
+          <h2 className="mt-lg" style={{ marginTop: "1rem" }}>
+            Ready to compete?
+          </h2>
+          <p>
+            Register your team, get placed into a league, and start climbing
+            the R3IGN HQ rankings.
+          </p>
+          <div className="cta-actions">
+            <Link href="/register" className="btn btn-primary">
+              Register Your Team
+            </Link>
+            <Link href="/support" className="btn btn-ghost">
+              Talk To Support
+            </Link>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
