@@ -1908,41 +1908,108 @@ table.rank-table{
   -webkit-overflow-scrolling:touch;
 }
 .bracket{
+  --bracket-gap: 3.5rem;
+  --match-h: 72px;
+  --pair-gap: 1.75rem;
   display:flex;
-  gap:clamp(1.5rem, 4vw, 3.5rem);
+  gap:var(--bracket-gap);
   min-width:max-content;
   padding:0.5rem 0.25rem;
+  align-items:stretch;
 }
 .bracket-round{
   display:flex;
   flex-direction:column;
-  justify-content:space-around;
-  gap:1.25rem;
   min-width:220px;
 }
 .bracket-round-label{
   font-family:var(--f-mono); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase;
-  color:var(--amber); text-align:center; margin-bottom:0.5rem;
+  color:var(--amber); text-align:center; margin-bottom:0.85rem;
+  flex-shrink:0;
+}
+.bracket-round-body{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-around;
+}
+.bracket-pair{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:var(--pair-gap);
+  flex:0 0 auto;
 }
 .bracket-match{
   position:relative;
+  height:var(--match-h);
   border:1px solid var(--line);
   background:var(--panel);
   border-radius:0;
-  overflow:hidden;
+  overflow:visible;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
 }
-.bracket-match::after{
+
+/*
+  Connector geometry (left → right):
+  [match]----stub----┼----feeder----[next]
+                     │
+  [match]----stub----┘
+  Vertical sits at the MIDPOINT of the gap.
+*/
+.bracket-round:not(:last-child) .bracket-match::after{
   content:"";
-  position:absolute; top:50%; right:-1.5rem; width:calc(1.5rem + 1px); height:1px;
+  position:absolute;
+  top:50%;
+  left:100%;
+  width:calc(var(--bracket-gap) / 2);
+  height:2px;
   background:var(--line);
+  transform:translateY(-50%);
+  z-index:2;
 }
-.bracket-round:last-child .bracket-match::after{ display:none; }
-@media (min-width:601px){
-  .bracket-round:not(:last-child) .bracket-match::after{ width:clamp(1.5rem, 4vw, 3.5rem); right:calc(-1 * clamp(1.5rem, 4vw, 3.5rem)); }
+
+/* vertical at gap midpoint, from top-match center to bottom-match center */
+.bracket-pair:not(.is-single)::before{
+  content:"";
+  position:absolute;
+  top:calc(var(--match-h) / 2 - 1px);
+  height:calc(var(--match-h) + var(--pair-gap) + 2px);
+  left:calc(100% + var(--bracket-gap) / 2 - 1px);
+  width:2px;
+  background:var(--line);
+  z-index:0;
 }
+
+/* feeder continues from that same midpoint into the next column */
+.bracket-pair:not(.is-single)::after{
+  content:"";
+  position:absolute;
+  top:calc(var(--match-h) / 2 + (var(--match-h) + var(--pair-gap)) / 2);
+  left:calc(100% + var(--bracket-gap) / 2 - 1px);
+  width:calc(var(--bracket-gap) / 2 + 2px);
+  height:2px;
+  background:var(--line);
+  transform:translateY(-50%);
+  z-index:0;
+}
+
+.bracket-pair.is-single .bracket-match::after{
+  width:var(--bracket-gap);
+}
+
+.bracket-round:last-child .bracket-match::after,
+.bracket-round:last-child .bracket-pair::before,
+.bracket-round:last-child .bracket-pair::after{
+  display:none;
+}
+
 .bracket-team{
+  flex:1;
   display:flex; align-items:center; justify-content:space-between; gap:0.75rem;
-  padding:0.65rem 0.9rem;
+  padding:0 0.9rem;
   font-family:var(--f-mono); font-size:0.82rem;
   border-bottom:1px solid var(--line-soft);
   color:var(--paper-dim);
