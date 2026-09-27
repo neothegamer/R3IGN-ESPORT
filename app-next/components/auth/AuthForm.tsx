@@ -41,7 +41,19 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const checks = useMemo(() => passwordChecks(password), [password]);
   const strengthScore = Object.values(checks).filter(Boolean).length;
   const passwordStrong = strengthScore === 5;
-  const passwordsMatch = password === passwordConfirm && passwordConfirm.length > 0;
+  const passwordsMatch =
+    password === passwordConfirm && passwordConfirm.length > 0;
+
+  const strengthClass =
+    strengthScore <= 1
+      ? "is-weak"
+      : strengthScore === 2
+        ? "is-fair"
+        : strengthScore === 3 || strengthScore === 4
+          ? "is-good"
+          : strengthScore === 5
+            ? "is-strong"
+            : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,20 +137,26 @@ export default function AuthForm({ mode }: AuthFormProps) {
     }
   };
 
-
   const handleResetRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setResetMessage(null);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-        redirectTo: `${window.location.origin}/auth/callback?next=/signin`,
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        resetEmail.trim(),
+        {
+          redirectTo: `${window.location.origin}/auth/callback?next=/signin`,
+        }
+      );
       if (error) throw error;
-      setResetMessage("If an account exists for that email, a reset link is on its way.");
+      setResetMessage(
+        "If an account exists for that email, a reset link is on its way."
+      );
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Could not send reset link.");
+      setError(
+        err instanceof Error ? err.message : "Could not send reset link."
+      );
     } finally {
       setLoading(false);
     }
@@ -146,7 +164,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
   const handleDiscord = async () => {
     if (!termsAccepted) {
-      setError("Accept the Terms & Conditions before continuing with social sign-in.");
+      setError(
+        "Accept the Terms & Conditions before continuing with social sign-in."
+      );
       return;
     }
     setError(null);
@@ -163,20 +183,26 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
   const handleTikTok = () => {
     if (!termsAccepted) {
-      setError("Accept the Terms & Conditions before continuing with social sign-in.");
+      setError(
+        "Accept the Terms & Conditions before continuing with social sign-in."
+      );
       return;
     }
     window.location.href =
       "https://nyditfrfzarntmekcyli.supabase.co/functions/v1/tiktok-login-start";
   };
 
-
   if (mode === "signin" && panelMode === "reset-request") {
     return (
       <>
         {error && <div className="auth-error is-visible">{error}</div>}
-        {resetMessage && <div className="auth-success is-visible">{resetMessage}</div>}
-        <p className="lede">Enter your account email and we&rsquo;ll send a secure password reset link.</p>
+        {resetMessage && (
+          <div className="auth-success is-visible">{resetMessage}</div>
+        )}
+        <p className="lede">
+          Enter your account email and we&rsquo;ll send a secure password reset
+          link.
+        </p>
         <form onSubmit={handleResetRequest} noValidate>
           <div className="field">
             <label htmlFor="reset-email">
@@ -192,14 +218,22 @@ export default function AuthForm({ mode }: AuthFormProps) {
             />
             <div className="field-error">Enter a valid email address.</div>
           </div>
-          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+          <button
+            type="submit"
+            className="btn btn-primary btn-block"
+            disabled={loading}
+          >
             {loading ? "Sending…" : "Send Reset Link"}
           </button>
           <p className="auth-switch">
             <button
               type="button"
               className="link-btn"
-              onClick={() => { setPanelMode("auth"); setError(null); setResetMessage(null); }}
+              onClick={() => {
+                setPanelMode("auth");
+                setError(null);
+                setResetMessage(null);
+              }}
             >
               Back to sign in
             </button>
@@ -230,14 +264,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
               maxLength={6}
               placeholder="6-digit code"
             />
-            <div className="field-error">Enter the 6-digit code from your email.</div>
+            <div className="field-error">
+              Enter the 6-digit code from your email.
+            </div>
           </div>
-          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+          <button
+            type="submit"
+            className="btn btn-primary btn-block"
+            disabled={loading}
+          >
             {loading ? "Verifying…" : "Verify & continue"}
           </button>
         </form>
         <p className="auth-switch">
-          <button type="button" className="link-btn" onClick={handleResendCode} disabled={loading}>
+          <button
+            type="button"
+            className="link-btn"
+            onClick={handleResendCode}
+            disabled={loading}
+          >
             Resend code
           </button>
         </p>
@@ -295,7 +340,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={mode === "signup" ? 8 : 6}
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              autoComplete={
+                mode === "signup" ? "new-password" : "current-password"
+              }
               placeholder="Enter your password"
             />
             <button
@@ -329,35 +376,55 @@ export default function AuthForm({ mode }: AuthFormProps) {
           </div>
 
           {mode === "signup" && (
-            <div className="password-strength" id="password-strength">
+            <div
+              className={`password-strength${password.length > 0 ? " is-visible" : ""}`}
+              id="password-strength"
+            >
               <div
-                className="password-strength-bar"
+                className={`password-strength-bar ${strengthClass}`}
                 id="strength-bar"
                 data-score={strengthScore}
               >
-                <span style={{ width: `${(strengthScore / 5) * 100}%` }} />
+                <span />
               </div>
               <ul className="password-reqs" id="password-reqs">
-                <li data-req="length" className={checks.length ? "is-met" : undefined}>
+                <li
+                  data-req="length"
+                  className={checks.length ? "is-met" : undefined}
+                >
                   At least 8 characters
                 </li>
-                <li data-req="number" className={checks.number ? "is-met" : undefined}>
+                <li
+                  data-req="number"
+                  className={checks.number ? "is-met" : undefined}
+                >
                   At least 1 number
                 </li>
-                <li data-req="lower" className={checks.lower ? "is-met" : undefined}>
+                <li
+                  data-req="lower"
+                  className={checks.lower ? "is-met" : undefined}
+                >
                   At least 1 lowercase letter
                 </li>
-                <li data-req="upper" className={checks.upper ? "is-met" : undefined}>
+                <li
+                  data-req="upper"
+                  className={checks.upper ? "is-met" : undefined}
+                >
                   At least 1 uppercase letter
                 </li>
-                <li data-req="special" className={checks.special ? "is-met" : undefined}>
+                <li
+                  data-req="special"
+                  className={checks.special ? "is-met" : undefined}
+                >
                   At least 1 special character
                 </li>
               </ul>
             </div>
           )}
           <div className="field-error">
-            {mode === "signup" ? "Password does not meet the requirements." : "Enter your password."}
+            {mode === "signup"
+              ? "Password does not meet the requirements."
+              : "Enter your password."}
           </div>
         </div>
 
@@ -380,7 +447,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
               <button
                 type="button"
                 className="password-toggle"
-                aria-label={showPasswordConfirm ? "Hide password" : "Show password"}
+                aria-label={
+                  showPasswordConfirm ? "Hide password" : "Show password"
+                }
                 onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
               >
                 <img
@@ -389,7 +458,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   alt=""
                   width={20}
                   height={20}
-                  style={{ display: showPasswordConfirm ? "none" : "block" }}
+                  style={{
+                    display: showPasswordConfirm ? "none" : "block",
+                  }}
                 />
                 <svg
                   className="eye-open"
@@ -399,7 +470,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   strokeWidth="2"
                   width={20}
                   height={20}
-                  style={{ display: showPasswordConfirm ? "block" : "none" }}
+                  style={{
+                    display: showPasswordConfirm ? "block" : "none",
+                  }}
                 >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                   <circle cx="12" cy="12" r="3" />
@@ -411,8 +484,22 @@ export default function AuthForm({ mode }: AuthFormProps) {
         )}
 
         {mode === "signin" && (
-          <p style={{ margin: "-0.35rem 0 1rem", textAlign: "right", fontSize: "0.82rem" }}>
-            <button type="button" className="link-btn" onClick={() => { setPanelMode("reset-request"); setError(null); setMessage(null); }}>
+          <p
+            style={{
+              margin: "-0.35rem 0 1rem",
+              textAlign: "right",
+              fontSize: "0.82rem",
+            }}
+          >
+            <button
+              type="button"
+              className="link-btn"
+              onClick={() => {
+                setPanelMode("reset-request");
+                setError(null);
+                setMessage(null);
+              }}
+            >
               Forgot password?
             </button>
           </p>
@@ -439,12 +526,16 @@ export default function AuthForm({ mode }: AuthFormProps) {
           </label>
         </div>
 
-        <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+        <button
+          type="submit"
+          className="btn btn-primary btn-block"
+          disabled={loading}
+        >
           {loading
             ? "Please wait..."
             : mode === "signin"
-            ? "Sign In"
-            : "Create Account"}
+              ? "Sign In"
+              : "Create Account"}
         </button>
       </form>
 
