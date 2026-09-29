@@ -63,47 +63,76 @@ export default function Header({ accountSlot }: Props) {
               </Link>
             </li>
             <li>
-              <Link href="/leagues" aria-current={isActive("/leagues") ? "page" : undefined}>
+              <Link
+                href="/leagues"
+                aria-current={isActive("/leagues") ? "page" : undefined}
+              >
                 Leagues
               </Link>
             </li>
             <li>
-              <Link href="/rankings" aria-current={isActive("/rankings") ? "page" : undefined}>
+              <Link
+                href="/rankings"
+                aria-current={isActive("/rankings") ? "page" : undefined}
+              >
                 Rankings
               </Link>
             </li>
             <li>
-              <Link href="/events" aria-current={isActive("/events") ? "page" : undefined}>
+              <Link
+                href="/events"
+                aria-current={isActive("/events") ? "page" : undefined}
+              >
                 Events
               </Link>
             </li>
             <li>
-              <Link href="/organizations" aria-current={isActive("/organizations") ? "page" : undefined}>
+              <Link
+                href="/organizations"
+                aria-current={isActive("/organizations") ? "page" : undefined}
+              >
                 Organizations
               </Link>
             </li>
             <li>
-              <Link href="/player-market" aria-current={isActive("/player-market") ? "page" : undefined}>
+              <Link
+                href="/player-market"
+                aria-current={isActive("/player-market") ? "page" : undefined}
+              >
                 Player Market
               </Link>
             </li>
             <li>
-              <Link href="/match-highlights" aria-current={isActive("/match-highlights") ? "page" : undefined}>
+              <Link
+                href="/match-highlights"
+                aria-current={
+                  isActive("/match-highlights") ? "page" : undefined
+                }
+              >
                 Highlights
               </Link>
             </li>
             <li>
-              <Link href="/news" aria-current={isActive("/news") ? "page" : undefined}>
+              <Link
+                href="/news"
+                aria-current={isActive("/news") ? "page" : undefined}
+              >
                 News
               </Link>
             </li>
             <li>
-              <Link href="/about" aria-current={isActive("/about") ? "page" : undefined}>
+              <Link
+                href="/about"
+                aria-current={isActive("/about") ? "page" : undefined}
+              >
                 About
               </Link>
             </li>
             <li>
-              <Link href="/support" aria-current={isActive("/support") ? "page" : undefined}>
+              <Link
+                href="/support"
+                aria-current={isActive("/support") ? "page" : undefined}
+              >
                 Support
               </Link>
             </li>

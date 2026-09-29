@@ -59,11 +59,20 @@ export default function AuthForm({ mode }: AuthFormProps) {
     e.preventDefault();
     setError(null);
     setMessage(null);
+
     if (!termsAccepted) {
       setError("You must accept the Terms & Conditions before continuing.");
       return;
     }
+
     if (mode === "signup") {
+      const name = displayName.trim();
+      const mail = email.trim().toLowerCase();
+
+      if (!name) {
+        setError("Enter a display name.");
+        return;
+      }
       if (!passwordStrong) {
         setError("Password does not meet the requirements.");
         return;
@@ -72,30 +81,91 @@ export default function AuthForm({ mode }: AuthFormProps) {
         setError("Passwords do not match.");
         return;
       }
-    }
-    setLoading(true);
-    try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
+
+      setLoading(true);
+      try {
+        console.log("URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
+        console.log("KEY ok", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+        const { data: nameTaken, error: nameRpcErr } = await supabase.rpc(
+          "is_display_name_taken",
+          { p_name: name }
+        );
+        if (nameRpcErr) {
+          console.warn("is_display_name_taken:", nameRpcErr.message);
+        } else if (nameTaken) {
+          setError("That display name is already taken. Choose another.");
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+          email: mail,
           password,
           options: {
-            data: { display_name: displayName || "" },
+            data: { display_name: name },
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
-        if (error) throw error;
+
+        if (error) {
+          const msg = error.message.toLowerCase();
+          if (
+            msg.includes("already registered") ||
+            msg.includes("already exists") ||
+            msg.includes("user already")
+          ) {
+            setError(
+              "An account with this email already exists. Sign in instead."
+            );
+          } else if (
+            msg.includes("display_name") ||
+            msg.includes("duplicate") ||
+            msg.includes("unique")
+          ) {
+            setError("That display name is already taken. Choose another.");
+          } else {
+            setError(error.message);
+          }
+          setLoading(false);
+          return;
+        }
+
+        if (
+          data.user &&
+          Array.isArray(data.user.identities) &&
+          data.user.identities.length === 0
+        ) {
+          setError(
+            "An account with this email already exists. Sign in instead."
+          );
+          setLoading(false);
+          return;
+        }
+
         setVerifyMode(true);
         setMessage("We sent a 6-digit code to your email. Enter it below.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        router.push("/");
-        router.refresh();
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Something went wrong.");
+      } finally {
+        setLoading(false);
       }
+      return;
+    }
+
+    // Sign in
+    setLoading(true);
+    try {
+      console.log("URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log("KEY ok", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (error) throw error;
+      router.push("/");
+      router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -109,7 +179,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setLoading(true);
     try {
       const { error } = await supabase.auth.verifyOtp({
-        email,
+        email: email.trim().toLowerCase(),
         token: otpCode.trim(),
         type: "email",
       });
@@ -127,7 +197,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setError(null);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim().toLowerCase(),
+      });
       if (error) throw error;
       setMessage("A new code was sent to your email.");
     } catch (err: unknown) {
@@ -144,7 +217,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(
-        resetEmail.trim(),
+        resetEmail.trim().toLowerCase(),
         {
           redirectTo: `${window.location.origin}/auth/callback?next=/signin`,
         }

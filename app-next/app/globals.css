@@ -1908,126 +1908,41 @@ table.rank-table{
   -webkit-overflow-scrolling:touch;
 }
 .bracket{
-  --bracket-gap: 3.5rem;
-  --match-h: 72px;
-  --pair-gap: 1.75rem;
-  --pair-gap-base: var(--pair-gap);
   display:flex;
-  gap:var(--bracket-gap);
+  gap:clamp(1.5rem, 4vw, 3.5rem);
   min-width:max-content;
   padding:0.5rem 0.25rem;
-  align-items:stretch;
 }
 .bracket-round{
   display:flex;
   flex-direction:column;
+  justify-content:space-around;
+  gap:1.25rem;
   min-width:220px;
 }
 .bracket-round-label{
   font-family:var(--f-mono); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase;
-  color:var(--amber); text-align:center; margin-bottom:0.85rem;
-  flex-shrink:0;
-}
-.bracket-round-body{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:var(--pair-gap);
-}
-.bracket-pair{
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  gap:var(--pair-gap);
-  flex:0 0 auto;
+  color:var(--amber); text-align:center; margin-bottom:0.5rem;
 }
 .bracket-match{
   position:relative;
-  height:var(--match-h);
   border:1px solid var(--line);
   background:var(--panel);
   border-radius:0;
-  overflow:visible;
-  z-index:1;
-  display:flex;
-  flex-direction:column;
+  overflow:hidden;
 }
-
-/*
-  Connector geometry (left → right):
-  [match]----stub----┼----feeder----[next]
-                     │
-  [match]----stub----┘
-  Vertical sits at the MIDPOINT of the gap.
-*/
-.bracket-round:not(:last-child) .bracket-match::after{
+.bracket-match::after{
   content:"";
-  position:absolute;
-  top:50%;
-  left:100%;
-  width:calc(var(--bracket-gap) / 2);
-  height:2px;
+  position:absolute; top:50%; right:-1.5rem; width:calc(1.5rem + 1px); height:1px;
   background:var(--line);
-  transform:translateY(-50%);
-  z-index:2;
 }
-
-/* vertical at gap midpoint, from top-match center to bottom-match center */
-.bracket-pair:not(.is-single)::before{
-  content:"";
-  position:absolute;
-  top:calc(var(--match-h) / 2 - 1px);
-  height:calc(var(--match-h) + var(--pair-gap) + 2px);
-  left:calc(100% + var(--bracket-gap) / 2 - 1px);
-  width:2px;
-  background:var(--line);
-  z-index:0;
+.bracket-round:last-child .bracket-match::after{ display:none; }
+@media (min-width:601px){
+  .bracket-round:not(:last-child) .bracket-match::after{ width:clamp(1.5rem, 4vw, 3.5rem); right:calc(-1 * clamp(1.5rem, 4vw, 3.5rem)); }
 }
-
-/* feeder continues from that same midpoint into the next column */
-.bracket-pair:not(.is-single)::after{
-  content:"";
-  position:absolute;
-  top:calc(var(--match-h) / 2 + (var(--match-h) + var(--pair-gap)) / 2);
-  left:calc(100% + var(--bracket-gap) / 2 - 1px);
-  width:calc(var(--bracket-gap) / 2 + 2px);
-  height:2px;
-  background:var(--line);
-  transform:translateY(-50%);
-  z-index:0;
-}
-
-.bracket-pair.is-single .bracket-match::after{
-  width:var(--bracket-gap);
-}
-
-/*
-  Each round back from the final needs its own matches spaced twice as
-  far apart as the round before it - that's what makes a pair's
-  connector midpoint land exactly on the center of the match it feeds
-  into. nth-last-child(2) is the semifinal-equivalent round (the one
-  feeding the final); it builds off --pair-gap-base (the original,
-  unshadowed value) rather than --pair-gap itself, since a custom
-  property can't reference its own name without creating an invalid
-  cycle. Add nth-last-child(3) with the next expansion (3 * match-h +
-  4 * pair-gap-base) if a Round-of-16 round is introduced ahead of
-  this one.
-*/
-.bracket-round:nth-last-child(2){
-  --pair-gap: calc(var(--match-h) + 2 * var(--pair-gap-base));
-}
-
-.bracket-round:last-child .bracket-match::after,
-.bracket-round:last-child .bracket-pair::before,
-.bracket-round:last-child .bracket-pair::after{
-  display:none;
-}
-
 .bracket-team{
-  flex:1;
   display:flex; align-items:center; justify-content:space-between; gap:0.75rem;
-  padding:0 0.9rem;
+  padding:0.65rem 0.9rem;
   font-family:var(--f-mono); font-size:0.82rem;
   border-bottom:1px solid var(--line-soft);
   color:var(--paper-dim);
@@ -2555,7 +2470,268 @@ body::after{
 img[loading="lazy"] {
   opacity: 1 !important;
 }
-/* Auth pages: hide full site footer (cleaner match to focused auth panel) */
-body:has(.auth-wrap) .site-footer {
-  display: none;
+
+/* Nav icons — same size for messages + settings */
+.nav-message-icon,
+.nav-settings-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--paper, #f2f2f2);
+  width: 22px;
+  height: 22px;
+}
+.nav-message-icon svg,
+.nav-settings-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+.nav-icon-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+.nav-message-link:hover .nav-message-icon,
+.nav-message-link[aria-current="page"] .nav-message-icon,
+.nav-settings-link:hover .nav-settings-icon {
+  color: var(--signal, #c83c32);
+}
+
+/* Unread badge on header message icon — dot only, never show "0" */
+.nav-badge-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--signal, #c83c32);
+  border: 2px solid var(--ink, #0a0c0b);
+  pointer-events: none;
+}
+
+/* Conversation list — unread up */
+.msg-conv-item.has-unread .msg-conv-name {
+  font-weight: 700;
+  color: var(--paper);
+}
+.msg-conv-unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  background: var(--signal, #c83c32);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Bubble meta + ticks */
+.msg-bubble-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+.msg-ticks {
+  font-size: 0.75rem;
+  letter-spacing: -0.12em;
+  line-height: 1;
+}
+.msg-ticks.is-sent,
+.msg-ticks.is-delivered {
+  color: var(--paper-dim, #9a9a9a);
+}
+.msg-ticks.is-read {
+  color: #0a0a0a;
+}
+.msg-bubble.mine .msg-bubble-meta {
+  justify-content: flex-end;
+}
+
+/* Compact bubbles + long-press menu + black read ticks */
+/* Compact bubbles */
+.msg-thread-body {
+  gap: 0.45rem;
+  padding: 0.75rem 1rem;
+}
+.msg-bubble {
+  max-width: min(72%, 22rem);
+  padding: 0.4rem 0.65rem 0.35rem;
+  border-radius: 10px;
+  margin: 0;
+  line-height: 1.35;
+  font-size: 0.9rem;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.msg-bubble-text {
+  display: block;
+  word-break: break-word;
+}
+.msg-bubble-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.15rem;
+  font-size: 0.65rem;
+  opacity: 0.85;
+  line-height: 1;
+}
+.msg-bubble.mine .msg-bubble-meta {
+  justify-content: flex-end;
+}
+
+/* Ticks: sent/delivered muted; read = black */
+.msg-ticks {
+  font-size: 0.72rem;
+  letter-spacing: -0.12em;
+  line-height: 1;
+}
+.msg-ticks.is-sent,
+.msg-ticks.is-delivered {
+  color: rgba(255, 255, 255, 0.55);
+}
+.msg-ticks.is-read {
+  color: #0a0a0a;
+}
+
+/* Long-press action menu */
+.msg-bubble-menu {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.msg-action-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.72rem;
+  color: var(--paper-dim, #9a9a9a);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.msg-action-btn:hover {
+  color: var(--paper, #f2f2f2);
+}
+.msg-action-danger:hover {
+  color: var(--signal, #c83c32);
+}
+
+.msg-edit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  min-width: 10rem;
+}
+.msg-edit-input {
+  width: 100%;
+  min-height: 2.5rem;
+  resize: vertical;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--paper);
+  background: var(--ink, #0a0c0b);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.4rem 0.55rem;
+}
+.msg-edit-actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+.msg-edit-actions .btn {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+}
+
+
+/* ===== Messages page: fill viewport, keep compose pinned, reduce footer clash ===== */
+body:has(.msg-layout) .site-footer {
+  margin-top: 0;
+}
+
+.msg-page-shell {
+  min-height: calc(100vh - var(--header-h, 7rem) - 2.5rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.msg-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  min-height: min(70vh, calc(100vh - var(--header-h, 7rem) - 8rem));
+  max-height: calc(100vh - var(--header-h, 7rem) - 3.5rem);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.msg-list-pane,
+.msg-thread-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.msg-list-pane {
+  border-right: 1px solid var(--line);
+  overflow: hidden;
+}
+
+#msg-conv-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.msg-thread-pane {
+  min-width: 0;
+}
+
+#msg-thread-active {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.msg-thread-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  gap: 0.45rem;
+  padding: 0.75rem 1rem;
+}
+
+.msg-compose {
+  flex-shrink: 0;
+  border-top: 1px solid var(--line);
+  padding: 0.65rem 0.75rem;
+  background: var(--panel);
+}
+
+@media (max-width: 768px) {
+  .msg-layout {
+    grid-template-columns: 1fr;
+    max-height: calc(100vh - var(--header-h, 7rem) - 2rem);
+    min-height: 60vh;
+  }
 }
