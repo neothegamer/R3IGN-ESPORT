@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useOnlinePresence } from "@/components/OnlinePresenceProvider";
 
 type MsgRow = {
   id: string;
@@ -22,6 +23,8 @@ type MsgRow = {
   delivered_at?: string | null;
   read_at?: string | null;
   edited_at?: string | null;
+  attachment_path?: string | null;
+  attachment_type?: string | null;
   sender?: { display_name?: string | null } | null;
   recipient?: { display_name?: string | null } | null;
 };
@@ -33,6 +36,10 @@ type Conv = {
   listingId: string | null;
   unread: number;
 };
+
+const BUCKET = "message-attachments";
+const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 
 function fmtTime(iso: string) {
   const d = new Date(iso);
@@ -69,13 +76,25 @@ function MessageTicks({ msg }: { msg: MsgRow }) {
   );
 }
 
+function publicUrl(path: string) {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base) return "";
+  return `${base}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
 const LONG_PRESS_MS = 450;
 
 export default function MessagesClient() {
   const supabase = createClient();
+  const { isOnline, onlineIds } = useOnlinePresence();
   const searchParams = useSearchParams();
   const sendingLock = useRef(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingIdle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingChannelRef = useRef<ReturnType<
+    ReturnType<typeof createClient>["channel"]
+  > | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
@@ -85,11 +104,12 @@ export default function MessagesClient() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [threadOpen, setThreadOpen] = useState(false);
   const [compose, setCompose] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
-
+  const [peerTyping, setPeerTyping] = useState(false);
   const [menuMsgId, setMenuMsgId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
@@ -104,6 +124,33 @@ export default function MessagesClient() {
       clearTimeout(pressTimer.current);
       pressTimer.current = null;
     }
+  };
+
+  const clearFile = () => {
+    setFile(null);
+    if (filePreview) URL.revokeObjectURL(filePreview);
+    setFilePreview(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const onPickFile = (f: File | null) => {
+    if (filePreview) URL.revokeObjectURL(filePreview);
+    if (!f) {
+      setFile(null);
+      setFilePreview(null);
+      return;
+    }
+    if (!f.type.startsWith("image/")) {
+      setSendError("Only image attachments are supported.");
+      return;
+    }
+    if (f.size > MAX_BYTES) {
+      setSendError("Image must be 5MB or smaller.");
+      return;
+    }
+    setSendError(null);
+    setFile(f);
+    setFilePreview(URL.createObjectURL(f));
   };
 
   const ensureConv = useCallback(
@@ -174,58 +221,6 @@ export default function MessagesClient() {
   useEffect(() => {
     if (!userId) return;
 
-    const channel = supabase.channel("r3ign-online", {
-      config: { presence: { key: userId } },
-    });
-
-    const syncOnline = () => {
-      const state = channel.presenceState() as Record<
-        string,
-        Array<{ user_id?: string }>
-      >;
-      const ids = new Set<string>();
-      for (const [key, metas] of Object.entries(state)) {
-        ids.add(key);
-        for (const meta of metas || []) {
-          if (meta?.user_id) ids.add(meta.user_id);
-        }
-      }
-      // You are online if subscribed; include self
-      ids.add(userId);
-      setOnlineIds(ids);
-    };
-
-    channel
-      .on("presence", { event: "sync" }, syncOnline)
-      .on("presence", { event: "join" }, syncOnline)
-      .on("presence", { event: "leave" }, syncOnline)
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await channel.track({
-            user_id: userId,
-            online_at: new Date().toISOString(),
-          });
-          syncOnline();
-        }
-      });
-
-    // heartbeat so presence does not go stale
-    const beat = window.setInterval(() => {
-      channel.track({
-        user_id: userId,
-        online_at: new Date().toISOString(),
-      });
-    }, 30000);
-
-    return () => {
-      window.clearInterval(beat);
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, userId]);
-
-  useEffect(() => {
-    if (!userId) return;
-
     const channel = supabase
       .channel(`messages-realtime-${userId}`)
       .on(
@@ -235,7 +230,6 @@ export default function MessagesClient() {
           const row = payload.new as MsgRow;
           if (!row) return;
           if (row.sender_id !== userId && row.recipient_id !== userId) return;
-          // Full reload keeps names / unread correct; cheap for chat volume
           loadMessages(userId);
         }
       )
@@ -259,11 +253,7 @@ export default function MessagesClient() {
           loadMessages(userId);
         }
       )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          // ready for live events
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -305,7 +295,37 @@ export default function MessagesClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, activeId]);
 
-  // Close action menu on outside click
+  useEffect(() => {
+    if (!userId || !activeId) {
+      setPeerTyping(false);
+      typingChannelRef.current = null;
+      return;
+    }
+
+    const channel = supabase.channel(
+      `typing:${[userId, activeId].sort().join(":")}`,
+      { config: { broadcast: { self: false } } }
+    );
+    typingChannelRef.current = channel;
+
+    channel
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        if (!payload || payload.userId === userId) return;
+        if (payload.userId !== activeId) return;
+        setPeerTyping(true);
+        window.setTimeout(() => setPeerTyping(false), 2500);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (typingChannelRef.current === channel) {
+        typingChannelRef.current = null;
+      }
+      setPeerTyping(false);
+    };
+  }, [supabase, userId, activeId]);
+
   useEffect(() => {
     if (!menuMsgId) return;
     const close = () => setMenuMsgId(null);
@@ -313,8 +333,6 @@ export default function MessagesClient() {
     return () => window.removeEventListener("click", close);
   }, [menuMsgId]);
 
-
-  // Auto-scroll thread when messages change
   useEffect(() => {
     const el = document.getElementById("msg-thread-body");
     if (!el) return;
@@ -333,32 +351,66 @@ export default function MessagesClient() {
 
   const active = activeId ? conversations[activeId] : null;
 
+  function signalTyping() {
+    if (!userId || !activeId || !typingChannelRef.current) return;
+    typingChannelRef.current.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { userId, at: Date.now() },
+    });
+    if (typingIdle.current) clearTimeout(typingIdle.current);
+    typingIdle.current = setTimeout(() => {}, 2000);
+  }
+
   async function handleSend(e: FormEvent) {
     e.preventDefault();
-    if (!userId || !activeId || !compose.trim()) return;
+    if (!userId || !activeId) return;
+    const body = compose.trim();
+    if (!body && !file) return;
     if (sendingLock.current || sending) return;
     sendingLock.current = true;
     setSending(true);
     setSendError(null);
 
-    const body = compose.trim();
     const recipientOnline = onlineIds.has(activeId);
     const now = new Date().toISOString();
 
     try {
+      let attachment_path: string | null = null;
+      let attachment_type: string | null = null;
+
+      if (file) {
+        const safe = file.name.replace(/[^\w.\-]+/g, "_");
+        const path = `${userId}/${Date.now()}-${safe}`;
+        const { error: upErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, file, {
+            upsert: false,
+            contentType: file.type,
+          });
+        if (upErr) throw upErr;
+        attachment_path = path;
+        attachment_type = file.type;
+      }
+
       const { error } = await supabase.from("messages").insert({
         sender_id: userId,
         recipient_id: activeId,
-        body,
+        body: body || (file ? "" : ""),
         listing_id: active?.listingId || null,
         delivered_at: recipientOnline ? now : null,
         read_at: null,
+        attachment_path,
+        attachment_type,
       });
+
       if (error) {
         setSendError(error.message);
         return;
       }
       setCompose("");
+      clearFile();
+      setPeerTyping(false);
       await loadMessages(userId);
     } catch (err: unknown) {
       setSendError(
@@ -414,6 +466,12 @@ export default function MessagesClient() {
       return;
     }
     setSendError(null);
+    if (msg.attachment_path) {
+      await supabase.storage
+        .from(BUCKET)
+        .remove([msg.attachment_path])
+        .catch(() => {});
+    }
     const { error } = await supabase
       .from("messages")
       .delete()
@@ -483,6 +541,11 @@ export default function MessagesClient() {
             ) : (
               convList.map((c) => {
                 const last = c.messages[c.messages.length - 1];
+                const preview = last?.body?.trim()
+                  ? last.body
+                  : last?.attachment_path
+                    ? "📷 Image"
+                    : "New conversation";
                 return (
                   <button
                     key={c.id}
@@ -501,9 +564,7 @@ export default function MessagesClient() {
                         </span>
                       )}
                     </div>
-                    <div className="msg-conv-preview">
-                      {last?.body || "New conversation"}
-                    </div>
+                    <div className="msg-conv-preview">{preview}</div>
                     {last && (
                       <div className="msg-conv-time">
                         {fmtTime(last.created_at)}
@@ -527,14 +588,7 @@ export default function MessagesClient() {
               </div>
             </div>
           ) : (
-            <div
-              id="msg-thread-active"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-              }}
-            >
+            <div id="msg-thread-active">
               <div className="msg-thread-head">
                 <button
                   type="button"
@@ -547,10 +601,15 @@ export default function MessagesClient() {
                 <div>
                   <div className="msg-thread-title">{active.name}</div>
                   <div className="msg-thread-sub">
-                    {onlineIds.has(active.id) ? "Online" : "Offline"}
+                    {isOnline(active.id) ? "Online" : "Offline"}
                   </div>
                 </div>
               </div>
+              {peerTyping && (
+                <div className="msg-typing" aria-live="polite">
+                  {active.name} is typing…
+                </div>
+              )}
               <div className="msg-thread-body" id="msg-thread-body">
                 {active.messages.length === 0 ? (
                   <p className="field-hint" style={{ padding: "1rem" }}>
@@ -606,7 +665,49 @@ export default function MessagesClient() {
                           </div>
                         ) : (
                           <>
-                            <span className="msg-bubble-text">{m.body}</span>
+                            <div className="msg-bubble-row">
+                              <div className="msg-bubble-main">
+                                {m.attachment_path &&
+                                  (m.attachment_type || "").startsWith(
+                                    "image/"
+                                  ) && (
+                                    <a
+                                      href={publicUrl(m.attachment_path)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="msg-attach-link"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={publicUrl(m.attachment_path)}
+                                        alt="Attachment"
+                                        className="msg-attach-img"
+                                      />
+                                    </a>
+                                  )}
+                                {m.body?.trim() ? (
+                                  <span className="msg-bubble-text">
+                                    {m.body}
+                                  </span>
+                                ) : null}
+                              </div>
+                              {mine && (
+                                <button
+                                  type="button"
+                                  className="msg-more-btn"
+                                  aria-label="Message options"
+                                  aria-expanded={menuOpen}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setMenuMsgId(menuOpen ? null : m.id);
+                                  }}
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                >
+                                  ⋮
+                                </button>
+                              )}
+                            </div>
                             <span className="msg-bubble-meta">
                               <span className="msg-bubble-time">
                                 {fmtTime(m.created_at)}
@@ -618,14 +719,17 @@ export default function MessagesClient() {
                               <div
                                 className="msg-bubble-menu"
                                 onClick={(e) => e.stopPropagation()}
+                                onPointerDown={(e) => e.stopPropagation()}
                               >
-                                <button
-                                  type="button"
-                                  className="msg-action-btn"
-                                  onClick={() => startEdit(m)}
-                                >
-                                  Edit
-                                </button>
+                                {m.body?.trim() ? (
+                                  <button
+                                    type="button"
+                                    className="msg-action-btn"
+                                    onClick={() => startEdit(m)}
+                                  >
+                                    Edit
+                                  </button>
+                                ) : null}
                                 <button
                                   type="button"
                                   className="msg-action-btn msg-action-danger"
@@ -650,20 +754,63 @@ export default function MessagesClient() {
                   {sendError}
                 </div>
               )}
+              {filePreview && (
+                <div className="msg-compose-preview">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={filePreview} alt="Preview" />
+                  <button
+                    type="button"
+                    className="msg-compose-preview-remove"
+                    onClick={clearFile}
+                    aria-label="Remove attachment"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
               <form className="msg-compose" onSubmit={handleSend}>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept={ACCEPT}
+                  className="msg-file-input"
+                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                />
+                <button
+                  type="button"
+                  className="msg-attach-btn"
+                  aria-label="Attach image"
+                  title="Attach image"
+                  disabled={sending}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg>
+                </button>
                 <textarea
                   rows={1}
                   placeholder="Write a message…"
                   maxLength={2000}
-                  required
                   value={compose}
-                  onChange={(e) => setCompose(e.target.value)}
+                  onChange={(e) => {
+                    setCompose(e.target.value);
+                    if (e.target.value.trim()) signalTyping();
+                  }}
                   disabled={sending}
                 />
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={sending}
+                  disabled={sending || (!compose.trim() && !file)}
                 >
                   {sending ? "…" : "Send"}
                 </button>

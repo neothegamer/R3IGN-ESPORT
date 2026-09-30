@@ -4,33 +4,35 @@
 - Scaffold: App Router layout, Header, Footer, globals.css, public assets
 - Static / marketing pages ported (about, community, support, legal, etc.)
 - Dynamic browse pages: home, leagues, rankings, events, brackets, highlights, news, media, awards, divisions, merch, organizations, org
-- Auth: signin/signup (AuthForm), password strength UI, email confirm OTP flow
+- Auth: signin/signup (`AuthForm`), password strength UI, email confirm OTP flow
 - Unique display names (DB constraint + `is_display_name_taken` RPC) and duplicate-email handling on signup
-- Profiles backfill + `handle_new_user` trigger guidance (FK for messages.sender_id)
-- Register (live RegisterForm → registrations)
+- Profiles backfill + `handle_new_user` trigger (required for `messages.sender_id` FK)
+- Register (live `RegisterForm` → `registrations`)
 - Player Market (live listings create/delete + optional upload)
 - Messages (live):
   - Conversations list, thread, compose
   - Unread sort + header badge dot
-  - Send/delivered/read ticks (✓ / ✓✓ grey / ✓✓ black when read)
-  - Edit/delete own messages (long-press / right-click)
-  - Realtime INSERT/UPDATE/DELETE
-  - Presence channel `r3ign-online` for Online/Offline
-- Header: message icon (replaces bell), settings icon sized to match
+  - Send / delivered / read ticks (`✓` / `✓✓` grey / `✓✓` black when read)
+  - Edit / delete own messages (long-press or right-click)
+  - Realtime INSERT / UPDATE / DELETE on `messages`
+  - Compact bubbles; chat panel fills viewport under header
+- Site-wide online presence:
+  - `OnlinePresenceProvider` + `Providers` in root layout
+  - Channel `r3ign-online` (any signed-in page, not only `/messages`)
+  - Messages uses `useOnlinePresence()` for Online/Offline + delivery ticks
+- Header: chat icon (replaced bell), settings icon matched size
 - Env: `NEXT_PUBLIC_SUPABASE_URL` + legacy JWT anon key in `app-next/.env.local`
 
 ## In Progress
-- Messages UI polish (layout vs footer, compact bubbles)
-- Presence accuracy when users are not on `/messages`
+- Optional messages polish (typing indicator, soft-delete, etc. — user picks)
 
 ## Next Up
-1. Site-wide online presence (layout-level channel, not only messages page)
-2. Nav account menu polish / post-verify session refresh
-3. Live data for sample-backed browse pages (orgs, rankings, events…)
-4. Admin (registration review)
-5. TikTok OAuth → `app/api/` route handlers
-6. Resend SMTP for auth email (after Vercel host)
-7. PWA + legacy cleanup (last)
+1. Nav account menu / post-verify session refresh (if still flaky)
+2. Live data for sample-backed browse pages (orgs, rankings, events…)
+3. Admin (registration review)
+4. TikTok OAuth → `app/api/` route handlers
+5. Resend SMTP for auth email (after Vercel host)
+6. PWA + legacy cleanup (last)
 
 ## Decisions Made
 - Supabase remains backend (DB, auth, RLS); browser via `@supabase/ssr`
@@ -38,7 +40,8 @@
 - One task at a time; user applies files locally
 - Messages receipts: delivered when recipient online or opens thread; read when thread opened
 - Edit/delete only for sender; reflected via Realtime
-- Message actions: long-press (mobile) / right-click (desktop), not permanent hover buttons
+- Message actions: long-press (mobile) / right-click (desktop)
+- Online = signed-in user with app open (layout presence provider)
 
 ## Legacy → New file mapping
 | Legacy | Next.js |
@@ -49,9 +52,10 @@
 | `messages.html` | `app/messages`, `MessagesClient.tsx` |
 | `js/supabase-config.js` | `app-next/.env.local` + `lib/supabase/*` |
 | Header account / bell | `NavAccount.tsx` + `NavAccountClient.tsx` |
+| (n/a — new) | `components/OnlinePresenceProvider.tsx`, `components/Providers.tsx` |
 
 ## Known Issues
-- Online status only while both users have a page subscribed to presence (currently messages client)
-- Messages layout previously left large empty space / footer collision — CSS fill-height fix in progress
+- Online status requires a signed-in session and Realtime enabled on the project
 - Resend SMTP deferred until after Vercel deploy
 - Some browse pages still use sample data until live queries are wired
+- Confirm email / “Email not confirmed” if user skips OTP verify
