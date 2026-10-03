@@ -1,5 +1,6 @@
 import Link from "next/link";
-import OrgsGrid from "./OrgsGrid";
+import { createClient } from "@/lib/supabase/server";
+import OrgsGrid, { type OrgRow, type RankingRow } from "./OrgsGrid";
 
 export const metadata = {
   title: "Organizations · R3IGN HQ",
@@ -21,7 +22,26 @@ export const metadata = {
   },
 };
 
-export default function OrganizationsPage() {
+export default async function OrganizationsPage() {
+  const supabase = await createClient();
+
+  const [orgsRes, rankingsRes] = await Promise.all([
+    supabase
+      .from("organizations")
+      .select("id, name, tag, league, division, region")
+      .order("name", { ascending: true }),
+    supabase
+      .from("rankings")
+      .select("organization_id, team_name, league, wins, losses, points"),
+  ]);
+
+  const orgs: OrgRow[] =
+    !orgsRes.error && orgsRes.data ? (orgsRes.data as OrgRow[]) : [];
+  const rankings: RankingRow[] =
+    !rankingsRes.error && rankingsRes.data
+      ? (rankingsRes.data as RankingRow[])
+      : [];
+
   return (
     <main id="main-content">
       <div className="page-header">
@@ -46,7 +66,7 @@ export default function OrganizationsPage() {
 
       <section>
         <div className="wrap">
-          <OrgsGrid />
+          <OrgsGrid orgs={orgs} rankings={rankings} live={orgs.length > 0} />
 
           <div
             className="cta-band"

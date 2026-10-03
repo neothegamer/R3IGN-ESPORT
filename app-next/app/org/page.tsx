@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Team Profile · R3IGN HQ",
@@ -21,11 +22,18 @@ export const metadata: Metadata = {
   },
 };
 
+type RecordRow = {
+  league: string;
+  season: string;
+  record: string;
+  pct: string;
+};
+
 type OrgProfile = {
   name: string;
   tag: string;
   league: string;
-  division: number;
+  division: number | null;
   region: string;
   record: string;
   pct: string;
@@ -34,6 +42,25 @@ type OrgProfile = {
   discord_url: string;
   twitch_url: string;
   twitter_url: string;
+  records?: RecordRow[];
+};
+
+type OrgRow = {
+  id: string;
+  name: string;
+  tag: string;
+  league: string;
+  division: number | null;
+  region: string | null;
+};
+
+type RankingRow = {
+  organization_id: string | null;
+  team_name: string;
+  league: string | null;
+  season: string | null;
+  wins: number | null;
+  losses: number | null;
 };
 
 const SAMPLE_ORGS: Record<string, OrgProfile> = {
@@ -199,6 +226,82 @@ const SAMPLE_ORGS: Record<string, OrgProfile> = {
   },
 };
 
+function slugify(name: string) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function loadLiveOrg(
+  slug: string
+): Promise<{ live: boolean; org?: OrgProfile }> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("id, name, tag, league, division, region");
+
+  if (error || !data || data.length === 0) return { live: false };
+
+  const row = (data as OrgRow[]).find((o) => slugify(o.name) === slug);
+  if (!row) return { live: true };
+
+  const rankingCols = "organization_id, team_name, league, season, wins, losses";
+
+  let rankingRows: RankingRow[] = [];
+  const byId = await supabase
+    .from("rankings")
+    .select(rankingCols)
+    .eq("organization_id", row.id)
+    .order("updated_at", { ascending: false });
+  if (!byId.error && byId.data && byId.data.length > 0) {
+    rankingRows = byId.data as RankingRow[];
+  } else {
+    const byName = await supabase
+      .from("rankings")
+      .select(rankingCols)
+      .eq("team_name", row.name)
+      .order("updated_at", { ascending: false });
+    if (!byName.error && byName.data) {
+      rankingRows = byName.data as RankingRow[];
+    }
+  }
+
+  const records: RecordRow[] = rankingRows.map((r) => {
+    const wins = Number(r.wins ?? 0);
+    const losses = Number(r.losses ?? 0);
+    const games = wins + losses;
+    const rate = games > 0 ? wins / games : 0;
+    return {
+      league: r.league ?? row.league,
+      season: r.season ?? "Current Season",
+      record: `W${wins}–L${losses}`,
+      pct: (rate * 100).toFixed(1) + "%",
+    };
+  });
+
+  return {
+    live: true,
+    org: {
+      name: row.name,
+      tag: row.tag,
+      league: (row.league ?? "").toLowerCase(),
+      division: row.division,
+      region: row.region ?? "",
+      record: "",
+      pct: "",
+      description: "",
+      roster: "",
+      discord_url: "",
+      twitch_url: "",
+      twitter_url: "",
+      records,
+    },
+  };
+}
+
 type Props = {
   searchParams: Promise<{ name?: string; id?: string }>;
 };
@@ -206,7 +309,16 @@ type Props = {
 export default async function OrgPage({ searchParams }: Props) {
   const params = await searchParams;
   const nameSlug = params.name || "";
-  const org = nameSlug ? SAMPLE_ORGS[nameSlug] : undefined;
+
+  const result = nameSlug
+    ? await loadLiveOrg(nameSlug)
+    : { live: false as boolean, org: undefined as OrgProfile | undefined };
+
+  const org: OrgProfile | undefined = result.live
+    ? result.org
+    : nameSlug
+      ? SAMPLE_ORGS[nameSlug]
+      : undefined;
 
   if (!org) {
     return (
@@ -245,6 +357,19 @@ export default async function OrgPage({ searchParams }: Props) {
   if (org.twitch_url) socials.push({ label: "Twitch", href: org.twitch_url });
   if (org.twitter_url)
     socials.push({ label: "Twitter / X", href: org.twitter_url });
+
+  const recordRows: RecordRow[] =
+    org.records ??
+    (org.record
+      ? [
+          {
+            league: org.league,
+            season: "Current Season",
+            record: org.record,
+            pct: org.pct,
+          },
+        ]
+      : []);
 
   return (
     <main id="main-content">
@@ -313,14 +438,16 @@ export default async function OrgPage({ searchParams }: Props) {
                         </tr>
                       </thead>
                       <tbody id="org-record-rows">
-                        {org.record ? (
-                          <tr>
-                            <td>{(org.league || "—").toUpperCase()}</td>
-                            <td>Current Season</td>
-                            <td colSpan={3}>
-                              {org.record} ({org.pct} win rate)
-                            </td>
-                          </tr>
+                        {recordRows.length > 0 ? (
+                          recordRows.map((r, i) => (
+                            <tr key={i}>
+                              <td>{(r.league || "—").toUpperCase()}</td>
+                              <td>{r.season}</td>
+                              <td colSpan={3}>
+                                {r.record} ({r.pct} win rate)
+                              </td>
+                            </tr>
+                          ))
                         ) : (
                           <tr>
                             <td colSpan={5} style={{ color: "var(--steel)" }}>
