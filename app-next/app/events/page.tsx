@@ -1,5 +1,6 @@
 import Link from "next/link";
-import EventsClient from "./EventsClient";
+import { createClient } from "@/lib/supabase/server";
+import EventsClient, { type EventItem } from "./EventsClient";
 
 export const metadata = {
   title: "Events · R3IGN HQ",
@@ -21,7 +22,17 @@ export const metadata = {
   },
 };
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("events")
+    .select(
+      "id, title, description, league, location, start_time, end_time, ended_at"
+    )
+    .order("start_time", { ascending: true });
+
+  const events: EventItem[] = !error && data ? (data as EventItem[]) : [];
+
   return (
     <main id="main-content">
       <div className="page-header">
@@ -50,7 +61,7 @@ export default function EventsPage() {
 
       <section className="section-tight">
         <div className="wrap">
-          <EventsClient />
+          <EventsClient events={events} live={events.length > 0} />
         </div>
       </section>
     </main>

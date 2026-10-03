@@ -1,5 +1,6 @@
 import Link from "next/link";
-import RankingsTable from "./RankingsTable";
+import { createClient } from "@/lib/supabase/server";
+import RankingsTable, { type LiveRanking } from "./RankingsTable";
 
 export const metadata = {
   title: "Rankings · R3IGN HQ",
@@ -21,7 +22,14 @@ export const metadata = {
   },
 };
 
-export default function RankingsPage() {
+export default async function RankingsPage() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("rankings")
+    .select("team_name, tag, league, wins, losses, points");
+
+  const rows: LiveRanking[] = !error && data ? (data as LiveRanking[]) : [];
+
   return (
     <main id="main-content">
       <div className="page-header">
@@ -45,7 +53,7 @@ export default function RankingsPage() {
 
       <section>
         <div className="wrap">
-          <RankingsTable />
+          <RankingsTable rows={rows} live={rows.length > 0} />
         </div>
       </section>
     </main>

@@ -1,6 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+export type LiveRanking = {
+  team_name: string;
+  tag: string | null;
+  league: string | null;
+  wins: number | null;
+  losses: number | null;
+  points: number | null;
+};
 
 type RankRow = {
   league: string;
@@ -24,39 +33,89 @@ const SAMPLE_ROWS: RankRow[] = [
   { league: "rcml", pos: 8, team: "Ironclad", tag: "IC", wins: 4, losses: 7, pct: "36.4%" },
   { league: "rcml", pos: 9, team: "Vortex Squad", tag: "VS", wins: 3, losses: 8, pct: "27.3%" },
   { league: "rcml", pos: 10, team: "Last Watch", tag: "LW", wins: 1, losses: 10, pct: "9.1%" },
-  {
-    league: "rfcl",
-    pos: "—",
-    team: "RFCL standings open once Season 1 begins.",
-    tag: "",
-    wins: "",
-    losses: "",
-    pct: "",
-    isPlaceholder: true,
-  },
-  {
-    league: "rbsl",
-    pos: "—",
-    team: "RBSL standings open once Season 1 begins.",
-    tag: "",
-    wins: "",
-    losses: "",
-    pct: "",
-    isPlaceholder: true,
-  },
 ];
 
-export default function RankingsTable() {
+const PLACEHOLDERS: Record<string, string> = {
+  rfcl: "RFCL standings open once Season 1 begins.",
+  rbsl: "RBSL standings open once Season 1 begins.",
+  rcml: "RCML standings open once Season 4 begins.",
+};
+
+function winRate(wins: number, losses: number) {
+  const games = wins + losses;
+  return games > 0 ? wins / games : 0;
+}
+
+function formatPct(rate: number) {
+  return (rate * 100).toFixed(1) + "%";
+}
+
+function buildLiveRows(rows: LiveRanking[], league: string): RankRow[] {
+  return rows
+    .filter((r) => (r.league ?? "").toLowerCase() === league)
+    .map((r) => {
+      const wins = Number(r.wins ?? 0);
+      const losses = Number(r.losses ?? 0);
+      return {
+        team: r.team_name,
+        tag: r.tag ?? "",
+        wins,
+        losses,
+        points: Number(r.points ?? 0),
+        rate: winRate(wins, losses),
+      };
+    })
+    .sort(
+      (a, b) => b.points - a.points || b.rate - a.rate || b.wins - a.wins
+    )
+    .map((r, i) => ({
+      league,
+      pos: i + 1,
+      team: r.team,
+      tag: r.tag,
+      wins: r.wins,
+      losses: r.losses,
+      pct: formatPct(r.rate),
+    }));
+}
+
+export default function RankingsTable({
+  rows,
+  live,
+}: {
+  rows: LiveRanking[];
+  live: boolean;
+}) {
   const [filter, setFilter] = useState("rcml");
 
-  const visible = SAMPLE_ROWS.filter((r) => r.league === filter);
+  const visible: RankRow[] = useMemo(() => {
+    const source = live
+      ? buildLiveRows(rows, filter)
+      : SAMPLE_ROWS.filter((r) => r.league === filter);
+    if (source.length > 0) return source;
+    return [
+      {
+        league: filter,
+        pos: "—",
+        team: PLACEHOLDERS[filter] ?? "No standings yet.",
+        tag: "",
+        wins: "",
+        losses: "",
+        pct: "",
+        isPlaceholder: true,
+      },
+    ];
+  }, [rows, live, filter]);
 
-  const statusText =
-    filter === "rcml"
-      ? "Showing RCML Season 4 · sample data — connect Supabase for live standings."
-      : filter === "rfcl"
-        ? "Showing RFCL · Season not yet started."
-        : "Showing RBSL · Season not yet started.";
+  const hasRows = visible.some((r) => !r.isPlaceholder);
+
+  const statusText = !live
+    ? filter === "rcml"
+      ? "Showing RCML Season 4 · sample data — no live standings found yet."
+      : `Showing ${filter.toUpperCase()} · Season not yet started.`
+    : hasRows
+      ? "Showing live standings from Supabase."
+      : `Showing ${filter.toUpperCase()} · Season not yet started.`;
 
   return (
     <>
@@ -83,12 +142,6 @@ export default function RankingsTable() {
           RBSL
         </button>
       </div>
-
-      {visible.length === 0 && (
-        <p className="empty-state">
-          No teams match that filter. Try a different league.
-        </p>
-      )}
 
       <div className="table-wrap">
         <table className="rank-table">

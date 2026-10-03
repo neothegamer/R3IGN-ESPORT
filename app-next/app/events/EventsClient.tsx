@@ -1,22 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
-type EventItem = {
+export type EventItem = {
   id: string;
   title: string;
-  description: string;
-  league: string;
-  location: string;
+  description: string | null;
+  league: string | null;
+  location: string | null;
   start_time: string;
-  end_time?: string;
+  end_time: string | null;
+  ended_at?: string | null;
 };
+
+type Tab = "upcoming" | "ongoing" | "past";
 
 const LEAGUE_LABEL: Record<string, string> = {
   rcml: "RCML · COD Mobile",
   rfcl: "RFCL · Free Fire",
   rbsl: "RBSL · Blood Strike",
 };
+
+const TWO_HOURS = 2 * 60 * 60 * 1000;
 
 function pad(n: number) {
   return n < 10 ? "0" + n : "" + n;
@@ -47,7 +52,7 @@ function downloadICS(ev: EventItem) {
   const start = new Date(ev.start_time);
   const end = ev.end_time
     ? new Date(ev.end_time)
-    : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    : new Date(start.getTime() + TWO_HOURS);
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -81,7 +86,7 @@ function googleCalendarUrl(ev: EventItem) {
   const start = new Date(ev.start_time);
   const end = ev.end_time
     ? new Date(ev.end_time)
-    : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    : new Date(start.getTime() + TWO_HOURS);
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: ev.title || "",
@@ -104,7 +109,7 @@ function sampleUpcoming(): EventItem[] {
       league: "rcml",
       location: "Online",
       start_time: new Date(now + 3 * day).toISOString(),
-      end_time: new Date(now + 3 * day + 2 * 60 * 60 * 1000).toISOString(),
+      end_time: new Date(now + 3 * day + TWO_HOURS).toISOString(),
     },
     {
       id: "sample-2",
@@ -114,7 +119,7 @@ function sampleUpcoming(): EventItem[] {
       league: "rfcl",
       location: "Online",
       start_time: new Date(now + 1 * day).toISOString(),
-      end_time: new Date(now + 1 * day + 2 * 60 * 60 * 1000).toISOString(),
+      end_time: new Date(now + 1 * day + TWO_HOURS).toISOString(),
     },
     {
       id: "sample-3",
@@ -124,6 +129,7 @@ function sampleUpcoming(): EventItem[] {
       league: "rbsl",
       location: "Online",
       start_time: new Date(now + 8 * day).toISOString(),
+      end_time: null,
     },
   ];
 }
@@ -148,9 +154,11 @@ function sampleOngoing(): EventItem[] {
 function EventCard({
   ev,
   showLiveBadge,
+  showActions = true,
 }: {
   ev: EventItem;
   showLiveBadge?: boolean;
+  showActions?: boolean;
 }) {
   const start = new Date(ev.start_time);
   const dateLabel =
@@ -165,6 +173,9 @@ function EventCard({
       hour: "numeric",
       minute: "2-digit",
     });
+  const leagueLabel = ev.league
+    ? LEAGUE_LABEL[ev.league.toLowerCase()] ?? ev.league
+    : null;
 
   return (
     <div className="event-card">
@@ -180,44 +191,69 @@ function EventCard({
           </span>
         )}
       </h3>
-      <p>{ev.description}</p>
+      {ev.description && <p>{ev.description}</p>}
       <div className="event-meta">
-        {ev.league && LEAGUE_LABEL[ev.league] && (
-          <span>{LEAGUE_LABEL[ev.league]}</span>
-        )}
+        {leagueLabel && <span>{leagueLabel}</span>}
         {ev.location && <span>{ev.location}</span>}
       </div>
-      <div className="event-actions">
-        <button
-          className="btn btn-ghost btn-add-cal"
-          onClick={() => downloadICS(ev)}
-        >
-          Add to Calendar
-        </button>
-        <a
-          className="btn btn-ghost"
-          href={googleCalendarUrl(ev)}
-          target="_blank"
-          rel="noopener"
-        >
-          Google Calendar
-        </a>
-      </div>
+      {showActions && (
+        <div className="event-actions">
+          <button
+            className="btn btn-ghost btn-add-cal"
+            onClick={() => downloadICS(ev)}
+          >
+            Add to Calendar
+          </button>
+          <a
+            className="btn btn-ghost"
+            href={googleCalendarUrl(ev)}
+            target="_blank"
+            rel="noopener"
+          >
+            Google Calendar
+          </a>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function EventsClient() {
-  const [tab, setTab] = useState<"upcoming" | "ongoing">("upcoming");
-  const [upcoming, setUpcoming] = useState<EventItem[]>([]);
-  const [ongoing, setOngoing] = useState<EventItem[]>([]);
-  const [ready, setReady] = useState(false);
+export default function EventsClient({
+  events,
+  live,
+}: {
+  events: EventItem[];
+  live: boolean;
+}) {
+  const [tab, setTab] = useState<Tab>("upcoming");
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
-    setUpcoming(sampleUpcoming());
-    setOngoing(sampleOngoing());
-    setReady(true);
+    setNow(Date.now());
   }, []);
+
+  const ready = now !== null;
+
+  const { upcoming, ongoing, past } = useMemo(() => {
+    if (now === null) return { upcoming: [], ongoing: [], past: [] };
+    if (!live) {
+      return {
+        upcoming: sampleUpcoming(),
+        ongoing: sampleOngoing(),
+        past: [] as EventItem[],
+      };
+    }
+    const startMs = (e: EventItem) => new Date(e.start_time).getTime();
+    const endedMs = (e: EventItem) =>
+      e.ended_at ? new Date(e.ended_at).getTime() : 0;
+    return {
+      upcoming: events.filter((e) => !e.ended_at && startMs(e) > now),
+      ongoing: events.filter((e) => !e.ended_at && startMs(e) <= now),
+      past: events
+        .filter((e) => !!e.ended_at)
+        .sort((a, b) => endedMs(b) - endedMs(a)),
+    };
+  }, [events, live, now]);
 
   return (
     <>
@@ -238,6 +274,14 @@ export default function EventsClient() {
         >
           Ongoing Events
         </button>
+        <button
+          className="filter-chip"
+          aria-pressed={tab === "past"}
+          role="tab"
+          onClick={() => setTab("past")}
+        >
+          Past Events
+        </button>
       </div>
 
       {!ready && (
@@ -249,13 +293,16 @@ export default function EventsClient() {
       {ready && tab === "upcoming" && (
         <div>
           <div className="events-grid">
-            {upcoming.map((ev) => (
-              <EventCard key={ev.id} ev={ev} />
-            ))}
-            <p className="field-hint" style={{ gridColumn: "1 / -1" }}>
-              Sample schedule shown — connect Supabase and post real events
-              from the Admin page for live dates.
-            </p>
+            {upcoming.length === 0 ? (
+              <p
+                className="field-hint center"
+                style={{ gridColumn: "1 / -1", marginTop: "1.5rem" }}
+              >
+                No upcoming events scheduled yet.
+              </p>
+            ) : (
+              upcoming.map((ev) => <EventCard key={ev.id} ev={ev} />)
+            )}
           </div>
         </div>
       )}
@@ -277,6 +324,33 @@ export default function EventsClient() {
             )}
           </div>
         </div>
+      )}
+
+      {ready && tab === "past" && (
+        <div>
+          <div className="events-grid">
+            {past.length === 0 ? (
+              <p
+                className="field-hint center"
+                style={{ gridColumn: "1 / -1", marginTop: "1.5rem" }}
+              >
+                No past events yet.
+              </p>
+            ) : (
+              past.map((ev) => (
+                <EventCard key={ev.id} ev={ev} showActions={false} />
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {ready && (
+        <p className="field-hint" style={{ marginTop: "1.5rem" }}>
+          {live
+            ? "Showing live events from Supabase."
+            : "Sample schedule shown — no live events found yet."}
+        </p>
       )}
     </>
   );

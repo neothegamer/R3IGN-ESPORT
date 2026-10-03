@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import MessagesClient from "./MessagesClient";
@@ -44,7 +45,11 @@ export default function MessagesPage() {
 
       <section className="section-tight">
         <div className="wrap">
-          <MessagesClient />
+          <Suspense
+            fallback={<p className="field-hint">Loading messages…</p>}
+          >
+            <MessagesClient />
+          </Suspense>
         </div>
       </section>
     </main>
