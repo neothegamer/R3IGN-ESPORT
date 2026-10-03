@@ -12,6 +12,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useOnlinePresence } from "@/components/OnlinePresenceProvider";
+import { useR3ignDialog } from "@/components/R3ignDialog";
 
 type MsgRow = {
   id: string;
@@ -23,6 +24,7 @@ type MsgRow = {
   delivered_at?: string | null;
   read_at?: string | null;
   edited_at?: string | null;
+  deleted_at?: string | null;
   attachment_path?: string | null;
   attachment_type?: string | null;
   sender?: { display_name?: string | null } | null;
@@ -49,6 +51,58 @@ function fmtTime(iso: string) {
     ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
     : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
+
+const EDIT_WINDOW_MS = 10 * 60 * 1000;
+/** Min gap between sends */
+const SEND_MIN_INTERVAL_MS = 1200;
+/** Max messages in the sliding window */
+const SEND_MAX_PER_WINDOW = 8;
+const SEND_WINDOW_MS = 60_000;
+
+function canEditMessage(msg: { created_at: string; deleted_at?: string | null }) {
+  if (msg.deleted_at) return false;
+  return Date.now() - new Date(msg.created_at).getTime() <= EDIT_WINDOW_MS;
+}
+
+const URL_RE =
+  /https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/gi;
+
+function extractUrls(text: string): string[] {
+  if (!text) return [];
+  const found = text.match(URL_RE) || [];
+  return [...new Set(found)].slice(0, 3);
+}
+
+function linkDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+function LinkPreviews({ body }: { body: string }) {
+  const urls = extractUrls(body);
+  if (!urls.length) return null;
+  return (
+    <div className="msg-link-previews">
+      {urls.map((url) => (
+        <a
+          key={url}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="msg-link-card"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="msg-link-domain">{linkDomain(url)}</span>
+          <span className="msg-link-url">{url}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 
 function MessageTicks({ msg }: { msg: MsgRow }) {
   if (msg.read_at) {
@@ -87,8 +141,11 @@ const LONG_PRESS_MS = 450;
 export default function MessagesClient() {
   const supabase = createClient();
   const { isOnline, onlineIds } = useOnlinePresence();
+  const { confirm, alert } = useR3ignDialog();
   const searchParams = useSearchParams();
   const sendingLock = useRef(false);
+  const lastSendAt = useRef(0);
+  const sendTimestamps = useRef<number[]>([]);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingIdle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingChannelRef = useRef<ReturnType<
@@ -114,6 +171,15 @@ export default function MessagesClient() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("spam");
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportBusy, setReportBusy] = useState(false);
+  const [blockBusy, setBlockBusy] = useState(false);
+  const [mutedIds, setMutedIds] = useState<Set<string>>(new Set());
+  const [muteBusy, setMuteBusy] = useState(false);
+  const [convQuery, setConvQuery] = useState("");
 
   const draftTo = searchParams.get("to");
   const draftName = searchParams.get("name");
@@ -170,6 +236,30 @@ export default function MessagesClient() {
     },
     []
   );
+
+  const loadBlocks = useCallback(async (uid: string) => {
+    const { data, error } = await supabase
+      .from("user_blocks")
+      .select("blocked_id")
+      .eq("blocker_id", uid);
+    if (error) {
+      console.warn("loadBlocks", error.message);
+      return;
+    }
+    setBlockedIds(new Set((data || []).map((r) => r.blocked_id as string)));
+  }, [supabase]);
+
+  const loadMutes = useCallback(async (uid: string) => {
+    const { data, error } = await supabase
+      .from("user_mutes")
+      .select("muted_id")
+      .eq("muter_id", uid);
+    if (error) {
+      console.warn("loadMutes", error.message);
+      return;
+    }
+    setMutedIds(new Set((data || []).map((r) => r.muted_id as string)));
+  }, [supabase]);
 
   const loadMessages = useCallback(
     async (uid: string) => {
@@ -265,7 +355,11 @@ export default function MessagesClient() {
       const id = data.user?.id ?? null;
       setUserId(id);
       setChecking(false);
-      if (id) loadMessages(id);
+      if (id) {
+        loadMessages(id);
+        loadBlocks(id);
+        loadMutes(id);
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -339,15 +433,55 @@ export default function MessagesClient() {
     el.scrollTop = el.scrollHeight;
   }, [activeId, conversations]);
 
-  const convList = useMemo(() => {
-    return Object.values(conversations).sort((a, b) => {
-      if (a.unread > 0 && b.unread === 0) return -1;
-      if (b.unread > 0 && a.unread === 0) return 1;
+  const sortConvs = (list: Conv[]) =>
+    list.sort((a, b) => {
+      const aMuted = mutedIds.has(a.id) ? 1 : 0;
+      const bMuted = mutedIds.has(b.id) ? 1 : 0;
+      if (aMuted !== bMuted) return aMuted - bMuted;
+      const aUnread = mutedIds.has(a.id) ? 0 : a.unread;
+      const bUnread = mutedIds.has(b.id) ? 0 : b.unread;
+      if (aUnread > 0 && bUnread === 0) return -1;
+      if (bUnread > 0 && aUnread === 0) return 1;
       const aT = a.messages[a.messages.length - 1]?.created_at || "";
       const bT = b.messages[b.messages.length - 1]?.created_at || "";
       return bT.localeCompare(aT);
     });
-  }, [conversations]);
+
+  const convList = useMemo(() => {
+    return sortConvs(
+      Object.values(conversations).filter((c) => !blockedIds.has(c.id))
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations, blockedIds, mutedIds]);
+
+  const blockedConvList = useMemo(() => {
+    return sortConvs(
+      Object.values(conversations).filter((c) => blockedIds.has(c.id))
+    );
+  }, [conversations, blockedIds]);
+
+  const filterConv = (list: Conv[]) => {
+    const q = convQuery.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((c) => {
+      if (c.name.toLowerCase().includes(q)) return true;
+      const last = c.messages[c.messages.length - 1];
+      if (last?.body?.toLowerCase().includes(q)) return true;
+      return false;
+    });
+  };
+
+  const filteredConvList = useMemo(
+    () => filterConv(convList),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [convList, convQuery]
+  );
+
+  const filteredBlockedList = useMemo(
+    () => filterConv(blockedConvList),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [blockedConvList, convQuery]
+  );
 
   const active = activeId ? conversations[activeId] : null;
 
@@ -362,12 +496,152 @@ export default function MessagesClient() {
     typingIdle.current = setTimeout(() => {}, 2000);
   }
 
+  async function blockUser() {
+    if (!userId || !activeId || blockBusy) return;
+    const ok = await confirm({
+      title: "Block user",
+      message: `Block ${active?.name || "this user"}? They will not be able to message you, and you will not be able to message them until you unblock.`,
+      confirmLabel: "Block",
+      cancelLabel: "Cancel",
+    });
+    if (!ok) return;
+    setBlockBusy(true);
+    setSendError(null);
+    const { error } = await supabase.from("user_blocks").insert({
+      blocker_id: userId,
+      blocked_id: activeId,
+    });
+    setBlockBusy(false);
+    if (error) {
+      setSendError(error.message);
+      return;
+    }
+    setBlockedIds((prev) => new Set(prev).add(activeId));
+    setReportOpen(false);
+  }
+
+  async function unblockUser(peerId?: string) {
+    const target = peerId || activeId;
+    if (!userId || !target || blockBusy) return;
+    setBlockBusy(true);
+    setSendError(null);
+    const { error } = await supabase
+      .from("user_blocks")
+      .delete()
+      .eq("blocker_id", userId)
+      .eq("blocked_id", target);
+    setBlockBusy(false);
+    if (error) {
+      setSendError(error.message);
+      return;
+    }
+    setBlockedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(target);
+      return next;
+    });
+    await loadMessages(userId);
+  }
+
+
+  async function muteUser() {
+    if (!userId || !activeId || muteBusy) return;
+    const ok = await confirm({
+      title: "Mute conversation",
+      message: `Mute ${active?.name || "this user"}? You can still open the chat, but new messages will not mark the conversation as unread.`,
+      confirmLabel: "Mute",
+      cancelLabel: "Cancel",
+    });
+    if (!ok) return;
+    setMuteBusy(true);
+    setSendError(null);
+    const { error } = await supabase.from("user_mutes").insert({
+      muter_id: userId,
+      muted_id: activeId,
+    });
+    setMuteBusy(false);
+    if (error) {
+      setSendError(error.message);
+      return;
+    }
+    setMutedIds((prev) => new Set(prev).add(activeId));
+  }
+
+  async function unmuteUser(peerId?: string) {
+    const target = peerId || activeId;
+    if (!userId || !target || muteBusy) return;
+    setMuteBusy(true);
+    setSendError(null);
+    const { error } = await supabase
+      .from("user_mutes")
+      .delete()
+      .eq("muter_id", userId)
+      .eq("muted_id", target);
+    setMuteBusy(false);
+    if (error) {
+      setSendError(error.message);
+      return;
+    }
+    setMutedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(target);
+      return next;
+    });
+  }
+
+  async function submitReport(e: FormEvent) {
+    e.preventDefault();
+    if (!userId || !activeId || reportBusy) return;
+    setReportBusy(true);
+    setSendError(null);
+    const { error } = await supabase.from("user_reports").insert({
+      reporter_id: userId,
+      reported_id: activeId,
+      reason: reportReason,
+      details: reportDetails.trim() || null,
+      conversation_peer_id: activeId,
+    });
+    setReportBusy(false);
+    if (error) {
+      setSendError(error.message);
+      return;
+    }
+    setReportOpen(false);
+    setReportDetails("");
+    setReportReason("spam");
+    await alert({
+      title: "Report submitted",
+      message: "Thanks. Our team will review this report.",
+      okLabel: "OK",
+    });
+  }
+
   async function handleSend(e: FormEvent) {
     e.preventDefault();
     if (!userId || !activeId) return;
+    if (blockedIds.has(activeId)) {
+      setSendError("You have blocked this user.");
+      return;
+    }
     const body = compose.trim();
     if (!body && !file) return;
     if (sendingLock.current || sending) return;
+
+    const sendNow = Date.now();
+    if (sendNow - lastSendAt.current < SEND_MIN_INTERVAL_MS) {
+      setSendError("You're sending too quickly. Wait a moment.");
+      return;
+    }
+    sendTimestamps.current = sendTimestamps.current.filter(
+      (t) => sendNow - t < SEND_WINDOW_MS
+    );
+    if (sendTimestamps.current.length >= SEND_MAX_PER_WINDOW) {
+      setSendError(
+        "Rate limit: you can send at most 8 messages per minute. Try again shortly."
+      );
+      return;
+    }
+
     sendingLock.current = true;
     setSending(true);
     setSendError(null);
@@ -405,9 +679,20 @@ export default function MessagesClient() {
       });
 
       if (error) {
-        setSendError(error.message);
+        const msg = error.message || "";
+        if (
+          /row-level security|policy|permission denied|violates/i.test(msg)
+        ) {
+          setSendError(
+            "Message could not be delivered. This user may have blocked you or is unavailable."
+          );
+        } else {
+          setSendError(msg);
+        }
         return;
       }
+      lastSendAt.current = Date.now();
+      sendTimestamps.current.push(lastSendAt.current);
       setCompose("");
       clearFile();
       setPeerTyping(false);
@@ -423,6 +708,7 @@ export default function MessagesClient() {
   }
 
   function startEdit(msg: MsgRow) {
+    if (!canEditMessage(msg)) return;
     setMenuMsgId(null);
     setEditingId(msg.id);
     setEditDraft(msg.body);
@@ -435,6 +721,12 @@ export default function MessagesClient() {
 
   async function saveEdit() {
     if (!userId || !editingId || !editDraft.trim()) return;
+    const original = active?.messages.find((x) => x.id === editingId);
+    if (original && !canEditMessage(original)) {
+      setSendError("Messages can only be edited within 10 minutes of sending.");
+      cancelEdit();
+      return;
+    }
     setEditSaving(true);
     setSendError(null);
     const { error } = await supabase
@@ -457,29 +749,37 @@ export default function MessagesClient() {
 
   async function deleteMessage(msg: MsgRow) {
     if (!userId || msg.sender_id !== userId) return;
+    if (msg.deleted_at) return;
     setMenuMsgId(null);
-    if (
-      !window.confirm(
-        "Delete this message? The other person will no longer see it."
-      )
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: "Delete message",
+      message:
+        "Delete this message? Both of you will see that it was deleted.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+    });
+    if (!ok) return;
     setSendError(null);
-    if (msg.attachment_path) {
-      await supabase.storage
-        .from(BUCKET)
-        .remove([msg.attachment_path])
-        .catch(() => {});
-    }
     const { error } = await supabase
       .from("messages")
-      .delete()
+      .update({
+        deleted_at: new Date().toISOString(),
+        body: " ",
+        attachment_path: null,
+        attachment_type: null,
+      })
       .eq("id", msg.id)
       .eq("sender_id", userId);
     if (error) {
       setSendError(error.message);
       return;
+    }
+    // Optional: remove attachment file but keep placeholder in thread
+    if (msg.attachment_path) {
+      await supabase.storage
+        .from(BUCKET)
+        .remove([msg.attachment_path])
+        .catch(() => {});
     }
     if (editingId === msg.id) cancelEdit();
     await loadMessages(userId);
@@ -503,14 +803,15 @@ export default function MessagesClient() {
 
   if (!userId) {
     return (
-      <div className="auth-notice is-visible" id="msg-signin-notice">
-        <Link
-          href="/signin?redirect=/messages"
-          style={{ color: "var(--paper)" }}
-        >
+      <div className="msg-empty-panel msg-empty-panel--auth">
+        <div className="msg-empty-icon" aria-hidden="true">🔒</div>
+        <p className="msg-empty-title">Sign in to use messages</p>
+        <p className="msg-empty-copy">
+          Your conversations with players and organizations live here after you sign in.
+        </p>
+        <Link href="/signin?redirect=/messages" className="btn btn-primary">
           Sign in
-        </Link>{" "}
-        to view and send messages.
+        </Link>
       </div>
     );
   }
@@ -532,47 +833,117 @@ export default function MessagesClient() {
       >
         <div className="msg-list-pane">
           <div className="msg-list-head">Conversations</div>
+          <div className="msg-conv-search">
+            <input
+              type="search"
+              value={convQuery}
+              onChange={(e) => setConvQuery(e.target.value)}
+              placeholder="Search conversations…"
+              aria-label="Search conversations"
+            />
+          </div>
           <div id="msg-conv-list">
-            {convList.length === 0 ? (
-              <p className="field-hint" style={{ padding: "1rem" }}>
-                No conversations yet. Message someone from the{" "}
-                <Link href="/player-market">Player Market</Link>.
-              </p>
+            {filteredConvList.length === 0 && filteredBlockedList.length === 0 ? (
+              <div className="msg-empty-panel">
+                {convQuery.trim() ? (
+                  <>
+                    <div className="msg-empty-icon" aria-hidden="true">⌕</div>
+                    <p className="msg-empty-title">No matches</p>
+                    <p className="msg-empty-copy">
+                      Nothing matches &ldquo;{convQuery.trim()}&rdquo;. Try another name or clear the search.
+                    </p>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setConvQuery("")}
+                    >
+                      Clear search
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="msg-empty-icon" aria-hidden="true">💬</div>
+                    <p className="msg-empty-title">No conversations yet</p>
+                    <p className="msg-empty-copy">
+                      Start a chat from a Player Market listing — captains and free agents can reach out there.
+                    </p>
+                    <Link href="/player-market" className="btn btn-primary">
+                      Browse Player Market
+                    </Link>
+                  </>
+                )}
+              </div>
             ) : (
-              convList.map((c) => {
-                const last = c.messages[c.messages.length - 1];
-                const preview = last?.body?.trim()
-                  ? last.body
-                  : last?.attachment_path
-                    ? "📷 Image"
-                    : "New conversation";
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className={`msg-conv-item${activeId === c.id ? " is-active" : ""}${c.unread > 0 ? " has-unread" : ""}`}
-                    onClick={() => {
-                      setActiveId(c.id);
-                      setThreadOpen(true);
-                    }}
-                  >
-                    <div className="msg-conv-name">
-                      <span>{c.name}</span>
-                      {c.unread > 0 && (
-                        <span className="msg-conv-unread-badge">
-                          {c.unread}
-                        </span>
-                      )}
-                    </div>
-                    <div className="msg-conv-preview">{preview}</div>
-                    {last && (
-                      <div className="msg-conv-time">
-                        {fmtTime(last.created_at)}
+              <>
+                {filteredConvList.map((c) => {
+                  const last = c.messages[c.messages.length - 1];
+                  const preview = last?.deleted_at
+                    ? "Message deleted"
+                    : last?.body?.trim()
+                      ? last.body
+                      : last?.attachment_path
+                        ? "📷 Image"
+                        : "New conversation";
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`msg-conv-item${activeId === c.id ? " is-active" : ""}${c.unread > 0 ? " has-unread" : ""}`}
+                      onClick={() => {
+                        setActiveId(c.id);
+                        setThreadOpen(true);
+                      }}
+                    >
+                      <div className="msg-conv-name">
+                        <span>{c.name}</span>
+                        {mutedIds.has(c.id) && (
+                          <span className="msg-muted-tag">Muted</span>
+                        )}
+                        {!mutedIds.has(c.id) && c.unread > 0 && (
+                          <span className="msg-conv-unread-badge">
+                            {c.unread}
+                          </span>
+                        )}
                       </div>
-                    )}
-                  </button>
-                );
-              })
+                      <div className="msg-conv-preview">{preview}</div>
+                      {last && (
+                        <div className="msg-conv-time">
+                          {fmtTime(last.created_at)}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+                {filteredBlockedList.length > 0 && (
+                  <>
+                    <div className="msg-list-head msg-list-head-blocked">
+                      Blocked
+                    </div>
+                    {filteredBlockedList.map((c) => {
+                      const last = c.messages[c.messages.length - 1];
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className={`msg-conv-item is-blocked${activeId === c.id ? " is-active" : ""}`}
+                          onClick={() => {
+                            setActiveId(c.id);
+                            setThreadOpen(true);
+                          }}
+                        >
+                          <div className="msg-conv-name">
+                            <span>{c.name}</span>
+                            <span className="msg-blocked-tag">Blocked</span>
+                          </div>
+                          <div className="msg-conv-preview">
+                            {last?.body?.trim() || "Blocked conversation"}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -580,8 +951,12 @@ export default function MessagesClient() {
         <div className="msg-thread-pane">
           {!active ? (
             <div id="msg-thread-empty" className="msg-empty">
-              <div className="msg-empty-state">
-                <span>Select a conversation to start chatting.</span>
+              <div className="msg-empty-panel msg-empty-panel--thread">
+                <div className="msg-empty-icon" aria-hidden="true">↗</div>
+                <p className="msg-empty-title">Select a conversation</p>
+                <p className="msg-empty-copy">
+                  Choose someone from the list, or find players and orgs on the market.
+                </p>
                 <Link href="/player-market" className="btn btn-ghost">
                   Browse Player Market
                 </Link>
@@ -598,23 +973,146 @@ export default function MessagesClient() {
                 >
                   ←
                 </button>
-                <div>
+                <div className="msg-thread-head-main">
                   <div className="msg-thread-title">{active.name}</div>
                   <div className="msg-thread-sub">
                     {isOnline(active.id) ? "Online" : "Offline"}
                   </div>
                 </div>
+                <div className="msg-thread-actions">
+                  <button
+                    type="button"
+                    className="msg-thread-action-btn"
+                    onClick={() => setReportOpen((v) => !v)}
+                  >
+                    Report
+                  </button>
+                  {!blockedIds.has(active.id) &&
+                    (mutedIds.has(active.id) ? (
+                      <button
+                        type="button"
+                        className="msg-thread-action-btn"
+                        onClick={() => unmuteUser(active.id)}
+                        disabled={muteBusy}
+                      >
+                        {muteBusy ? "…" : "Unmute"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="msg-thread-action-btn"
+                        onClick={muteUser}
+                        disabled={muteBusy}
+                      >
+                        {muteBusy ? "…" : "Mute"}
+                      </button>
+                    ))}
+                  {blockedIds.has(active.id) ? (
+                    <button
+                      type="button"
+                      className="msg-thread-action-btn"
+                      onClick={() => unblockUser(active.id)}
+                      disabled={blockBusy}
+                    >
+                      {blockBusy ? "…" : "Unblock"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="msg-thread-action-btn msg-action-danger"
+                      onClick={blockUser}
+                      disabled={blockBusy}
+                    >
+                      {blockBusy ? "…" : "Block"}
+                    </button>
+                  )}
+                </div>
               </div>
-              {peerTyping && (
+              {reportOpen && (
+                <div
+                  className="r3ign-confirm-overlay is-open"
+                  role="presentation"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) setReportOpen(false);
+                  }}
+                >
+                  <form
+                    className="r3ign-confirm msg-report-modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="msg-report-title"
+                    onSubmit={submitReport}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3 className="r3ign-confirm__title" id="msg-report-title">
+                      Report {active.name}
+                    </h3>
+                    <p className="r3ign-confirm__message">
+                      Tell us why you&apos;re reporting this user. Our team will review it.
+                    </p>
+                    <label className="msg-report-label" htmlFor="report-reason">
+                      Reason
+                    </label>
+                    <select
+                      id="report-reason"
+                      className="msg-report-field"
+                      value={reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      required
+                    >
+                      <option value="spam">Spam</option>
+                      <option value="harassment">Harassment</option>
+                      <option value="scam">Scam / fraud</option>
+                      <option value="inappropriate">Inappropriate content</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <label className="msg-report-label" htmlFor="report-details">
+                      Details (optional)
+                    </label>
+                    <textarea
+                      id="report-details"
+                      className="msg-report-field"
+                      rows={3}
+                      maxLength={500}
+                      value={reportDetails}
+                      onChange={(e) => setReportDetails(e.target.value)}
+                      placeholder="Anything we should know…"
+                    />
+                    <div className="r3ign-confirm__actions">
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setReportOpen(false)}
+                        disabled={reportBusy}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={reportBusy}
+                      >
+                        {reportBusy ? "Sending…" : "Submit report"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+
+              {peerTyping && !blockedIds.has(active.id) && (
                 <div className="msg-typing" aria-live="polite">
                   {active.name} is typing…
                 </div>
               )}
               <div className="msg-thread-body" id="msg-thread-body">
                 {active.messages.length === 0 ? (
-                  <p className="field-hint" style={{ padding: "1rem" }}>
-                    No messages yet — say hello.
-                  </p>
+                  <div className="msg-empty-panel msg-empty-panel--inline">
+                    <p className="msg-empty-title">No messages yet</p>
+                    <p className="msg-empty-copy">
+                      Say hello to {active.name}. Keep it professional — this is a competitive network.
+                    </p>
+                  </div>
                 ) : (
                   active.messages.map((m) => {
                     const mine = m.sender_id === userId;
@@ -623,18 +1121,32 @@ export default function MessagesClient() {
                     return (
                       <div
                         key={m.id}
-                        className={`msg-bubble ${mine ? "mine" : "theirs"}${menuOpen ? " is-menu-open" : ""}`}
-                        onPointerDown={() => onBubblePressStart(m, mine)}
+                        className={`msg-bubble ${mine ? "mine" : "theirs"}${menuOpen ? " is-menu-open" : ""}${m.deleted_at ? " is-deleted" : ""}`}
+                        onPointerDown={() => {
+                          if (m.deleted_at) return;
+                          onBubblePressStart(m, mine);
+                        }}
                         onPointerUp={onBubblePressEnd}
                         onPointerLeave={onBubblePressEnd}
                         onPointerCancel={onBubblePressEnd}
                         onContextMenu={(e) => {
-                          if (!mine) return;
+                          if (!mine || m.deleted_at) return;
                           e.preventDefault();
                           setMenuMsgId(m.id);
                         }}
                       >
-                        {isEditing ? (
+                        {m.deleted_at ? (
+                          <>
+                            <span className="msg-bubble-text msg-deleted-text">
+                              This message was deleted
+                            </span>
+                            <span className="msg-bubble-meta">
+                              <span className="msg-bubble-time">
+                                {fmtTime(m.created_at)}
+                              </span>
+                            </span>
+                          </>
+                        ) : isEditing ? (
                           <div className="msg-edit-box">
                             <textarea
                               className="msg-edit-input"
@@ -691,6 +1203,9 @@ export default function MessagesClient() {
                                     {m.body}
                                   </span>
                                 ) : null}
+                                {m.body?.trim() && !m.deleted_at ? (
+                                  <LinkPreviews body={m.body} />
+                                ) : null}
                               </div>
                               {mine && (
                                 <button
@@ -721,7 +1236,7 @@ export default function MessagesClient() {
                                 onClick={(e) => e.stopPropagation()}
                                 onPointerDown={(e) => e.stopPropagation()}
                               >
-                                {m.body?.trim() ? (
+                                {canEditMessage(m) && m.body?.trim() ? (
                                   <button
                                     type="button"
                                     className="msg-action-btn"
@@ -774,6 +1289,7 @@ export default function MessagesClient() {
                   type="file"
                   accept={ACCEPT}
                   className="msg-file-input"
+                  disabled={blockedIds.has(active.id)}
                   onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
                 />
                 <button
@@ -781,7 +1297,7 @@ export default function MessagesClient() {
                   className="msg-attach-btn"
                   aria-label="Attach image"
                   title="Attach image"
-                  disabled={sending}
+                  disabled={sending || blockedIds.has(active.id)}
                   onClick={() => fileRef.current?.click()}
                 >
                   <svg
@@ -798,19 +1314,27 @@ export default function MessagesClient() {
                 </button>
                 <textarea
                   rows={1}
-                  placeholder="Write a message…"
+                  placeholder={
+                    blockedIds.has(active.id)
+                      ? "Unblock to send messages…"
+                      : "Write a message…"
+                  }
                   maxLength={2000}
                   value={compose}
                   onChange={(e) => {
                     setCompose(e.target.value);
                     if (e.target.value.trim()) signalTyping();
                   }}
-                  disabled={sending}
+                  disabled={sending || blockedIds.has(active.id)}
                 />
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={sending || (!compose.trim() && !file)}
+                  disabled={
+                    sending ||
+                    blockedIds.has(active.id) ||
+                    (!compose.trim() && !file)
+                  }
                 >
                   {sending ? "…" : "Send"}
                 </button>
